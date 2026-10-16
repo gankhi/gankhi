@@ -6,16 +6,13 @@ Nothing in this module modifies the system.
 
 from __future__ import annotations
 
-import subprocess
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
-DPKG_INFO_DIR = Path("/var/lib/dpkg/info")
+from ganki.runner import APT_MARK, DPKG_QUERY, run
 
-# Absolute paths + fixed argument lists: no shell, no user-controlled input.
-DPKG_QUERY = "/usr/bin/dpkg-query"
-APT_MARK = "/usr/bin/apt-mark"
+DPKG_INFO_DIR = Path("/var/lib/dpkg/info")
 
 _SEP = "\t"
 _FIELDS = (
@@ -95,20 +92,12 @@ def install_date(
     return None
 
 
-def _run(args: list[str]) -> str:
-    """Run a fixed command (no shell) and return its stdout."""
-    result = subprocess.run(  # noqa: S603  (fixed absolute path and arguments)
-        args, capture_output=True, text=True, check=True, timeout=60
-    )
-    return result.stdout
-
-
 def collect() -> list[Package]:
     """Return all installed apt packages, sorted by name."""
     packages = parse_dpkg_query(
-        _run([DPKG_QUERY, "--show", f"--showformat={_QUERY_FORMAT}"])
+        run([DPKG_QUERY, "--show", f"--showformat={_QUERY_FORMAT}"])
     )
-    manual = parse_manual(_run([APT_MARK, "showmanual"]))
+    manual = parse_manual(run([APT_MARK, "showmanual"]))
     enriched = [
         replace(
             pkg,
