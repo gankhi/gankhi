@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% macro table(rows, show_fixed_in=True) %}
+  {% if rows %}
+  <div class="scroll"><table>
+    <thead><tr>
+      <th>{{ t('col_package') }}</th><th>{{ t('col_installed') }}</th>
+      {% if show_fixed_in %}<th>{{ t('col_fixed_in') }}</th>{% endif %}
+      <th class="num">{{ t('col_cves') }}</th><th>{{ t('col_priority') }}</th>
+      <th class="num">{{ t('col_fixable') }}</th><th class="num">{{ t('col_nofix') }}</th>
+    </tr></thead>
+    <tbody>
+    {% for r in rows[:limit] %}
+      <tr>
+        <td>{{ r.source_package }}</td><td class="mono">{{ r.installed_version }}</td>
+        {% if show_fixed_in %}<td class="mono">{{ r.target_version or '—' }}</td>{% endif %}
+        <td class="num">{{ r.cve_count }}</td>
+        <td><span class="badge p-{{ r.top_priority or 'unknown' }}">{{ t(r.top_priority or 'unknown') }}</span></td>
+        <td class="num">{{ r.fix_available + r.fix_with_pro }}</td><td class="num">{{ r.no_fix }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% if rows|length > limit %}<p class="muted">{{ t('more', n=rows|length - limit) }}</p>{% endif %}
+  {% else %}<p class="muted">{{ t('none') }}</p>{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="bar">
+  <h2>{{ t('title') }}</h2>
+  <button id="rescan" type="button"{% if state == 'running' %} disabled{% endif %}>{{ t('rescan') }}</button>
+</div>
+
+{% if state == 'running' %}<p class="notice" role="status">{{ t('scanning') }}</p>{% endif %}
+{% if state == 'error' %}<p class="notice bad" role="alert">{{ t('error') }}</p>{% endif %}
+{% if state == 'unsupported' %}<p class="notice bad" role="alert">{{ t('unsupported') }}</p>{% endif %}
+
+{% if result and state in ('done', 'running') %}
+  <section class="cards">
+    <div class="card"><span class="label">{{ t('findings') }}</span><strong>{{ result.findings|length }}</strong></div>
+    <div class="card"><span class="label">{{ t('cves') }}</span><strong>{{ total_cves }}</strong></div>
+    <div class="card good"><span class="label">{{ t('fixable') }}</span><strong>{{ total_fixable }}</strong></div>
+    <div class="card"><span class="label">{{ t('no_fix') }}</span><strong>{{ total_nofix }}</strong></div>
+    <div class="card"><span class="label">{{ t('pending') }}</span><strong>{{ result.pending_updates }}</strong></div>
+  </section>
+  <p class="muted">{{ t('feed') }}: {{ result.feed_date or '?' }} ({{ t('feed_new') if result.feed_downloaded else t('feed_cached') }}) · {{ t('scanned') }}: {{ result.scanned_at.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+
+  <section><h3>{{ t('kernel') }}</h3><p class="muted">{{ t('kernel_hint') }}</p>{{ table(kernel) }}</section>
+  <section><h3>{{ t('programs_fix') }}</h3><p class="muted">{{ t('programs_fix_hint') }}</p>{{ table(fixable) }}</section>
+  <section><h3>{{ t('programs_nofix') }}</h3><p class="muted">{{ t('programs_nofix_hint') }}</p>{{ table(unfixable, False) }}</section>
+  <section><h3>{{ t('old_kernels') }}</h3><p class="muted">{{ t('old_kernels_hint') }}</p>{{ table(old_kernels) }}</section>
+  {% if result.snap_stubs %}
+  <section><h3>{{ t('snaps') }}</h3><p class="mono">{{ result.snap_stubs|join(', ') }}</p></section>
+  {% endif %}
+{% endif %}
+{% endblock %}

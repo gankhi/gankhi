@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import ganki.scan as scan
+import ganki.service as service
 from ganki.collectors.apt import Package
 from ganki.feed import FeedStatus
 from ganki.osv import Advisory
@@ -14,10 +15,13 @@ from ganki.release import UnsupportedReleaseError
 def test_main_prints_a_summary(monkeypatch, capsys):
     advisory = Advisory("CVE-2025-1", "demo bug", "high", "demo", "2.0", frozenset())
     package = Package("demo", "1.0", "amd64", 1, "", source_name="demo", source_version="1.0")
-    monkeypatch.setattr(scan, "detect_ecosystem", lambda: "Ubuntu:24.04:LTS")
-    monkeypatch.setattr(scan, "refresh", lambda: FeedStatus(Path("x"), "today", downloaded=False))
-    monkeypatch.setattr(scan, "load_advisories", lambda path, eco: {"demo": [advisory]})
-    monkeypatch.setattr(scan, "collect", lambda: [package])
+    monkeypatch.setattr(service, "detect_ecosystem", lambda: "Ubuntu:24.04:LTS")
+    monkeypatch.setattr(
+        service, "refresh", lambda: FeedStatus(Path("x"), "today", downloaded=False)
+    )
+    monkeypatch.setattr(service, "load_advisories", lambda path, eco: {"demo": [advisory]})
+    monkeypatch.setattr(service, "collect", lambda: [package])
+    monkeypatch.setattr(service, "collect_updates", lambda: [])
 
     assert scan.main() == 0
     output = capsys.readouterr().out
@@ -33,6 +37,6 @@ def test_main_reports_unsupported_systems(monkeypatch, capsys):
     def fail():
         raise UnsupportedReleaseError("not ubuntu")
 
-    monkeypatch.setattr(scan, "detect_ecosystem", fail)
+    monkeypatch.setattr(service, "detect_ecosystem", fail)
     assert scan.main() == 2
     assert "not ubuntu" in capsys.readouterr().out
