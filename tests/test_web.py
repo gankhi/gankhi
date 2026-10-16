@@ -414,5 +414,6 @@ def test_long_ring_labels_use_the_smaller_text():
         "{% from 'index.html' import ring %}{{ ring([(50, 'ok')], center, 'x', 'y') }}"
     )
     with app.test_request_context():
-        assert "ring-big long" in template.render(center="1636/2438")
+        assert "ring-big long" in template.render(center="42/147")
         assert "ring-big long" not in template.render(center="60%")
+        assert "ring-big xlong" in template.render(center="2097/3097")

@@ -12,7 +12,7 @@
     {% set ns.offset = ns.offset + pct %}
   {% endfor %}
   </g>
-  <text x="70" y="70" text-anchor="middle" class="ring-big{% if center|string|length > 5 %} long{% endif %}">{{ center }}</text>
+  <text x="70" y="70" text-anchor="middle" class="ring-big{% if center|string|length > 8 %} xlong{% elif center|string|length > 5 %} long{% endif %}">{{ center }}</text>
   <text x="70" y="90" text-anchor="middle" class="ring-cap">{{ caption }}</text>
 </svg>
 {% endmacro %}
