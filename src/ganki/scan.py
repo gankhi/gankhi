@@ -7,14 +7,11 @@ changed), then compares it with your installed packages locally.
 
 from __future__ import annotations
 
-import os
 from collections import Counter
 
-from ganki.collectors.apt import collect
-from ganki.feed import refresh
-from ganki.osv import find_findings, is_snap_stub, load_advisories
-from ganki.release import UnsupportedReleaseError, detect_ecosystem
-from ganki.summary import OLD_KERNEL, PROGRAM, RUNNING_KERNEL, PackageRisk, summarize
+from ganki.release import UnsupportedReleaseError
+from ganki.service import run_scan
+from ganki.summary import OLD_KERNEL, PROGRAM, RUNNING_KERNEL, PackageRisk
 
 SHOWN = 15
 STATUS_TEXT = {
@@ -42,19 +39,14 @@ def print_section(title: str, risks: list[PackageRisk]) -> None:
 def main() -> int:
     """Run the scan and print a short summary. Returns a process exit code."""
     try:
-        ecosystem = detect_ecosystem()
+        result = run_scan()
     except UnsupportedReleaseError as error:
         print(f"Cannot check vulnerabilities on this system: {error}")
         return 2
 
-    status = refresh()
-    state = "downloaded a newer feed" if status.downloaded else "feed already up to date"
-    print(f"Release: {ecosystem} | {state} | server date: {status.last_modified or 'unknown'}")
-
-    index = load_advisories(status.path, ecosystem)
-    packages = collect()
-    findings = find_findings(packages, index)
-    stubs = sorted({p.name for p in packages if is_snap_stub(p.source_version or p.version)})
+    state = "downloaded a newer feed" if result.feed_downloaded else "feed already up to date"
+    print(f"Release: {result.ecosystem} | {state} | server date: {result.feed_date or 'unknown'}")
+    findings, risks, stubs = result.findings, result.risks, result.snap_stubs
 
     print(
         f"{len(findings)} findings across {len({f.cve_id for f in findings})} different CVEs "
@@ -65,7 +57,6 @@ def main() -> int:
     by_priority = Counter(f.priority or "unknown" for f in findings)
     print("  by priority: " + ", ".join(f"{p}={n}" for p, n in by_priority.most_common()))
 
-    risks = summarize(findings, os.uname().release)
     programs = [r for r in risks if r.kind == PROGRAM]
     print_section("Programs you can fix (update or Ubuntu Pro)", [r for r in programs if r.has_fix])
     print_section(
