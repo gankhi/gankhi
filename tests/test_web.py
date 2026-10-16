@@ -390,3 +390,19 @@ def test_pause_on_error_waits_for_enter_only_when_it_fails(monkeypatch):
         port = busy.getsockname()[1]
         assert server.main(["--port", str(port), "--no-open", "--pause-on-error"]) == 1
     assert len(asked) == 1
+
+
+def test_fonts_are_served_from_the_app_itself():
+    client = login(build().test_client())
+    response = client.get("/static/fonts/space-grotesk-latin-400-normal.woff2", base_url=BASE)
+    assert response.status_code == 200 and len(response.data) > 1000
+    csp = client.get("/", base_url=BASE).headers["Content-Security-Policy"]
+    assert "font-src 'self'" in csp and "http" not in csp
+
+
+def test_install_prompts_accept_a_spanish_yes():
+    from pathlib import Path
+
+    for name in ("install.sh", "uninstall.sh"):
+        script = (Path(__file__).parent.parent / "scripts" / name).read_text()
+        assert "|s|S|" in script

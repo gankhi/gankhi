@@ -34,7 +34,7 @@ Homepage = "https://github.com/gankigit/ganki"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"ganki.web" = ["templates/*.html", "static/*"]
+"ganki.web" = ["templates/*.html", "static/*", "static/fonts/*"]
 
 [tool.ruff]
 line-length = 100

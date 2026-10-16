@@ -39,8 +39,8 @@ say "  $DESKTOP_FILE"
 say "  Ganki.desktop on your Desktop folder, if it is there"
 [ "$purge" = true ] && say "  $CACHE_DIR (downloaded vulnerability data)"
 if [ "$assume_yes" = false ]; then
-    read -r -p "Continue? [y/N] " answer
-    case "$answer" in y|Y|yes|YES) ;; *) say "Cancelled. Nothing was changed."; exit 0 ;; esac
+    read -r -p "Continue? [y/N] (s/y = yes) " answer
+    case "$answer" in y|Y|yes|YES|s|S|si|SI|Si|sí|Sí) ;; *) say "Cancelled. Nothing was changed."; exit 0 ;; esac
 fi
 
 rm -rf -- "$APP_DIR"

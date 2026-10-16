@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hmac
 from collections.abc import Callable
+from datetime import datetime
 
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
@@ -29,7 +30,7 @@ LANG_COOKIE = "ganki_lang"
 FILTERS = ("all", "outdated", "vulnerable")
 MAX_QUERY_CHARS = 100
 CSP = (
-    "default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; "
+    "default-src 'none'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self'; "
     "img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 )
 
@@ -141,6 +142,7 @@ def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
             "t": lambda key, **values: i18n.translate(lang, key, **values),
             "state": job.state,
             "result": result,
+            "now": datetime.now(),
         }
         if result is not None and job.state in (DONE, RUNNING):
             context.update(tool_view(result))
