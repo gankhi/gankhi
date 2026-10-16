@@ -19,7 +19,13 @@ ECOSYSTEMS = {
     "noble": "Ubuntu:24.04:LTS",
     "plucky": "Ubuntu:25.04",
     "questing": "Ubuntu:25.10",
+    "resolute": "Ubuntu:26.04:LTS",
 }
+
+
+def pro_ecosystem(ecosystem: str) -> str:
+    """The Ubuntu Pro variant of an ecosystem: ``Ubuntu:24.04:LTS`` -> ``Ubuntu:Pro:24.04:LTS``."""
+    return ecosystem.replace("Ubuntu:", "Ubuntu:Pro:", 1)
 
 
 class UnsupportedReleaseError(RuntimeError):
