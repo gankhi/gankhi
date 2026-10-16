@@ -68,8 +68,11 @@ def make_result(summary="plain text"):
     )
 
 
-def build(scan=make_result):
-    app = create_app(scan, SECRET, PORT)
+def build(scan=make_result, simulator=None):
+    if simulator is None:
+        app = create_app(scan, SECRET, PORT)
+    else:
+        app = create_app(scan, SECRET, PORT, simulator)
     app.testing = True
     return app
 
@@ -426,3 +429,91 @@ def test_rows_explain_in_plain_words_what_to_do():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "Fixed in 2.0 with the distribution" in html  # openssl has a fix
     assert "No fix yet: use it with care" in html  # virtualbox has none
+
+
+URIS = (
+    "'http://x/vim.deb' vim_9.2.deb 1000000 SHA256:abc\n"
+    "'http://x/rt.deb' rt.deb 234000 SHA256:def\n"
+)
+SIMULATION = """Reading package lists...
+Inst vim [9.1] (9.2 noble-updates [amd64])
+Inst vim-runtime [9.1] (9.2 noble-updates [all])
+Inst brand-new-lib (1.0 noble [amd64])
+Remv old-thing [1.0]
+Need to get 1,234 kB/5,678 kB of archives.
+After this operation, 12.5 MB of additional disk space will be used.
+"""
+
+
+def with_guarded_packages():
+    from dataclasses import replace
+
+    result = make_result()
+    guarded = [
+        Package("bash", "5.2", "amd64", 1800, "shell", priority="required", has_menu_entry=True),
+        Package("vim", "9.1", "amd64", 3000, "text editor", has_menu_entry=True),
+    ]
+    updates = [Update("vim", "amd64", "9.1", "9.2", "noble-updates", False)]
+    return replace(result, tools=build_tools(guarded, [], updates, "6.8.0-137-generic"))
+
+
+def preview_client(simulator=lambda action, name, uris=False: URIS if uris else SIMULATION):
+    client = login(build(with_guarded_packages, simulator).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    return client
+
+
+def test_preview_shows_what_an_update_would_do_and_the_commands_to_copy():
+    html = (
+        preview_client().get("/preview?action=update&pkg=vim", base_url=BASE).get_data(as_text=True)
+    )
+    assert "2 updated, 1 new, 1 removed" in html
+    assert "Download: 1.2 MiB" in html
+    assert "sudo apt-get install --only-upgrade vim" in html
+    assert "dpkg --get-selections" in html  # the undo list comes first
+    assert "style=" not in html
+
+
+def test_protected_programs_cannot_be_previewed_for_removal():
+    client = preview_client(lambda *_: (_ for _ in ()).throw(AssertionError("must not simulate")))
+    html = client.get("/preview?action=remove&pkg=bash", base_url=BASE).get_data(as_text=True)
+    assert "will not remove it" in html and "sudo apt-get remove" not in html
+
+
+def test_removal_that_drags_protected_software_is_refused():
+    simulation = "Remv vim [9.1]\nRemv bash [5.2]\n"
+    client = preview_client(lambda *_a: simulation)
+    html = client.get("/preview?action=remove&pkg=vim", base_url=BASE).get_data(as_text=True)
+    assert "also remove software the system depends on" in html
+    assert "sudo apt-get remove" not in html
+
+
+def test_preview_rejects_unknown_actions_and_packages():
+    client = preview_client(lambda *_: (_ for _ in ()).throw(AssertionError("must not simulate")))
+    assert client.get("/preview?action=purge&pkg=vim", base_url=BASE).status_code == 400
+    for name in ("nonexistent", "vim;reboot", "-rf", "../etc"):
+        html = client.get(f"/preview?action=remove&pkg={name}", base_url=BASE).get_data(
+            as_text=True
+        )
+        assert "not in the list" in html
+
+
+def test_preview_needs_the_access_cookie():
+    assert build().test_client().get("/preview?action=all", base_url=BASE).status_code == 403
+
+
+def test_a_failed_simulation_shows_a_generic_message():
+    def broken(action, name, uris=False):
+        raise OSError("/secret/path exploded")
+
+    html = preview_client(broken).get("/preview?action=all", base_url=BASE).get_data(as_text=True)
+    assert "could not run" in html and "/secret/path" not in html
+
+
+def test_table_has_update_and_remove_buttons_and_protected_lock():
+    html = preview_client().get("/", base_url=BASE).get_data(as_text=True)
+    assert "/preview?action=update&amp;pkg=vim" in html
+    assert "/preview?action=remove&amp;pkg=vim" in html
+    assert "Protected" in html and "action=remove&amp;pkg=bash" not in html
+    assert "action=all" in html  # "Update everything" in the header
