@@ -1,82 +1,132 @@
 {% extends "base.html" %}
-{% set TOP_ROWS = 6 %}
+{% set TOP_ROWS = 5 %}
 {% macro badge(priority) %}<span class="badge p-{{ priority or 'unknown' }}">{{ t(priority or 'unknown') }}</span>{% endmacro %}
-{% macro ring(percent, tone, center, label) %}
-<svg class="ring" viewBox="0 0 36 36" role="img" aria-label="{{ label }}: {{ center }}">
-  <circle class="track" cx="18" cy="18" r="15.9" fill="none" stroke-width="4"/>
-  <circle class="bar tone-{{ tone }}" cx="18" cy="18" r="15.9" fill="none" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ percent }} 100" transform="rotate(-90 18 18)"/>
-  <text x="18" y="20.6" text-anchor="middle" class="ring-text">{{ center }}</text>
+{% macro ring(segments, center, caption, label) %}
+{# Each segment is (percent, tone); they are laid end to end around the circle. #}
+<svg class="ring" viewBox="0 0 140 140" role="img" aria-label="{{ label }}: {{ center }} {{ caption }}">
+  <circle class="track" cx="70" cy="70" r="52" fill="none" stroke-width="14"/>
+  <g transform="rotate(-90 70 70)">
+  {% set ns = namespace(offset=0) %}
+  {% for pct, tone in segments if pct > 0 %}
+    <circle class="seg {{ tone }}" cx="70" cy="70" r="52" fill="none" stroke-width="14" pathLength="100" stroke-dasharray="{{ pct|round(2) }} 100" stroke-dashoffset="{{ -ns.offset|round(2) }}"/>
+    {% set ns.offset = ns.offset + pct %}
+  {% endfor %}
+  </g>
+  <text x="70" y="70" text-anchor="middle" class="ring-big">{{ center }}</text>
+  <text x="70" y="90" text-anchor="middle" class="ring-cap">{{ caption }}</text>
 </svg>
 {% endmacro %}
 
 {% block content %}
-<div class="bar">
-  <h2>{{ t('title') }}</h2>
-  <button id="rescan" type="button"{% if state == 'running' %} disabled{% endif %}>{{ t('rescan') }}</button>
-</div>
-
+{% if not (result and state in ('done', 'running')) %}<nav class="lang solo" aria-label="Language"><a href="/lang/es">ES</a><a href="/lang/en">EN</a></nav>{% endif %}
 {% if state == 'running' %}<p class="notice" role="status">{{ t('scanning') }}</p>{% endif %}
 {% if state == 'error' %}<p class="notice bad" role="alert">{{ t('error') }}</p>{% endif %}
 {% if state == 'unsupported' %}<p class="notice bad" role="alert">{{ t('unsupported') }}</p>{% endif %}
 
 {% if result and state in ('done', 'running') %}
 {% set sys = result.system %}
-<p class="muted strip">
-  {% if sys %}{{ sys.os_name }} · {{ sys.kernel }} · {{ sys.user }} · {{ t('uptime', time=sys.uptime_seconds|uptime) }} · {% endif %}
-  {{ t('last_scan') }}: {{ result.scanned_at.strftime('%Y-%m-%d %H:%M UTC') }} · {{ t('feed') }}: {{ t('feed_new') if result.feed_downloaded else t('feed_cached') }}
-  {% if sys and sys.reboot_required %}<span class="chip warn" role="status">{{ t('reboot') }}</span>{% endif %}
-</p>
-
 {% set rec = result.reclaimable %}
+
+<header class="card head">
+  <div class="headrow">
+    <div class="prompt mono">{{ sys.user if sys else 'user' }}@ganki:~$ <span>{{ t('prompt_cmd') }}</span></div>
+    <nav class="lang" aria-label="Language">
+      <a href="/lang/es"{% if lang == 'es' %} aria-current="true"{% endif %}>ES</a>
+      <a href="/lang/en"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a>
+    </nav>
+  </div>
+  <div class="headgrid">
+    <dl class="facts">
+      {% if sys %}
+      <div><dt>{{ t('lbl_system') }}</dt><dd>{{ sys.os_name }}</dd><dd class="mono sub">kernel {{ sys.kernel }} · {{ sys.architecture }}</dd></div>
+      <div><dt>{{ t('lbl_user') }}</dt><dd>{{ sys.user }}</dd><dd class="mono sub">{{ t('uptime', time=sys.uptime_seconds|uptime) }}</dd></div>
+      {% endif %}
+      <div><dt>{{ t('lbl_datetime') }}</dt><dd>{{ now.strftime('%Y-%m-%d · %H:%M') }}</dd><dd class="mono sub">{{ t('last_scan_short') }}: {{ result.scanned_at.strftime('%H:%M UTC') }}</dd></div>
+      {% if sys %}
+      <div><dt>{{ t('lbl_disk') }}</dt><dd>{{ t('disk_free_big', free=sys.disk_free|bytes) }}</dd><dd class="mono sub">{{ t('disk_used_of', used=sys.disk_used|bytes, total=sys.disk_total|bytes) }}</dd></div>
+      {% endif %}
+    </dl>
+    <div class="status">
+      <div class="statusrow">
+        <strong>{{ t('x_of_y_ok', ok=counts.ok, all=counts.all) }}</strong>
+        {% if counts.vulnerable %}<span class="pill bad"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M12 8v4M12 16h.01"/></svg>{{ t('pill_vuln', n=counts.vulnerable) }}</span>{% endif %}
+      </div>
+      <div class="actions">
+        <button id="rescan" type="button" class="ghost"{% if state == 'running' %} disabled{% endif %}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>{{ t('rescan') }}</button>
+      </div>
+      {% if sys and sys.reboot_required %}<div class="warnline" role="status">{{ t('reboot') }}</div>{% endif %}
+      <div class="small">{{ t('feed') }}: {{ t('feed_new') if result.feed_downloaded else t('feed_cached') }}</div>
+    </div>
+  </div>
+</header>
+
 <section class="cards">
   {% if sys %}
   <div class="card ringcard">
-    {{ ring(sys.disk_percent, 'ok' if sys.disk_percent < 70 else ('warn' if sys.disk_percent < 85 else 'bad'), sys.disk_percent ~ '%', t('disk')) }}
-    <div><span class="label">{{ t('disk') }}</span><strong>{{ t('ring_used') }}</strong>
-      <span class="small">{{ t('disk_detail', used=sys.disk_used|bytes, free=sys.disk_free|bytes, total=sys.disk_total|bytes) }}</span></div>
+    <h3>{{ t('disk') }}</h3>
+    <div class="ringrow">
+      {{ ring([(sys.disk_percent, 'ok' if sys.disk_percent < 70 else ('warn' if sys.disk_percent < 85 else 'bad'))], sys.disk_percent ~ '%', t('ring_used'), t('disk')) }}
+      <ul class="legend">
+        <li><i class="sw {{ 'ok' if sys.disk_percent < 70 else ('warn' if sys.disk_percent < 85 else 'bad') }}"></i>{{ t('leg_disk_used', size=sys.disk_used|bytes) }}</li>
+        <li><i class="sw rest"></i>{{ t('leg_disk_free', size=sys.disk_free|bytes) }}</li>
+      </ul>
+    </div>
   </div>
   <div class="card ringcard">
-    {{ ring(sys.ram_percent, 'ok' if sys.ram_percent < 70 else ('warn' if sys.ram_percent < 85 else 'bad'), sys.ram_percent ~ '%', t('ram')) }}
-    <div><span class="label">{{ t('ram') }}</span><strong>{{ t('ring_in_use') }}</strong>
-      <span class="small">{{ t('ram_detail', used=sys.ram_used_kib|size, free=(sys.ram_total_kib - sys.ram_used_kib)|size) }}</span></div>
+    <h3>{{ t('ram') }}</h3>
+    <div class="ringrow">
+      {{ ring([(sys.ram_percent, 'ok' if sys.ram_percent < 70 else ('warn' if sys.ram_percent < 85 else 'bad'))], sys.ram_percent ~ '%', t('ring_in_use'), t('ram')) }}
+      <ul class="legend">
+        <li><i class="sw {{ 'ok' if sys.ram_percent < 70 else ('warn' if sys.ram_percent < 85 else 'bad') }}"></i>{{ t('leg_ram_used', size=sys.ram_used_kib|size) }}</li>
+        <li><i class="sw rest"></i>{{ t('leg_ram_free', size=(sys.ram_total_kib - sys.ram_used_kib)|size) }}</li>
+      </ul>
+    </div>
   </div>
   {% endif %}
+  {% set total = counts.all or 1 %}
   <div class="card ringcard">
-    {{ ring((100 * counts.ok / counts.all)|round|int if counts.all else 0, 'ok', counts.ok ~ '/' ~ counts.all, t('programs')) }}
-    <div><span class="label">{{ t('programs') }}</span><strong>{{ t('ring_ok') }}</strong>
-      <span class="small">{{ t('programs_detail', vuln=counts.vulnerable, old=counts.outdated) }}</span></div>
+    <h3>{{ t('programs') }}</h3>
+    <div class="ringrow">
+      {{ ring([(100 * counts.ok / total, 'good'), (100 * counts.outdated / total, 'warn'), (100 * counts.vulnerable / total, 'bad')], counts.ok ~ '/' ~ counts.all, t('ring_ok'), t('programs')) }}
+      <ul class="legend">
+        <li><i class="sw good"></i>{{ t('leg_ok', n=counts.ok) }}</li>
+        <li><i class="sw warn"></i>{{ t('leg_old', n=counts.outdated) }}</li>
+        {% if counts.vulnerable %}<li><i class="sw bad"></i>{{ t('leg_vuln', n=counts.vulnerable) }}</li>{% endif %}
+      </ul>
+    </div>
   </div>
-  <div class="card">
-    <span class="label">{{ t('reclaim') }}</span><strong class="big">{{ rec.total_kib|size }}</strong>
+  <div class="card wide">
+    <div class="reclaimhead"><h3>{{ t('reclaim') }}</h3><span class="bigsize">{{ rec.total_kib|size }}</span></div>
     <ul class="mini">
-      {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><b>{{ rec.old_kernel_kib|size }}</b></li>{% endif %}
-      {% if rec.apt_cache_kib %}<li><span>{{ t('reclaim_cache') }}</span><b>{{ rec.apt_cache_kib|size }}</b></li>{% endif %}
-      {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><b>{{ rec.orphan_kib|size }}</b></li>{% endif %}
+      {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><b class="mono">{{ rec.old_kernel_kib|size }}</b></li>{% endif %}
+      {% if rec.apt_cache_kib %}<li><span>{{ t('reclaim_cache') }}</span><b class="mono">{{ rec.apt_cache_kib|size }}</b></li>{% endif %}
+      {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><b class="mono">{{ rec.orphan_kib|size }}</b></li>{% endif %}
     </ul>
-    <span class="small">{{ t('reclaim_total') }}</span>
+    <span class="small">{{ t('review_clean') }}</span>
   </div>
 </section>
 
-<div class="layout">
-<div class="main-col">
-<section>
-  <h3>{{ t('tools') }}</h3>
+<section class="card tools">
+  <div class="toolshead">
+    <div><h2>{{ t('tools') }}</h2><p class="muted">{{ t('tools_sub', n=counts.all) }}</p></div>
+    <form method="get" action="/" class="search">
+      <input type="hidden" name="f" value="{{ filter }}">
+      <label for="q" class="small">{{ t('search_label') }}</label>
+      <input id="q" type="search" name="q" value="{{ q }}" maxlength="100" placeholder="{{ t('search_ph') }}">
+      <label class="check"><input type="checkbox" name="show" value="all"{% if show_all %} checked{% endif %}> {{ t('show_all') }}</label>
+      <button type="submit" class="ghost">{{ t('apply') }}</button>
+    </form>
+  </div>
   <nav class="chips" aria-label="{{ t('tools') }}">
     {% for f in filters %}
     <a href="{{ url_for('index', f=f, q=q or None, show='all' if show_all else None) }}"{% if f == filter %} aria-current="true"{% endif %}>{{ t('f_' ~ f) }} · {{ counts[f] }}</a>
     {% endfor %}
   </nav>
-  <form method="get" action="/" class="filters">
-    <input type="hidden" name="f" value="{{ filter }}">
-    <input type="search" name="q" value="{{ q }}" maxlength="100" placeholder="{{ t('search') }}" aria-label="{{ t('search') }}">
-    <label class="check"><input type="checkbox" name="show" value="all"{% if show_all %} checked{% endif %}> {{ t('show_all') }}</label>
-    <button type="submit">{{ t('apply') }}</button>
-  </form>
 
   <input type="checkbox" id="more-tools" class="toggle">
   <div class="scroll"><table>
     <thead><tr>
-      <th>{{ t('col_tool') }}</th><th>{{ t('col_version') }}</th>
+      <th>{{ t('col_tool') }}</th><th>{{ t('col_origin') }}</th><th>{{ t('col_version') }}</th>
       <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th>
     </tr></thead>
     {% for group in (page.items[:TOP_ROWS], page.items[TOP_ROWS:]) %}
@@ -95,16 +145,17 @@
           </details>
           {% endif %}
         </td>
-        <td class="mono">{{ tool.version }}{% if tool.update_to %} → {{ tool.update_to }}{% endif %}</td>
-        <td class="num">{{ tool.size_kib|size }}</td>
+        <td class="mono">apt</td>
+        <td class="mono">{{ tool.version }}{% if tool.update_to %} → <span class="new">{{ tool.update_to }}</span>{% endif %}</td>
+        <td class="num mono">{{ tool.size_kib|size }}</td>
         <td>
-          {% if tool.state == 'vulnerable' %}{{ badge(tool.top_priority) }} {{ t('state_vulnerable') }}
-          {% elif tool.state == 'outdated' %}<span class="badge p-medium">{{ t('state_outdated') }}</span>
-          {% else %}<span class="badge p-ok">{{ t('state_ok') }}</span>{% endif %}
+          {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
+          {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
+          {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
         </td>
       </tr>
     {% else %}
-      {% if loop.index == 1 and group is sameas page.items[:TOP_ROWS] %}<tr><td colspan="4" class="muted">{{ t('none') }}</td></tr>{% endif %}
+      {% if loop.index == 1 and group is sameas page.items[:TOP_ROWS] %}<tr><td colspan="5" class="muted">{{ t('none') }}</td></tr>{% endif %}
     {% endfor %}
     </tbody>
     {% endfor %}
@@ -121,40 +172,39 @@
   </nav>
   {% endif %}
 </section>
-</div>
 
-<aside class="side-col">
-{% if kernel %}
-<section class="kernel">
-  <h3>{{ t('kernel') }}</h3>
-  <p class="small"><span class="mono">{{ kernel.installed_version }}</span> · {{ t('kernel_cves', n=kernel.cve_count, fixed=kernel.target_version or '?') }}</p>
-</section>
-{% endif %}
-
-<section>
-  <h3>{{ t('downloads') }}</h3>
+<section class="bottom">
+<div class="card">
+  <div class="toolshead"><h2>{{ t('downloads') }}</h2>
   {% if result.download_groups %}
     {% set total_files = result.download_groups|sum(attribute='files') %}
     {% set total_bytes = result.download_groups|sum(attribute='size_bytes') %}
-    <p class="muted">{{ result.downloads_folder }} · {{ t('downloads_summary', n=total_files, size=total_bytes|bytes) }}</p>
+    <span class="mono small">{{ t('downloads_summary', n=total_files, size=total_bytes|bytes) }}</span></div>
+    <p class="muted mono">{{ result.downloads_folder }}</p>
     <input type="checkbox" id="more-downloads" class="toggle">
     <ul class="downloads">
     {% for g in result.download_groups %}
-      <li{% if loop.index > 3 %} class="more"{% endif %}><span>{{ t('dl_' ~ g.key) }} · {{ g.files }}</span>
-        <meter min="0" max="{{ total_bytes }}" value="{{ g.size_bytes }}" aria-label="{{ t('dl_' ~ g.key) }}"></meter>
-        <strong>{{ g.size_bytes|bytes }}</strong></li>
+      <li{% if loop.index > 3 %} class="more"{% endif %}><span>{{ t('dl_' ~ g.key) }} · {{ g.files }}</span><strong class="mono">{{ g.size_bytes|bytes }}</strong>
+        <meter min="0" max="{{ total_bytes }}" value="{{ g.size_bytes }}" aria-label="{{ t('dl_' ~ g.key) }}"></meter></li>
     {% endfor %}
     </ul>
     {% if result.download_groups|length > 3 %}
     <label for="more-downloads" class="more-label"><span class="when-closed">{{ t('show_more', n=result.download_groups|length - 3) }}</span><span class="when-open">{{ t('show_less') }}</span></label>
     {% endif %}
-  {% else %}<p class="muted">{{ t('downloads_empty', folder=result.downloads_folder or '~') }}</p>{% endif %}
-</section>
-
-{% if result.snap_stubs %}
-<section><h3>{{ t('snaps') }}</h3><p class="mono small">{{ result.snap_stubs|join(', ') }}</p></section>
-{% endif %}
-</aside>
+  {% else %}</div><p class="muted">{{ t('downloads_empty', folder=result.downloads_folder or '~') }}</p>{% endif %}
 </div>
+
+{% if kernel or result.snap_stubs %}
+<div class="card">
+  {% if kernel %}
+  <h2>{{ t('kernel') }}</h2>
+  <p class="small"><span class="mono">{{ kernel.installed_version }}</span> · {{ t('kernel_cves', n=kernel.cve_count, fixed=kernel.target_version or '?') }}</p>
+  {% endif %}
+  {% if result.snap_stubs %}
+  <h2>{{ t('snaps') }}</h2><p class="mono small">{{ result.snap_stubs|join(', ') }}</p>
+  {% endif %}
+</div>
+{% endif %}
+</section>
 {% endif %}
 {% endblock %}

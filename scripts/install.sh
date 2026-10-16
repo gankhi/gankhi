@@ -58,8 +58,8 @@ say "  command       : $BIN_DIR/ganki"
 say "  menu entry    : $DESKTOP_DIR/ganki.desktop"
 [ -n "$desktop_dir" ] && say "  desktop icon  : $desktop_dir/Ganki.desktop"
 if [ "$assume_yes" = false ]; then
-    read -r -p "Continue? [y/N] " answer
-    case "$answer" in y|Y|yes|YES) ;; *) say "Cancelled. Nothing was changed."; exit 0 ;; esac
+    read -r -p "Continue? [y/N] (s/y = yes) " answer
+    case "$answer" in y|Y|yes|YES|s|S|si|SI|Si|sí|Sí) ;; *) say "Cancelled. Nothing was changed."; exit 0 ;; esac
 fi
 
 mkdir -p "$APP_DIR" "$BIN_DIR" "$DESKTOP_DIR"
