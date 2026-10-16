@@ -23,6 +23,7 @@ Safety notes:
 from __future__ import annotations
 
 import json
+import re
 import tarfile
 from collections import defaultdict
 from dataclasses import dataclass, replace
@@ -36,6 +37,17 @@ from ganki.release import pro_ecosystem
 MAX_RECORD_BYTES = 2 * 1024 * 1024  # a single CVE record is far smaller than this
 MAX_MEMBERS = 500_000  # the feed has tens of thousands of files
 SUMMARY_CHARS = 240
+
+# Ubuntu ships some apps (Firefox, Thunderbird, ...) as a snap and keeps a tiny
+# transitional .deb with a version like "2:1snap1-0ubuntu3". That version says
+# nothing about the real app, so comparing it with CVE records gives false hits.
+_SNAP_STUB = re.compile(r"\dsnap\d")
+
+
+def is_snap_stub(version: str) -> bool:
+    """Is this the placeholder .deb of an app that is really installed as a snap?"""
+    return _SNAP_STUB.search(version) is not None
+
 
 # Ubuntu priority, most urgent first. Unknown priorities sort last.
 PRIORITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "negligible": 4}
@@ -202,6 +214,8 @@ def find_findings(packages: list[Package], index: dict[str, list[Advisory]]) -> 
     for pkg in packages:
         source = pkg.source_name or pkg.name.split(":")[0]
         installed = pkg.source_version or pkg.version
+        if is_snap_stub(installed):
+            continue
         for advisory in index.get(source, []):
             if not _is_affected(advisory, installed):
                 continue

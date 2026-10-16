@@ -75,3 +75,9 @@ def test_pro_only_fix_is_counted_separately():
     risk = summarize([finding("CVE-1", fixed=None, pro="1~esm1")])[0]
     assert (risk.fix_available, risk.fix_with_pro, risk.no_fix) == (0, 1, 0)
     assert risk.target_version is None
+
+
+def test_has_fix_tells_fixable_from_unfixable():
+    assert summarize([finding("CVE-1")])[0].has_fix
+    assert summarize([finding("CVE-1", fixed=None, pro="1~esm1")])[0].has_fix
+    assert not summarize([finding("CVE-1", fixed=None)])[0].has_fix

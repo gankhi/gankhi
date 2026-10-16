@@ -26,6 +26,7 @@ def test_main_prints_a_summary(monkeypatch, capsys):
     assert "[high] demo 1.0 -> 2.0" in output
     assert "1 CVEs (high 1)" in output
     assert "feed already up to date" in output
+    assert "Programs you can fix" in output
 
 
 def test_main_reports_unsupported_systems(monkeypatch, capsys):
