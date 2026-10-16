@@ -322,3 +322,45 @@ def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, mo
     output = capsys.readouterr().out
     assert str(tmp_path / server.ACCESS_FILE) in output
     assert saved.split("access=")[1] not in output
+
+
+# ---------- a second copy must not disturb the first ----------
+
+
+def test_second_launch_on_a_busy_port_leaves_the_saved_address_alone(tmp_path, monkeypatch):
+    import socket
+
+    from ganki.web import server
+
+    saved = tmp_path / server.ACCESS_FILE
+    saved.write_text("original-address\n")
+    monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path)
+    with socket.socket() as busy:
+        busy.bind(("127.0.0.1", 0))
+        busy.listen()
+        port = busy.getsockname()[1]
+        assert server.port_is_free(port) is False
+        assert server.main(["--port", str(port), "--no-open"]) == 1
+    assert saved.read_text() == "original-address\n"
+    assert server.port_is_free(port) is True
+
+
+def test_request_log_lines_never_show_the_access_key():
+    import logging
+
+    from ganki.web.server import HideAccessKey
+
+    record = logging.LogRecord(
+        "werkzeug",
+        logging.INFO,
+        "",
+        0,
+        '"%s" %s %s',
+        ("GET /?access=SECRET123 HTTP/1.1", 302, "-"),
+        None,
+    )
+    assert HideAccessKey().filter(record) is True
+    line = record.getMessage()
+    assert "SECRET123" not in line
+    assert "access=<hidden>" in line
+    assert "GET /" in line and "302" in line

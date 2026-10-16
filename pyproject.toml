@@ -24,6 +24,9 @@ dependencies = ["flask>=3.0"]
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
 
+[project.scripts]
+ganki = "ganki.web.server:run"
+
 [project.urls]
 Homepage = "https://github.com/gankigit/ganki"
 

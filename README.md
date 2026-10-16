@@ -25,12 +25,26 @@ A local dashboard for Linux that shows what is installed on your computer, what 
 
 ## Roadmap
 
-- [ ] Read-only apt inventory
-- [ ] Update and vulnerability status
-- [ ] Web dashboard (English and Spanish)
-- [ ] Downloads, screenshots and duplicates view
+- [x] Read-only apt inventory
+- [x] Update and vulnerability status
+- [x] Web dashboard (English and Spanish)
+- [x] Downloads by type
+- [x] Packaging (installer and desktop launcher)
+- [ ] Screenshots and duplicates view
+- [ ] Docker images
 - [ ] Guarded removal and cleanup actions
-- [ ] Packaging (installer and desktop launcher)
+
+## Install and run
+
+From a copy of this repository, without `sudo` (everything goes inside your home folder):
+
+```
+scripts/install.sh
+```
+
+Then open **Ganki** from your applications menu, or run `ganki` in a terminal. It opens in your browser and only accepts connections from your own computer. Close it with `Ctrl+C` in its terminal. To remove it: `scripts/uninstall.sh`.
+
+Each start creates a new secret key that is kept out of the terminal: the browser opens with it, and a copy is saved in `~/.cache/ganki/dashboard-url`, readable only by you.
 
 ## Requirements
 
