@@ -38,7 +38,7 @@ Linux basado en Debian/Ubuntu y Python 3.10 o superior. Desarrollado sobre una b
 
 ## Notas de desarrollo
 
-Este proyecto se desarrolla con la ayuda de asistentes de IA para programar. Lo que toque el sistema debe estar cubierto por pruebas automáticas y análisis estático; la hoja de ruta muestra lo que existe hoy.
+Lo que toque el sistema debe estar cubierto por pruebas automáticas y análisis estático; la hoja de ruta muestra lo que existe hoy.
 
 ## Licencia
 
