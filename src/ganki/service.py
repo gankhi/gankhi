@@ -70,5 +70,5 @@ def run_scan() -> ScanResult:
         reclaimable=cleanup.estimate(packages, system.kernel),
         download_groups=downloads_mod.scan_downloads(folder),
         downloads_folder="~/" + folder.name,
-        tools=build_tools(packages, findings, updates),
+        tools=build_tools(packages, findings, updates, system.kernel),
     )

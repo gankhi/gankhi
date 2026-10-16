@@ -68,8 +68,19 @@ def test_apt_get_is_limited_to_the_simulated_autoremove():
     for args in (
         ["/usr/bin/apt-get", "remove", "bash"],
         ["/usr/bin/apt-get", "autoremove"],
-        ["/usr/bin/apt-get", "-s", "remove", "bash"],
         ["/usr/bin/apt-get", "-s", "autoremove", "--purge"],
+        ["/usr/bin/apt-get", "-s", "remove", "--purge", "bash"],
+        ["/usr/bin/apt-get", "-s", "remove", "bash", "libc6"],
+        ["/usr/bin/apt-get", "-s", "remove", "-bash"],
+        ["/usr/bin/apt-get", "-s", "remove", "bash;reboot"],
+        ["/usr/bin/apt-get", "-s", "remove", "Bash"],
+        ["/usr/bin/apt-get", "-s", "install", "bash"],
+        ["/usr/bin/apt-get", "install", "--only-upgrade", "bash"],
+        ["/usr/bin/apt-get", "full-upgrade"],
+        ["/usr/bin/apt-get", "-s", "full-upgrade", "extra"],
+        ["/usr/bin/apt-get", "--print-uris", "-y", "-qq", "remove", "bash"],
+        ["/usr/bin/apt-get", "--print-uris", "-y", "-qq", "install", "bash"],
+        ["/usr/bin/apt-get", "--print-uris", "full-upgrade"],
         ["/usr/bin/apt-get"],
     ):
         with pytest.raises(runner.CommandNotAllowedError):
@@ -92,3 +103,28 @@ def test_apt_get_simulated_autoremove_is_allowed(monkeypatch):
     monkeypatch.setattr(runner.subprocess, "run", fake)
     assert runner.run([runner.APT_GET, "-s", "autoremove"]) == "ok"
     assert seen == [[runner.APT_GET, "-s", "autoremove"]]
+
+
+def test_apt_get_only_simulates_the_previews(monkeypatch):
+    from ganki import runner
+
+    seen = []
+
+    def fake(args, **_kwargs):
+        seen.append(args)
+
+        class Done:
+            stdout = "ok"
+
+        return Done()
+
+    monkeypatch.setattr(runner.subprocess, "run", fake)
+    for args in (
+        ["-s", "remove", "libstdc++6:amd64"],
+        ["-s", "install", "--only-upgrade", "vim-common"],
+        ["-s", "full-upgrade"],
+        ["--print-uris", "-y", "-qq", "full-upgrade"],
+        ["--print-uris", "-y", "-qq", "install", "--only-upgrade", "vim"],
+    ):
+        assert runner.run([runner.APT_GET, *args]) == "ok"
+    assert len(seen) == 5

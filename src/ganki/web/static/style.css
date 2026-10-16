@@ -160,3 +160,18 @@ meter::-moz-meter-bar { background: var(--blue); border-radius: 6px; }
   .ring { width: 120px; height: 120px; }
   .search input[type="search"] { min-width: 0; width: 100%; }
 }
+
+/* actions and preview */
+.btn { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border-radius: 8px;
+  border: 1px solid #3f3f3f; color: var(--text); text-decoration: none; font-size: .88rem; font-weight: 500; white-space: nowrap; }
+.btn.primary { background: var(--green); color: #03210e; border-color: var(--green); font-weight: 600; }
+.btn.danger { color: var(--red); border-color: var(--red-line); }
+.btn.off { color: #666; border-color: var(--line); }
+.btn.big { min-height: 40px; padding: 0 18px; font-size: .95rem; }
+td.actions { display: flex; gap: 8px; flex-wrap: wrap; border-top: 0; }
+tr:has(td.actions) td { border-top: 1px solid var(--line); }
+.preview h3 { margin: 14px 0 6px; }
+.names { list-style: none; padding: 0; margin: 0; columns: 3 220px; font-size: .85rem; }
+.names li.more { display: none; }
+.toggle:checked ~ .names li.more { display: list-item; }
+.commands { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; margin: 8px 0; }

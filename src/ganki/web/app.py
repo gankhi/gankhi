@@ -12,13 +12,15 @@ Defences, in order of what they stop:
 from __future__ import annotations
 
 import hmac
+import subprocess
 from collections.abc import Callable
 from datetime import datetime
 
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
-from ganki import paging
+from ganki import actions, paging
+from ganki.runner import CommandNotAllowedError
 from ganki.service import ScanResult
 from ganki.summary import RUNNING_KERNEL
 from ganki.tools import OK, OUTDATED, VULNERABLE
@@ -42,8 +44,16 @@ def uptime_text(seconds: int) -> str:
     return f"{days} d {hours} h" if days else f"{hours} h {rest // 60} min"
 
 
-def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
-    """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token."""
+def create_app(
+    scan: Callable[[], ScanResult],
+    secret: str,
+    port: int,
+    simulator: actions.Simulator = actions.simulate,
+) -> Flask:
+    """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token.
+
+    ``simulator`` runs the apt simulations behind the previews (replaced in tests).
+    """
     app = Flask(__name__)
     job = ScanJob(scan)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
@@ -147,6 +157,36 @@ def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
         if result is not None and job.state in (DONE, RUNNING):
             context.update(tool_view(result))
         return render_template("index.html", **context)
+
+    @app.route("/preview")
+    def preview_page() -> str:
+        """What an update or removal would do, from a simulation. Nothing is changed."""
+        result = job.result
+        action = request.args.get("action", "")
+        package = request.args.get("pkg", "")[:100]
+        if action not in actions.ACTIONS:
+            abort(400)
+        if result is None or job.state not in (DONE, RUNNING):
+            return redirect("/")  # type: ignore[return-value]
+        lang = current_language()
+        try:
+            view = actions.preview(
+                action,
+                package,
+                {t.name for t in result.tools},
+                {t.name for t in result.tools if t.protected},
+                simulator,
+                {t.name: t.size_kib for t in result.tools},
+            )
+        except (CommandNotAllowedError, subprocess.SubprocessError, OSError):
+            view = actions.Preview(action, package, blocked="blocked_failed")
+        return render_template(
+            "preview.html",
+            lang=lang,
+            t=lambda key, **values: i18n.translate(lang, key, **values),
+            state=job.state,
+            view=view,
+        )
 
     @app.route("/api/status")
     def status() -> Response:

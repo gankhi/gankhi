@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card preview">
+  <p><a href="{{ url_for('index') }}">← {{ t('back') }}</a></p>
+  <h2>{{ t('prev_title_' ~ view.action, name=view.package) }}</h2>
+
+  {% if view.blocked %}
+    <p class="hint bad" role="alert">{{ t(view.blocked) }}</p>
+  {% else %}
+    <p>{{ t('prev_summary', up=view.upgrades|length, new=view.installs|length, gone=view.removals|length) }}</p>
+    <p class="muted">
+      {% if view.download_bytes %}{{ t('prev_download', size=view.download_bytes|bytes) }} · {% endif %}
+      {% if view.disk_change_bytes < 0 %}{{ t('prev_frees', size=(-view.disk_change_bytes)|bytes) }}
+      {% else %}{{ t('prev_uses', size=view.disk_change_bytes|bytes) }}{% endif %}
+    </p>
+
+    {% for key, names in (('prev_list_up', view.upgrades), ('prev_list_new', view.installs), ('prev_list_gone', view.removals)) %}
+    {% if names %}
+    <h3>{{ t(key) }} · {{ names|length }}</h3>
+    <input type="checkbox" id="more-{{ key }}" class="toggle">
+    <ul class="names mono">
+      {% for name in names %}<li{% if loop.index > 8 %} class="more"{% endif %}>{{ name }}</li>{% endfor %}
+    </ul>
+    {% if names|length > 8 %}
+    <label for="more-{{ key }}" class="more-label"><span class="when-closed">{{ t('show_more', n=names|length - 8) }}</span><span class="when-open">{{ t('show_less') }}</span></label>
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+
+    <p class="small mono">{{ t('prev_simulation') }}: apt-get {{ view.simulation }}</p>
+
+    <h3>{{ t('prev_run_title') }}</h3>
+    <p class="small">{{ t('prev_run_note') }}</p>
+    <pre class="commands mono" id="commands">{% for command in view.commands %}{{ command }}
+{% endfor %}</pre>
+    <button type="button" id="copy" data-target="commands" data-done="{{ t('copied') }}">{{ t('copy') }}</button>
+    {% if view.action != 'remove' %}<p class="small">{{ t('prev_reboot') }}</p>{% endif %}
+  {% endif %}
+</section>
+{% endblock %}

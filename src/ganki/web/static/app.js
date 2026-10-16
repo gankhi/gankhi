@@ -21,5 +21,12 @@
         .then(function () { location.reload(); });
     });
   }
+  var copy = document.getElementById("copy");
+  if (copy) {
+    copy.addEventListener("click", function () {
+      var text = document.getElementById(copy.dataset.target).textContent;
+      navigator.clipboard.writeText(text).then(function () { copy.textContent = copy.dataset.done; });
+    });
+  }
   if (document.body.dataset.state === "running") { poll(); }
 })();

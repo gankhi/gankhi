@@ -7,7 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from ganki import debversion
-from ganki.collectors.apt import Package
+from ganki.collectors.apt import SYSTEM_PRIORITIES, Package
 from ganki.collectors.updates import Update
 from ganki.osv import PRIORITY_ORDER, Finding
 
@@ -20,6 +20,30 @@ MAX_CVE_LINES = 5  # most urgent CVEs shown per tool
 # (https://nodejs.org/en/about/previous-releases: 18 ended in 2025, 20 in April 2026).
 NODE_LAST_UNSUPPORTED_MAJOR = 20
 _LEADING_NUMBER = re.compile(r"^(?:\d+:)?(\d+)")
+
+
+# Packages whose removal can leave the machine unable to boot, log in or update.
+_PROTECTED_NAME = re.compile(
+    r"^(linux-(generic|image-generic|headers-generic|lowlatency|virtual)\b"
+    r"|ubuntu-(desktop|minimal|standard|server|keyring|release-upgrader)"
+    r"|systemd|udev|apt|dpkg|libc6|bash|sudo|grub|shim|initramfs-tools|xorg|xserver-xorg"
+    r"|network-manager|netplan|lightdm|sddm|gdm3|linuxlite|lite-|dbus|policykit-1|polkitd)"
+)
+_RUNNING_KERNEL_PART = re.compile(
+    r"^linux-(image|modules|modules-extra|headers|tools)-(\d+\.\d+\.\d+-\d+)"
+)
+_RELEASE_ABI = re.compile(r"^(\d+\.\d+\.\d+-\d+)")
+
+
+def is_protected(pkg: Package, kernel_release: str = "") -> bool:
+    """Packages Ganki will never offer to remove: the system depends on them."""
+    if pkg.essential or pkg.priority in SYSTEM_PRIORITIES:
+        return True
+    if _PROTECTED_NAME.match(pkg.name.split(":")[0]):
+        return True
+    abi = _RELEASE_ABI.match(kernel_release)
+    part = _RUNNING_KERNEL_PART.match(pkg.name)
+    return bool(abi and part and part.group(2) == abi.group(1))
 
 
 def end_of_support(name: str, version: str) -> bool:
@@ -54,6 +78,7 @@ class Tool:
     unfixable: int = 0  # CVEs with no fix published yet
     fixed_in: str | None = None  # version that fixes everything fixable
     cves: tuple[CveLine, ...] = ()
+    protected: bool = False  # never offered for removal
     end_of_support: bool = False  # the authors no longer publish fixes for this version
 
 
@@ -62,7 +87,10 @@ def _rank(priority: str) -> int:
 
 
 def build_tools(
-    packages: list[Package], findings: list[Finding], updates: list[Update]
+    packages: list[Package],
+    findings: list[Finding],
+    updates: list[Update],
+    kernel_release: str = "",
 ) -> list[Tool]:
     """One ``Tool`` per installed package, most urgent first."""
     by_name: dict[str, list[Finding]] = defaultdict(list)
@@ -103,6 +131,7 @@ def build_tools(
                 fixable=sum(1 for f in unique.values() if f.status != "no_fix"),
                 unfixable=sum(1 for f in unique.values() if f.status == "no_fix"),
                 fixed_in=fixed_in,
+                protected=is_protected(pkg, kernel_release),
                 end_of_support=end_of_support(pkg.name, pkg.version),
                 cves=tuple(
                     CveLine(f.cve_id, f.priority, f.summary, f.fixed_version, f.status)
