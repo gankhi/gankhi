@@ -64,7 +64,7 @@ def test_launcher_template_has_the_required_entries():
     text = (ROOT / "packaging" / "ganki.desktop.in").read_text()
     assert "Exec=@EXEC@" in text
     assert "Terminal=true" in text  # a terminal window is how the user stops it (Ctrl+C)
-    assert "Icon=ganki" in text
+    assert "Icon=@ICON@" in text
     assert (ROOT / "packaging" / "ganki.svg").read_text().lstrip().startswith("<svg")
 
 

@@ -6,7 +6,8 @@
 # - Adds a "Ganki" entry to your applications menu and a `ganki` command.
 # Run it again later to update; run scripts/uninstall.sh to remove it.
 #
-# Usage: scripts/install.sh [--yes]
+# Usage: scripts/install.sh [--yes] [--no-desktop]
+#   --no-desktop  do not put a shortcut on your Desktop
 
 set -euo pipefail
 
@@ -14,24 +15,25 @@ DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 APP_DIR="$DATA_HOME/ganki"
 BIN_DIR="$HOME/.local/bin"
 DESKTOP_DIR="$DATA_HOME/applications"
-ICON_DIR="$DATA_HOME/icons/hicolor/scalable/apps"
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 say() { printf '%s\n' "$*"; }
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 
 assume_yes=false
+desktop_shortcut=true
 for arg in "$@"; do
     case "$arg" in
         --yes|-y) assume_yes=true ;;
-        -h|--help) sed -n '2,11p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        --no-desktop) desktop_shortcut=false ;;
+        -h|--help) sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) die "unknown option: $arg" ;;
     esac
 done
 
 [ "$(id -u)" -ne 0 ] || die "do not run this as root or with sudo. It installs for your user only."
 [ -n "${HOME:-}" ] || die "HOME is not set."
-for dir in "$APP_DIR" "$BIN_DIR" "$DESKTOP_DIR" "$ICON_DIR"; do
+for dir in "$APP_DIR" "$BIN_DIR" "$DESKTOP_DIR"; do
     case "$dir" in "$HOME"/*) ;; *) die "refusing to install outside your home folder: $dir" ;; esac
 done
 
@@ -41,16 +43,26 @@ python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' \
 python3 -c 'import venv, ensurepip' 2>/dev/null \
     || die "the Python venv module is missing. On Ubuntu: sudo apt install python3-venv"
 
+# The Desktop folder, wherever the system language put it (Desktop, Escritorio, ...).
+desktop_dir=""
+if [ "$desktop_shortcut" = true ]; then
+    configured="$(sed -n 's/^XDG_DESKTOP_DIR="\(.*\)"$/\1/p' "$HOME/.config/user-dirs.dirs" 2>/dev/null | head -n 1)"
+    candidate="${configured//\$HOME/$HOME}"
+    [ -n "$candidate" ] || candidate="$HOME/Desktop"
+    case "$candidate" in "$HOME"/*) [ -d "$candidate" ] && desktop_dir="$candidate" ;; esac
+fi
+
 say "Ganki will be installed for your user only:"
 say "  program files : $APP_DIR"
 say "  command       : $BIN_DIR/ganki"
 say "  menu entry    : $DESKTOP_DIR/ganki.desktop"
+[ -n "$desktop_dir" ] && say "  desktop icon  : $desktop_dir/Ganki.desktop"
 if [ "$assume_yes" = false ]; then
     read -r -p "Continue? [y/N] " answer
     case "$answer" in y|Y|yes|YES) ;; *) say "Cancelled. Nothing was changed."; exit 0 ;; esac
 fi
 
-mkdir -p "$APP_DIR" "$BIN_DIR" "$DESKTOP_DIR" "$ICON_DIR"
+mkdir -p "$APP_DIR" "$BIN_DIR" "$DESKTOP_DIR"
 python3 -m venv "$APP_DIR/venv"
 "$APP_DIR/venv/bin/python" -m pip install --quiet --upgrade pip
 
@@ -62,14 +74,29 @@ cp -R -- "$SRC/pyproject.toml" "$SRC/README.md" "$SRC/LICENSE" "$SRC/src" "$buil
 "$APP_DIR/venv/bin/python" -m pip install --quiet --upgrade "$build_dir"
 
 ln -sfn "$APP_DIR/venv/bin/ganki" "$BIN_DIR/ganki"
-install -m 644 "$SRC/packaging/ganki.svg" "$ICON_DIR/ganki.svg"
+# The icon is referenced by its full path: that works on every desktop without
+# having to refresh an icon cache.
+install -m 644 "$SRC/packaging/ganki.svg" "$APP_DIR/ganki.svg"
 
 # Quote the path as the desktop-entry format requires (spaces, and % written as %%).
 exec_path="${BIN_DIR//%/%%}/ganki"
-sed -e "s|@EXEC@|\"$exec_path\"|" "$SRC/packaging/ganki.desktop.in" > "$DESKTOP_DIR/ganki.desktop"
+icon_path="$APP_DIR/ganki.svg"
+make_launcher() {
+    sed -e "s|@EXEC@|\"$exec_path\"|" -e "s|@ICON@|$icon_path|" \
+        "$SRC/packaging/ganki.desktop.in" > "$1"
+}
+make_launcher "$DESKTOP_DIR/ganki.desktop"
 chmod 644 "$DESKTOP_DIR/ganki.desktop"
 if command -v update-desktop-database >/dev/null; then
     update-desktop-database "$DESKTOP_DIR" >/dev/null 2>&1 || true
+fi
+
+if [ -n "$desktop_dir" ]; then
+    make_launcher "$desktop_dir/Ganki.desktop"
+    chmod 755 "$desktop_dir/Ganki.desktop"  # desktops only run launchers marked executable
+    if command -v gio >/dev/null; then  # "trust" it so the desktop does not ask on first click
+        gio set "$desktop_dir/Ganki.desktop" metadata::trusted true >/dev/null 2>&1 || true
+    fi
 fi
 
 say ""
