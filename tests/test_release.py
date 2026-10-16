@@ -53,3 +53,15 @@ def test_debian_is_unsupported(tmp_path):
 def test_missing_file_is_unsupported(tmp_path):
     with pytest.raises(UnsupportedReleaseError):
         detect_ecosystem(tmp_path / "does-not-exist")
+
+
+def test_pro_ecosystem_name():
+    from ganki.release import pro_ecosystem
+
+    assert pro_ecosystem("Ubuntu:24.04:LTS") == "Ubuntu:Pro:24.04:LTS"
+    assert pro_ecosystem("Ubuntu:25.10") == "Ubuntu:Pro:25.10"
+
+
+def test_ubuntu_26_04_is_known(tmp_path):
+    path = write(tmp_path, "ID=ubuntu\nVERSION_CODENAME=resolute\n")
+    assert detect_ecosystem(path) == "Ubuntu:26.04:LTS"

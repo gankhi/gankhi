@@ -12,7 +12,7 @@ from ganki.release import UnsupportedReleaseError
 
 
 def test_main_prints_a_summary(monkeypatch, capsys):
-    advisory = Advisory("CVE-2025-1", "demo", "demo", "2.0", requires_subscription=False)
+    advisory = Advisory("CVE-2025-1", "demo bug", "high", "demo", "2.0", frozenset())
     package = Package("demo", "1.0", "amd64", 1, "", source_name="demo", source_version="1.0")
     monkeypatch.setattr(scan, "detect_ecosystem", lambda: "Ubuntu:24.04:LTS")
     monkeypatch.setattr(scan, "refresh", lambda: FeedStatus(Path("x"), "today", downloaded=False))
@@ -21,8 +21,9 @@ def test_main_prints_a_summary(monkeypatch, capsys):
 
     assert scan.main() == 0
     output = capsys.readouterr().out
-    assert "1 findings" in output
-    assert "CVE-2025-1" in output
+    assert "1 findings across 1 different CVEs" in output
+    assert "fix available (update it): 1" in output
+    assert "[high] CVE-2025-1" in output
     assert "feed already up to date" in output
 
 
