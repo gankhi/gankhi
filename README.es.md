@@ -1,0 +1,45 @@
+# Ganki
+
+Un panel local para Linux que muestra qué hay instalado en tu computadora, qué está desactualizado y qué podés limpiar con seguridad para liberar espacio en disco.
+
+> **Estado: desarrollo inicial (alfa).** Por ahora nada en este repositorio modifica tu sistema. El primer objetivo es un inventario de solo lectura del software instalado.
+
+[Read in English](README.md)
+
+## Objetivos
+
+- Inventario del software instalado (primero apt; después snap, flatpak, pip, npm y Docker) con versión, tamaño y fecha de instalación.
+- Mostrar qué programas están desactualizados y cuáles tienen vulnerabilidades conocidas.
+- Encontrar descargas pesadas, capturas de pantalla y archivos duplicados, agrupados por tipo.
+- Liberar espacio en disco con acciones explícitas y reversibles.
+- Funcionar por completo en tu propia máquina, en tu navegador, sin que salgan datos.
+
+## Principios de diseño
+
+- **Primero solo lectura.** Las funciones que solo muestran información van antes que cualquiera que modifique el sistema.
+- **Vista previa antes de actuar.** Cada borrado muestra exactamente qué se ve afectado y cuánto espacio libera.
+- **Elementos protegidos.** Los paquetes esenciales del sistema no se pueden quitar desde la interfaz.
+- **Reversible por defecto.** Los archivos van a la papelera y se guarda la lista de paquetes antes de los cambios.
+- **Solo local.** La interfaz web escuchará únicamente en `127.0.0.1`.
+- **Reutilizar, no reinventar.** Ganki coordina herramientas probadas en lugar de reimplementarlas.
+
+## Hoja de ruta
+
+- [ ] Inventario apt de solo lectura
+- [ ] Estado de actualizaciones y vulnerabilidades
+- [ ] Panel web (inglés y español)
+- [ ] Vista de descargas, capturas y duplicados
+- [ ] Acciones de borrado y limpieza con protecciones
+- [ ] Empaquetado (instalador y lanzador de escritorio)
+
+## Requisitos
+
+Linux basado en Debian/Ubuntu y Python 3.10 o superior. Desarrollado sobre una base Ubuntu 24.04.
+
+## Notas de desarrollo
+
+Este proyecto se desarrolla con la ayuda de asistentes de IA para programar. Lo que toque el sistema debe estar cubierto por pruebas automáticas y análisis estático; la hoja de ruta muestra lo que existe hoy.
+
+## Licencia
+
+MIT. Ver [LICENSE](LICENSE).
