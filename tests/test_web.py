@@ -417,3 +417,12 @@ def test_long_ring_labels_use_the_smaller_text():
         assert "ring-big long" in template.render(center="42/147")
         assert "ring-big long" not in template.render(center="60%")
         assert "ring-big xlong" in template.render(center="2097/3097")
+
+
+def test_rows_explain_in_plain_words_what_to_do():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert "Fixed in 2.0 with the distribution" in html  # openssl has a fix
+    assert "No fix yet: use it with care" in html  # virtualbox has none

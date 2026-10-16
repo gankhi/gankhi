@@ -49,6 +49,13 @@ TEXTS: dict[str, dict[str, str]] = {
         "cve_summary": "CVE: {n}",
         "fixed_in": "Fixed in {version}",
         "no_fix_yet": "no fix published yet",
+        "hint_fixed": "Fixed in {version} with the distribution's patch. Update to resolve it.",
+        "hint_no_fix": "No fix yet: use it with care and do not open files from unknown sources.",
+        "hint_some_no_fix": "{n} more notices have no fix yet.",
+        "hint_eol": (
+            "End of support: its authors no longer publish fixes. Move to a supported version."
+        ),
+        "chip_eol": "End of support",
         "details_note": "Source: Ubuntu security data, compared locally.",
         "downloads": "Downloads by type",
         "downloads_summary": "{n} files, {size}",
@@ -142,6 +149,17 @@ TEXTS: dict[str, dict[str, str]] = {
         "cve_summary": "CVE: {n}",
         "fixed_in": "Corregida en {version}",
         "no_fix_yet": "sin arreglo publicado",
+        "hint_fixed": (
+            "Corregida en {version} con parche de la distribución. Actualizá para resolverla."
+        ),
+        "hint_no_fix": (
+            "Sin arreglo todavía: usalo con cuidado y no abras archivos de origen dudoso."
+        ),
+        "hint_some_no_fix": "{n} avisos más todavía no tienen arreglo.",
+        "hint_eol": (
+            "Fin de soporte: sus autores ya no publican arreglos. Pasá a una versión vigente."
+        ),
+        "chip_eol": "Fin de soporte",
         "details_note": "Fuente: datos de seguridad de Ubuntu, comparados en tu equipo.",
         "downloads": "Descargas por tipo",
         "downloads_summary": "{n} archivos, {size}",

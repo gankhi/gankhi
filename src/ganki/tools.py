@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from dataclasses import dataclass
 
@@ -14,6 +15,19 @@ VULNERABLE, OUTDATED, OK = "vulnerable", "outdated", "ok"
 _STATE_RANK = {VULNERABLE: 0, OUTDATED: 1, OK: 2}
 _UNKNOWN = len(PRIORITY_ORDER)
 MAX_CVE_LINES = 5  # most urgent CVEs shown per tool
+
+# Newest Node.js major that no longer gets fixes from its authors
+# (https://nodejs.org/en/about/previous-releases: 18 ended in 2025, 20 in April 2026).
+NODE_LAST_UNSUPPORTED_MAJOR = 20
+_LEADING_NUMBER = re.compile(r"^(?:\d+:)?(\d+)")
+
+
+def end_of_support(name: str, version: str) -> bool:
+    """True when the upstream project no longer fixes this version (only well-known cases)."""
+    if name.split(":")[0] == "nodejs":
+        match = _LEADING_NUMBER.match(version)
+        return bool(match) and int(match.group(1)) <= NODE_LAST_UNSUPPORTED_MAJOR
+    return False
 
 
 @dataclass(frozen=True)
@@ -40,6 +54,7 @@ class Tool:
     unfixable: int = 0  # CVEs with no fix published yet
     fixed_in: str | None = None  # version that fixes everything fixable
     cves: tuple[CveLine, ...] = ()
+    end_of_support: bool = False  # the authors no longer publish fixes for this version
 
 
 def _rank(priority: str) -> int:
@@ -88,6 +103,7 @@ def build_tools(
                 fixable=sum(1 for f in unique.values() if f.status != "no_fix"),
                 unfixable=sum(1 for f in unique.values() if f.status == "no_fix"),
                 fixed_in=fixed_in,
+                end_of_support=end_of_support(pkg.name, pkg.version),
                 cves=tuple(
                     CveLine(f.cve_id, f.priority, f.summary, f.fixed_version, f.status)
                     for f in list(unique.values())[:MAX_CVE_LINES]

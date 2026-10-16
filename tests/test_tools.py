@@ -80,3 +80,12 @@ def test_human_size():
     assert human_size(512) == "512 KiB"
     assert human_size(1536) == "1.5 MiB"
     assert human_size(3 * 1024 * 1024) == "3.0 GiB"
+
+
+def test_end_of_support_only_flags_well_known_cases():
+    from ganki.tools import end_of_support
+
+    assert end_of_support("nodejs", "18.19.1+dfsg-6ubuntu5")
+    assert end_of_support("nodejs", "20.11.0+dfsg-1")
+    assert not end_of_support("nodejs", "22.9.0-1")
+    assert not end_of_support("git", "1:2.43.0-1")
