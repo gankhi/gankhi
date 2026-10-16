@@ -32,10 +32,10 @@ def make_result(summary="plain text"):
         Finding("CVE-3", "linux", ("linux-image",), "6.8.0-31.31", "6.8.0-90.91", None, "low", ""),
     ]
     packages = [
-        Package("openssl", "1.0", "amd64", 900, "crypto toolkit", manual=True),
-        Package("virtualbox", "7.0", "amd64", 4000, "virtual machines", manual=True),
-        Package("vim", "9.1", "amd64", 3000, "text editor", manual=True),
-        Package("git", "2.43", "amd64", 38000, "version control", manual=True),
+        Package("openssl", "1.0", "amd64", 900, "crypto toolkit", has_menu_entry=True),
+        Package("virtualbox", "7.0", "amd64", 4000, "virtual machines", has_menu_entry=True),
+        Package("vim", "9.1", "amd64", 3000, "text editor", has_menu_entry=True),
+        Package("git", "2.43", "amd64", 38000, "version control", has_menu_entry=True),
         Package("libfoo1", "1.0", "amd64", 20, "internal library", manual=False),
     ]
     updates = [Update("vim", "amd64", "9.1", "9.2", "noble-updates", False)]

@@ -106,7 +106,7 @@ def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
         chosen = request.args.get("f", "all")
         chosen = chosen if chosen in FILTERS else "all"
         query = request.args.get("q", "")[:MAX_QUERY_CHARS]
-        universe = [t for t in result.tools if t.manual or show_all]
+        universe = [t for t in result.tools if t.is_program or show_all]
         wanted = {"outdated": OUTDATED, "vulnerable": VULNERABLE}.get(chosen)
         text = query.strip().lower()
         shown = [

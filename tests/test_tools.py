@@ -10,7 +10,7 @@ from ganki.tools import OK, OUTDATED, VULNERABLE, build_tools
 
 
 def pkg(name, manual=True):
-    return Package(name, "1.0", "amd64", 10, f"{name} description", manual=manual)
+    return Package(name, "1.0", "amd64", 10, f"{name} description", has_menu_entry=manual)
 
 
 def finding(cve, name="a", fixed="2.0", priority="medium"):

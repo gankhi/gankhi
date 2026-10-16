@@ -31,7 +31,7 @@ class Tool:
     version: str
     size_kib: int
     description: str
-    manual: bool  # installed on purpose (True) or pulled in as a dependency (False)
+    is_program: bool  # a program or tool (True) or a library/system dependency (False)
     state: str  # VULNERABLE, OUTDATED or OK
     update_to: str | None = None  # newer version available from the repositories
     cve_count: int = 0
@@ -80,7 +80,7 @@ def build_tools(
                 version=pkg.version,
                 size_kib=pkg.size_kib,
                 description=pkg.description,
-                manual=pkg.manual,
+                is_program=pkg.is_program,
                 state=state,
                 update_to=candidate,
                 cve_count=len(unique),
