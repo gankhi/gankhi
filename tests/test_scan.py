@@ -23,7 +23,8 @@ def test_main_prints_a_summary(monkeypatch, capsys):
     output = capsys.readouterr().out
     assert "1 findings across 1 different CVEs" in output
     assert "fix available (update it): 1" in output
-    assert "[high] CVE-2025-1" in output
+    assert "[high] demo 1.0 -> 2.0" in output
+    assert "1 CVEs (high 1)" in output
     assert "feed already up to date" in output
 
 

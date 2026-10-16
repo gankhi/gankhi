@@ -81,9 +81,7 @@ def parse_manual(output: str) -> set[str]:
     return {line.strip() for line in output.splitlines() if line.strip()}
 
 
-def install_date(
-    name: str, architecture: str, info_dir: Path = DPKG_INFO_DIR
-) -> datetime | None:
+def install_date(name: str, architecture: str, info_dir: Path = DPKG_INFO_DIR) -> datetime | None:
     """Approximate install date from the modification time of the .list file.
 
     dpkg has no real install date. The file time changes when a package is
@@ -101,9 +99,7 @@ def install_date(
 
 def collect() -> list[Package]:
     """Return all installed apt packages, sorted by name."""
-    packages = parse_dpkg_query(
-        run([DPKG_QUERY, "--show", f"--showformat={_QUERY_FORMAT}"])
-    )
+    packages = parse_dpkg_query(run([DPKG_QUERY, "--show", f"--showformat={_QUERY_FORMAT}"]))
     manual = parse_manual(run([APT_MARK, "showmanual"]))
     enriched = [
         replace(

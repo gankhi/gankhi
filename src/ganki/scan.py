@@ -7,12 +7,14 @@ changed), then compares it with your installed packages locally.
 
 from __future__ import annotations
 
+import os
 from collections import Counter
 
 from ganki.collectors.apt import collect
 from ganki.feed import refresh
 from ganki.osv import find_findings, load_advisories
 from ganki.release import UnsupportedReleaseError, detect_ecosystem
+from ganki.summary import OLD_KERNEL, PROGRAM, RUNNING_KERNEL, PackageRisk, summarize
 
 SHOWN = 15
 STATUS_TEXT = {
@@ -20,6 +22,21 @@ STATUS_TEXT = {
     "fix_with_pro": "fix needs Ubuntu Pro",
     "no_fix": "no fix released yet",
 }
+
+
+def print_section(title: str, risks: list[PackageRisk]) -> None:
+    """Print the most urgent packages of one kind, one line each."""
+    print(f"\n{title}: {len(risks)} package(s)")
+    for risk in risks[:SHOWN]:
+        priorities = ", ".join(f"{p} {n}" for p, n in risk.by_priority.items())
+        fix = f" -> {risk.target_version}" if risk.target_version else ""
+        state = f"fixable {risk.fix_available}, needs Pro {risk.fix_with_pro}, no fix {risk.no_fix}"
+        print(
+            f"  [{risk.top_priority or '?'}] {risk.source_package} "
+            f"{risk.installed_version}{fix} | {risk.cve_count} CVEs ({priorities}) | {state}"
+        )
+    if len(risks) > SHOWN:
+        print(f"  ... and {len(risks) - SHOWN} more")
 
 
 def main() -> int:
@@ -46,15 +63,16 @@ def main() -> int:
     by_priority = Counter(f.priority or "unknown" for f in findings)
     print("  by priority: " + ", ".join(f"{p}={n}" for p, n in by_priority.most_common()))
 
-    for finding in findings[:SHOWN]:
-        fixed = finding.fixed_version or finding.pro_fixed_version or "-"
-        print(
-            f"  [{finding.priority or '?'}] {finding.cve_id}  {finding.source_package} "
-            f"{finding.installed_version} -> {fixed}  ({STATUS_TEXT[finding.status]}; "
-            f"{len(finding.packages)} package(s))"
-        )
-    if len(findings) > SHOWN:
-        print(f"  ... and {len(findings) - SHOWN} more")
+    risks = summarize(findings, os.uname().release)
+    print_section("Programs (grouped by package)", [r for r in risks if r.kind == PROGRAM])
+    print_section("Running kernel", [r for r in risks if r.kind == RUNNING_KERNEL])
+    old = [r for r in risks if r.kind == OLD_KERNEL]
+    if old:
+        total = sum(r.cve_count for r in old)
+        print(f"\nOld kernels, installed but not running: {len(old)} ({total} CVEs). Removing them")
+        print("clears these findings; they are not an exposure while you boot the newer kernel.")
+        for risk in old:
+            print(f"  {risk.source_package} {risk.installed_version}: {risk.cve_count} CVEs")
     return 0
 
 

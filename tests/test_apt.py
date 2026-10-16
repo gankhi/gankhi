@@ -57,8 +57,14 @@ def test_install_date_missing_file_returns_none(tmp_path):
 
 def test_source_package_is_parsed_when_present():
     line = _row(
-        "libssl3t64", "3.0.13-0ubuntu3.5", "amd64", "5000", "ii ", "SSL library",
-        "openssl", "3.0.13-0ubuntu3.5",
+        "libssl3t64",
+        "3.0.13-0ubuntu3.5",
+        "amd64",
+        "5000",
+        "ii ",
+        "SSL library",
+        "openssl",
+        "3.0.13-0ubuntu3.5",
     )
     pkg = parse_dpkg_query(line)[0]
     assert pkg.source_name == "openssl"
