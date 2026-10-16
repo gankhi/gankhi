@@ -25,12 +25,26 @@ Un panel local para Linux que muestra qué hay instalado en tu computadora, qué
 
 ## Hoja de ruta
 
-- [ ] Inventario apt de solo lectura
-- [ ] Estado de actualizaciones y vulnerabilidades
-- [ ] Panel web (inglés y español)
-- [ ] Vista de descargas, capturas y duplicados
+- [x] Inventario apt de solo lectura
+- [x] Estado de actualizaciones y vulnerabilidades
+- [x] Panel web (inglés y español)
+- [x] Descargas por tipo
+- [x] Empaquetado (instalador y lanzador de escritorio)
+- [ ] Vista de capturas y duplicados
+- [ ] Imágenes de Docker
 - [ ] Acciones de borrado y limpieza con protecciones
-- [ ] Empaquetado (instalador y lanzador de escritorio)
+
+## Instalar y usar
+
+Desde una copia de este repositorio, sin `sudo` (todo queda dentro de tu carpeta personal):
+
+```
+scripts/install.sh
+```
+
+Después abrí **Ganki** desde el menú de aplicaciones, o ejecutá `ganki` en una terminal. Se abre en tu navegador y solo acepta conexiones de tu propia computadora. Se cierra con `Ctrl+C` en su terminal. Para quitarlo: `scripts/uninstall.sh`.
+
+Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el navegador se abre con ella y se guarda una copia en `~/.cache/ganki/dashboard-url`, legible solo por vos.
 
 ## Requisitos
 
