@@ -72,6 +72,8 @@ build_dir="$(mktemp -d)"
 trap 'rm -rf -- "$build_dir"' EXIT
 cp -R -- "$SRC/pyproject.toml" "$SRC/README.md" "$SRC/LICENSE" "$SRC/src" "$build_dir/"
 "$APP_DIR/venv/bin/python" -m pip install --quiet --upgrade "$build_dir"
+# Same version number but new code (a git pull) is not reinstalled by --upgrade alone.
+"$APP_DIR/venv/bin/python" -m pip install --quiet --force-reinstall --no-deps "$build_dir"
 
 ln -sfn "$APP_DIR/venv/bin/ganki" "$BIN_DIR/ganki"
 # The icon is referenced by its full path: that works on every desktop without

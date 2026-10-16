@@ -70,6 +70,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "low": "low",
         "negligible": "negligible",
         "unknown": "unknown",
+        "ring_used": "used",
+        "ring_in_use": "in use",
+        "ring_ok": "up to date",
+        "show_more": "Show {n} more",
+        "show_less": "Show less",
+        "reclaim_total": "Review before cleaning",
     },
     "es": {
         "title": "Resumen del sistema",
@@ -135,6 +141,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "low": "baja",
         "negligible": "despreciable",
         "unknown": "desconocida",
+        "ring_used": "ocupado",
+        "ring_in_use": "en uso",
+        "ring_ok": "al día",
+        "show_more": "Ver {n} más",
+        "show_less": "Ver menos",
+        "reclaim_total": "Revisar antes de limpiar",
     },
 }
 

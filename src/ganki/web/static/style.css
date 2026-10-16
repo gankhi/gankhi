@@ -92,3 +92,38 @@ meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: var(--red); }
 }
 .main-col > section:first-child h3, .side-col > section:first-child h3 { margin-top: 8px; }
 .downloads li { grid-template-columns: minmax(120px, 1fr) minmax(80px, 1.4fr) auto; }
+
+/* ---- compact first screen: rings, folded rows ---- */
+main { padding-top: 14px; }
+.bar h2 { font-size: 1.25rem; }
+h3 { margin: 14px 0 4px; font-size: 1.05rem; }
+.strip { margin: 4px 0 10px; }
+.chip.warn { margin-left: 8px; padding: 2px 10px; border: 1px solid var(--amber); border-radius: 999px; color: var(--amber); }
+.cards { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: 8px 0; }
+.card { padding: 10px 14px; }
+.ringcard { display: flex; align-items: center; gap: 14px; }
+.ring { width: 92px; height: 92px; flex: none; }
+.ring .track { stroke: var(--line); }
+.ring .bar { stroke: var(--green); }
+.ring .bar.tone-warn { stroke: var(--amber); }
+.ring .bar.tone-bad { stroke: var(--red); }
+.ring-text { fill: var(--text); font-size: 7px; font-weight: 700; font-family: inherit; }
+.card strong { font-size: 1.1rem; }
+.card strong.big { font-size: 1.7rem; }
+.mini { list-style: none; padding: 0; margin: 4px 0; font-size: .85rem; }
+.mini li { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); }
+.mini b { color: var(--text); font-weight: 600; }
+.filters { margin: 8px 0 4px; }
+.chips { margin: 6px 0 2px; }
+.toggle { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.toggle:focus-visible + .scroll, .toggle:focus-visible ~ .more-label { outline: 2px solid var(--amber); outline-offset: 2px; }
+tbody.more, .downloads li.more { display: none; }
+.toggle:checked ~ .scroll tbody.more { display: table-row-group; }
+.toggle:checked ~ .downloads li.more { display: grid; }
+.more-label { display: inline-block; margin-top: 8px; padding: 5px 14px; border: 1px solid var(--line);
+  border-radius: 999px; color: var(--blue); cursor: pointer; font-size: .9rem; }
+.more-label:hover { border-color: var(--blue); }
+.when-open, .toggle:checked ~ .more-label .when-closed { display: none; }
+.toggle:checked ~ .more-label .when-open { display: inline; }
+th, td { padding: 6px 10px; }
+.kernel p { margin: 2px 0 6px; }
