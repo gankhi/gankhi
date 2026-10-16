@@ -80,6 +80,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .ring .seg.bad { stroke: var(--red); }
 .ring .seg.blue { stroke: var(--blue); }
 .ring-big { fill: var(--text); font: 600 26px var(--sans); }
+.ring-big.long { font-size: 19px; }
 .ring-cap { fill: var(--muted); font: 400 12px var(--sans); }
 .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: .88rem; }
 .legend li { display: flex; align-items: center; gap: 8px; }

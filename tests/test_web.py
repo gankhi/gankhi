@@ -406,3 +406,13 @@ def test_install_prompts_accept_a_spanish_yes():
     for name in ("install.sh", "uninstall.sh"):
         script = (Path(__file__).parent.parent / "scripts" / name).read_text()
         assert "|s|S|" in script
+
+
+def test_long_ring_labels_use_the_smaller_text():
+    app = build()
+    template = app.jinja_env.from_string(
+        "{% from 'index.html' import ring %}{{ ring([(50, 'ok')], center, 'x', 'y') }}"
+    )
+    with app.test_request_context():
+        assert "ring-big long" in template.render(center="1636/2438")
+        assert "ring-big long" not in template.render(center="60%")
