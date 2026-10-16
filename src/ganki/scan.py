@@ -12,7 +12,7 @@ from collections import Counter
 
 from ganki.collectors.apt import collect
 from ganki.feed import refresh
-from ganki.osv import find_findings, load_advisories
+from ganki.osv import find_findings, is_snap_stub, load_advisories
 from ganki.release import UnsupportedReleaseError, detect_ecosystem
 from ganki.summary import OLD_KERNEL, PROGRAM, RUNNING_KERNEL, PackageRisk, summarize
 
@@ -52,7 +52,9 @@ def main() -> int:
     print(f"Release: {ecosystem} | {state} | server date: {status.last_modified or 'unknown'}")
 
     index = load_advisories(status.path, ecosystem)
-    findings = find_findings(collect(), index)
+    packages = collect()
+    findings = find_findings(packages, index)
+    stubs = sorted({p.name for p in packages if is_snap_stub(p.source_version or p.version)})
 
     print(
         f"{len(findings)} findings across {len({f.cve_id for f in findings})} different CVEs "
@@ -64,7 +66,12 @@ def main() -> int:
     print("  by priority: " + ", ".join(f"{p}={n}" for p, n in by_priority.most_common()))
 
     risks = summarize(findings, os.uname().release)
-    print_section("Programs (grouped by package)", [r for r in risks if r.kind == PROGRAM])
+    programs = [r for r in risks if r.kind == PROGRAM]
+    print_section("Programs you can fix (update or Ubuntu Pro)", [r for r in programs if r.has_fix])
+    print_section(
+        "Programs with no fix published (nothing to do yet)",
+        [r for r in programs if not r.has_fix],
+    )
     print_section("Running kernel", [r for r in risks if r.kind == RUNNING_KERNEL])
     old = [r for r in risks if r.kind == OLD_KERNEL]
     if old:
@@ -73,6 +80,11 @@ def main() -> int:
         print("clears these findings; they are not an exposure while you boot the newer kernel.")
         for risk in old:
             print(f"  {risk.source_package} {risk.installed_version}: {risk.cve_count} CVEs")
+    if stubs:
+        print(
+            f"\nNot checked (the real app is a snap): {len(stubs)} placeholder packages: "
+            + ", ".join(stubs)
+        )
     return 0
 
 

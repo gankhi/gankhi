@@ -46,6 +46,11 @@ class PackageRisk:
     no_fix: int = 0  # CVEs with no fix released yet
     target_version: str | None = None  # version that fixes everything fixable
 
+    @property
+    def has_fix(self) -> bool:
+        """Can the person do something about it (update, or get Ubuntu Pro)?"""
+        return self.fix_available > 0 or self.fix_with_pro > 0
+
 
 def _is_kernel_source(source: str) -> bool:
     return source == "linux" or source.startswith("linux-")

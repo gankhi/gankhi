@@ -12,7 +12,7 @@ import json
 import tarfile
 
 from ganki.collectors.apt import Package
-from ganki.osv import MAX_RECORD_BYTES, find_findings, load_advisories, parse_record
+from ganki.osv import MAX_RECORD_BYTES, find_findings, is_snap_stub, load_advisories, parse_record
 
 ECOSYSTEM = "Ubuntu:24.04:LTS"
 PRO = "Ubuntu:Pro:24.04:LTS"
@@ -258,3 +258,16 @@ def test_most_urgent_findings_come_first():
     index = {**index_for(low), **index_for(high)}
     findings = find_findings([pkg("a", "1"), pkg("b", "1")], index)
     assert [f.priority for f in findings] == ["high", "low"]
+
+
+def test_snap_placeholder_packages_are_not_matched():
+    record = make_record(affected=[affected_entry("thunderbird", fixed="2:999-0ubuntu1")])
+    stub = pkg("thunderbird", "2:1snap1-0ubuntu3")
+    assert find_findings([stub], index_for(record)) == []
+
+
+def test_is_snap_stub_only_matches_the_placeholder_pattern():
+    assert is_snap_stub("2:1snap1-0ubuntu3")
+    assert is_snap_stub("1:1snap1-0ubuntu2")
+    assert not is_snap_stub("128.0-1ubuntu1")
+    assert not is_snap_stub("2.76+ubuntu24.04")
