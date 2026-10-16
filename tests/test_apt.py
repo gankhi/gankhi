@@ -6,7 +6,9 @@ from ganki.collectors.apt import install_date, parse_dpkg_query, parse_manual
 
 
 def _row(*fields: str) -> str:
-    return "\t".join(fields)
+    # The last two fields (source package and version) are optional in tests.
+    padded = fields if len(fields) == 8 else (*fields, "", "")
+    return "\t".join(padded)
 
 
 SAMPLE = "\n".join(
@@ -51,3 +53,19 @@ def test_install_date_uses_list_file_mtime(tmp_path):
 
 def test_install_date_missing_file_returns_none(tmp_path):
     assert install_date("nothing", "amd64", info_dir=tmp_path) is None
+
+
+def test_source_package_is_parsed_when_present():
+    line = _row(
+        "libssl3t64", "3.0.13-0ubuntu3.5", "amd64", "5000", "ii ", "SSL library",
+        "openssl", "3.0.13-0ubuntu3.5",
+    )
+    pkg = parse_dpkg_query(line)[0]
+    assert pkg.source_name == "openssl"
+    assert pkg.source_version == "3.0.13-0ubuntu3.5"
+
+
+def test_source_falls_back_to_binary_name_and_version():
+    pkg = parse_dpkg_query(_row("bash", "5.2", "amd64", "1", "ii ", "shell"))[0]
+    assert pkg.source_name == "bash"
+    assert pkg.source_version == "5.2"

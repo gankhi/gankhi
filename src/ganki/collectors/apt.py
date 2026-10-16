@@ -22,6 +22,8 @@ _FIELDS = (
     "${Installed-Size}",
     "${db:Status-Abbrev}",
     "${binary:Summary}",
+    "${source:Package}",
+    "${source:Version}",
 )
 _QUERY_FORMAT = _SEP.join(_FIELDS) + "\n"
 
@@ -37,6 +39,9 @@ class Package:
     description: str
     manual: bool = False  # True if the user asked for it (not just a dependency)
     installed_at: datetime | None = None  # approximate, see install_date()
+    # Vulnerability databases are keyed by *source* package, not binary package.
+    source_name: str = ""
+    source_version: str = ""
 
 
 def _to_int(value: str) -> int:
@@ -54,7 +59,7 @@ def parse_dpkg_query(output: str) -> list[Package]:
         parts = line.split(_SEP)
         if len(parts) != len(_FIELDS):
             continue  # malformed line: skip instead of crashing
-        name, version, arch, size, status, summary = parts
+        name, version, arch, size, status, summary, source, source_version = parts
         if not status.startswith("ii"):
             continue  # removed or half-configured package
         packages.append(
@@ -64,6 +69,8 @@ def parse_dpkg_query(output: str) -> list[Package]:
                 architecture=arch,
                 size_kib=_to_int(size),
                 description=summary,
+                source_name=source or name.split(":")[0],
+                source_version=source_version or version,
             )
         )
     return packages
