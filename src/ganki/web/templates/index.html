@@ -42,21 +42,8 @@
   </div>
 </section>
 
-{% set rec = result.reclaimable %}
-{% if rec.total_kib %}
-<section class="reclaim">
-  <ul>
-    {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><strong>{{ rec.old_kernel_kib|size }}</strong></li>{% endif %}
-    {% if rec.apt_cache_kib %}<li><span>{{ t('reclaim_cache') }}</span><strong>{{ rec.apt_cache_kib|size }}</strong></li>{% endif %}
-    {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><strong>{{ rec.orphan_kib|size }}</strong></li>{% endif %}
-  </ul>
-</section>
-{% endif %}
-
-{% if kernel %}
-<p class="notice"><strong>{{ t('kernel') }}:</strong> {{ kernel.installed_version }} · {{ t('kernel_cves', n=kernel.cve_count, fixed=kernel.target_version or '?') }}</p>
-{% endif %}
-
+<div class="layout">
+<div class="main-col">
 <section>
   <h3>{{ t('tools') }}</h3>
   <p class="muted">{{ t('tools_hint') }}</p>
@@ -115,6 +102,24 @@
   {% endif %}
 </section>
 
+</div>
+<aside class="side-col">
+{% set rec = result.reclaimable %}
+{% if rec.total_kib %}
+<section class="reclaim">
+  <h3>{{ t('reclaim') }}</h3>
+  <ul>
+    {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><strong>{{ rec.old_kernel_kib|size }}</strong></li>{% endif %}
+    {% if rec.apt_cache_kib %}<li><span>{{ t('reclaim_cache') }}</span><strong>{{ rec.apt_cache_kib|size }}</strong></li>{% endif %}
+    {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><strong>{{ rec.orphan_kib|size }}</strong></li>{% endif %}
+  </ul>
+</section>
+{% endif %}
+
+{% if kernel %}
+<p class="notice"><strong>{{ t('kernel') }}:</strong> {{ kernel.installed_version }} · {{ t('kernel_cves', n=kernel.cve_count, fixed=kernel.target_version or '?') }}</p>
+{% endif %}
+
 <section>
   <h3>{{ t('downloads') }}</h3>
   {% if result.download_groups %}
@@ -134,5 +139,7 @@
 {% if result.snap_stubs %}
 <section><h3>{{ t('snaps') }}</h3><p class="mono">{{ result.snap_stubs|join(', ') }}</p></section>
 {% endif %}
+</aside>
+</div>
 {% endif %}
 {% endblock %}

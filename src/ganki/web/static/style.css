@@ -17,7 +17,7 @@ body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.5; }
 .top h1 { margin: 0; font-size: 1.3rem; letter-spacing: .08em; color: var(--blue); }
 .lang a { color: var(--muted); text-decoration: none; padding: 4px 8px; border-radius: 6px; }
 .lang a[aria-current] { color: var(--text); background: var(--panel); outline: 1px solid var(--line); }
-main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+main { padding: 24px clamp(16px, 3vw, 56px) 64px; }
 .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 h2 { margin: 0; }
 h3 { margin: 32px 0 4px; }
@@ -85,3 +85,10 @@ meter:-moz-meter-sub-sub-optimum::-moz-meter-bar { background: var(--red); }
 .downloads meter::-webkit-meter-optimum-value { background: var(--blue); }
 .downloads meter::-moz-meter-bar { background: var(--blue); }
 .reclaim { margin-top: 12px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px 32px; }
+@media (min-width: 1200px) {
+  .layout { grid-template-columns: minmax(0, 2.2fr) minmax(340px, 1fr); align-items: start; }
+}
+.main-col > section:first-child h3, .side-col > section:first-child h3 { margin-top: 8px; }
+.downloads li { grid-template-columns: minmax(120px, 1fr) minmax(80px, 1.4fr) auto; }
