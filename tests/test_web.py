@@ -364,3 +364,29 @@ def test_request_log_lines_never_show_the_access_key():
     assert "SECRET123" not in line
     assert "access=<hidden>" in line
     assert "GET /" in line and "302" in line
+
+
+def test_page_draws_the_ring_charts_and_folds_extra_rows():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/?show=all", base_url=BASE).get_data(as_text=True)
+    assert html.count('class="ring"') == 3  # disk, RAM, programs up to date
+    assert "stroke-dasharray" in html and "style=" not in html  # CSP: no inline styles
+    assert 'id="more-tools"' in html and 'class="more"' in html  # rows beyond the first few fold
+
+
+def test_pause_on_error_waits_for_enter_only_when_it_fails(monkeypatch):
+    import socket
+
+    from ganki.web import server
+
+    asked = []
+    monkeypatch.setattr("builtins.input", lambda prompt="": asked.append(prompt) or "")
+    monkeypatch.setattr(server.sys.stdin, "isatty", lambda: True, raising=False)
+    with socket.socket() as busy:
+        busy.bind(("127.0.0.1", 0))
+        busy.listen()
+        port = busy.getsockname()[1]
+        assert server.main(["--port", str(port), "--no-open", "--pause-on-error"]) == 1
+    assert len(asked) == 1

@@ -62,7 +62,7 @@ def test_uninstall_without_confirmation_changes_nothing(tmp_path):
 
 def test_launcher_template_has_the_required_entries():
     text = (ROOT / "packaging" / "ganki.desktop.in").read_text()
-    assert "Exec=@EXEC@" in text
+    assert "Exec=@EXEC@ --pause-on-error" in text
     assert "Terminal=true" in text  # a terminal window is how the user stops it (Ctrl+C)
     assert "Icon=@ICON@" in text
     assert (ROOT / "packaging" / "ganki.svg").read_text().lstrip().startswith("<svg")

@@ -16,6 +16,7 @@ import os
 import re
 import secrets
 import socket
+import sys
 import tempfile
 import webbrowser
 from pathlib import Path
@@ -72,8 +73,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--no-open", action="store_true", help="do not open the dashboard in the browser"
     )
+    parser.add_argument(
+        "--pause-on-error",
+        action="store_true",
+        help="wait for Enter before exiting after an error (for launchers that close the window)",
+    )
     args = parser.parse_args(argv)
+    code = _serve(args)
+    if code != 0 and args.pause_on_error and sys.stdin.isatty():
+        input("Press Enter to close this window...")
+    return code
 
+
+def _serve(args: argparse.Namespace) -> int:
     if not port_is_free(args.port):
         print(f"Port {args.port} is already in use. Is Ganki already running?")
         print("Close the other one, or choose another port with --port.")

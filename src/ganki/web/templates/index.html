@@ -1,5 +1,13 @@
 {% extends "base.html" %}
+{% set TOP_ROWS = 6 %}
 {% macro badge(priority) %}<span class="badge p-{{ priority or 'unknown' }}">{{ t(priority or 'unknown') }}</span>{% endmacro %}
+{% macro ring(percent, tone, center, label) %}
+<svg class="ring" viewBox="0 0 36 36" role="img" aria-label="{{ label }}: {{ center }}">
+  <circle class="track" cx="18" cy="18" r="15.9" fill="none" stroke-width="4"/>
+  <circle class="bar tone-{{ tone }}" cx="18" cy="18" r="15.9" fill="none" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ percent }} 100" transform="rotate(-90 18 18)"/>
+  <text x="18" y="20.6" text-anchor="middle" class="ring-text">{{ center }}</text>
+</svg>
+{% endmacro %}
 
 {% block content %}
 <div class="bar">
@@ -13,32 +21,39 @@
 
 {% if result and state in ('done', 'running') %}
 {% set sys = result.system %}
-{% if sys %}
-<p class="muted">{{ sys.os_name }} · {{ sys.kernel }} · {{ sys.architecture }} · {{ sys.user }} · {{ t('uptime', time=sys.uptime_seconds|uptime) }}</p>
-{% if sys.reboot_required %}<p class="notice warn" role="status">{{ t('reboot') }}</p>{% endif %}
-{% endif %}
-<p class="muted">{{ t('last_scan') }}: {{ result.scanned_at.strftime('%Y-%m-%d %H:%M UTC') }} · {{ t('feed') }}: {{ result.feed_date or '?' }} ({{ t('feed_new') if result.feed_downloaded else t('feed_cached') }})</p>
+<p class="muted strip">
+  {% if sys %}{{ sys.os_name }} · {{ sys.kernel }} · {{ sys.user }} · {{ t('uptime', time=sys.uptime_seconds|uptime) }} · {% endif %}
+  {{ t('last_scan') }}: {{ result.scanned_at.strftime('%Y-%m-%d %H:%M UTC') }} · {{ t('feed') }}: {{ t('feed_new') if result.feed_downloaded else t('feed_cached') }}
+  {% if sys and sys.reboot_required %}<span class="chip warn" role="status">{{ t('reboot') }}</span>{% endif %}
+</p>
 
+{% set rec = result.reclaimable %}
 <section class="cards">
   {% if sys %}
-  <div class="card">
-    <span class="label">{{ t('disk') }}</span><strong>{{ sys.disk_percent }}%</strong>
-    <meter min="0" max="100" low="70" high="85" optimum="30" value="{{ sys.disk_percent }}" aria-label="{{ t('disk') }}"></meter>
-    <span class="small">{{ t('disk_detail', used=sys.disk_used|bytes, free=sys.disk_free|bytes, total=sys.disk_total|bytes) }}</span>
+  <div class="card ringcard">
+    {{ ring(sys.disk_percent, 'ok' if sys.disk_percent < 70 else ('warn' if sys.disk_percent < 85 else 'bad'), sys.disk_percent ~ '%', t('disk')) }}
+    <div><span class="label">{{ t('disk') }}</span><strong>{{ t('ring_used') }}</strong>
+      <span class="small">{{ t('disk_detail', used=sys.disk_used|bytes, free=sys.disk_free|bytes, total=sys.disk_total|bytes) }}</span></div>
   </div>
-  <div class="card">
-    <span class="label">{{ t('ram') }}</span><strong>{{ sys.ram_percent }}%</strong>
-    <meter min="0" max="100" low="70" high="85" optimum="30" value="{{ sys.ram_percent }}" aria-label="{{ t('ram') }}"></meter>
-    <span class="small">{{ t('ram_detail', used=sys.ram_used_kib|size, free=(sys.ram_total_kib - sys.ram_used_kib)|size) }}</span>
+  <div class="card ringcard">
+    {{ ring(sys.ram_percent, 'ok' if sys.ram_percent < 70 else ('warn' if sys.ram_percent < 85 else 'bad'), sys.ram_percent ~ '%', t('ram')) }}
+    <div><span class="label">{{ t('ram') }}</span><strong>{{ t('ring_in_use') }}</strong>
+      <span class="small">{{ t('ram_detail', used=sys.ram_used_kib|size, free=(sys.ram_total_kib - sys.ram_used_kib)|size) }}</span></div>
   </div>
   {% endif %}
-  <div class="card good">
-    <span class="label">{{ t('programs') }}</span><strong>{{ counts.ok }}/{{ counts.all }}</strong>
-    <span class="small">{{ t('programs_detail', vuln=counts.vulnerable, old=counts.outdated) }}</span>
+  <div class="card ringcard">
+    {{ ring((100 * counts.ok / counts.all)|round|int if counts.all else 0, 'ok', counts.ok ~ '/' ~ counts.all, t('programs')) }}
+    <div><span class="label">{{ t('programs') }}</span><strong>{{ t('ring_ok') }}</strong>
+      <span class="small">{{ t('programs_detail', vuln=counts.vulnerable, old=counts.outdated) }}</span></div>
   </div>
   <div class="card">
-    <span class="label">{{ t('reclaim') }}</span><strong>{{ result.reclaimable.total_kib|size }}</strong>
-    <span class="small">{{ t('reclaim_hint') }}</span>
+    <span class="label">{{ t('reclaim') }}</span><strong class="big">{{ rec.total_kib|size }}</strong>
+    <ul class="mini">
+      {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><b>{{ rec.old_kernel_kib|size }}</b></li>{% endif %}
+      {% if rec.apt_cache_kib %}<li><span>{{ t('reclaim_cache') }}</span><b>{{ rec.apt_cache_kib|size }}</b></li>{% endif %}
+      {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><b>{{ rec.orphan_kib|size }}</b></li>{% endif %}
+    </ul>
+    <span class="small">{{ t('reclaim_total') }}</span>
   </div>
 </section>
 
@@ -46,7 +61,6 @@
 <div class="main-col">
 <section>
   <h3>{{ t('tools') }}</h3>
-  <p class="muted">{{ t('tools_hint') }}</p>
   <nav class="chips" aria-label="{{ t('tools') }}">
     {% for f in filters %}
     <a href="{{ url_for('index', f=f, q=q or None, show='all' if show_all else None) }}"{% if f == filter %} aria-current="true"{% endif %}>{{ t('f_' ~ f) }} · {{ counts[f] }}</a>
@@ -59,13 +73,15 @@
     <button type="submit">{{ t('apply') }}</button>
   </form>
 
+  <input type="checkbox" id="more-tools" class="toggle">
   <div class="scroll"><table>
     <thead><tr>
       <th>{{ t('col_tool') }}</th><th>{{ t('col_version') }}</th>
       <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th>
     </tr></thead>
-    <tbody>
-    {% for tool in page.items %}
+    {% for group in (page.items[:TOP_ROWS], page.items[TOP_ROWS:]) %}
+    <tbody{% if loop.index == 2 %} class="more"{% endif %}>
+    {% for tool in group %}
       <tr>
         <td class="wrap"><strong>{{ tool.name }}</strong><br><span class="small">{{ tool.description }}</span>
           {% if tool.cves %}
@@ -88,10 +104,14 @@
         </td>
       </tr>
     {% else %}
-      <tr><td colspan="4" class="muted">{{ t('none') }}</td></tr>
+      {% if loop.index == 1 and group is sameas page.items[:TOP_ROWS] %}<tr><td colspan="4" class="muted">{{ t('none') }}</td></tr>{% endif %}
     {% endfor %}
     </tbody>
+    {% endfor %}
   </table></div>
+  {% if page.items|length > TOP_ROWS %}
+  <label for="more-tools" class="more-label"><span class="when-closed">{{ t('show_more', n=page.items|length - TOP_ROWS) }}</span><span class="when-open">{{ t('show_less') }}</span></label>
+  {% endif %}
 
   {% if page.pages > 1 %}
   <nav class="pager" aria-label="Pages">
@@ -101,23 +121,14 @@
   </nav>
   {% endif %}
 </section>
-
 </div>
-<aside class="side-col">
-{% set rec = result.reclaimable %}
-{% if rec.total_kib %}
-<section class="reclaim">
-  <h3>{{ t('reclaim') }}</h3>
-  <ul>
-    {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><strong>{{ rec.old_kernel_kib|size }}</strong></li>{% endif %}
-    {% if rec.apt_cache_kib %}<li><span>{{ t('reclaim_cache') }}</span><strong>{{ rec.apt_cache_kib|size }}</strong></li>{% endif %}
-    {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><strong>{{ rec.orphan_kib|size }}</strong></li>{% endif %}
-  </ul>
-</section>
-{% endif %}
 
+<aside class="side-col">
 {% if kernel %}
-<p class="notice"><strong>{{ t('kernel') }}:</strong> {{ kernel.installed_version }} · {{ t('kernel_cves', n=kernel.cve_count, fixed=kernel.target_version or '?') }}</p>
+<section class="kernel">
+  <h3>{{ t('kernel') }}</h3>
+  <p class="small"><span class="mono">{{ kernel.installed_version }}</span> · {{ t('kernel_cves', n=kernel.cve_count, fixed=kernel.target_version or '?') }}</p>
+</section>
 {% endif %}
 
 <section>
@@ -126,18 +137,22 @@
     {% set total_files = result.download_groups|sum(attribute='files') %}
     {% set total_bytes = result.download_groups|sum(attribute='size_bytes') %}
     <p class="muted">{{ result.downloads_folder }} · {{ t('downloads_summary', n=total_files, size=total_bytes|bytes) }}</p>
+    <input type="checkbox" id="more-downloads" class="toggle">
     <ul class="downloads">
     {% for g in result.download_groups %}
-      <li><span>{{ t('dl_' ~ g.key) }} · {{ g.files }}</span>
+      <li{% if loop.index > 3 %} class="more"{% endif %}><span>{{ t('dl_' ~ g.key) }} · {{ g.files }}</span>
         <meter min="0" max="{{ total_bytes }}" value="{{ g.size_bytes }}" aria-label="{{ t('dl_' ~ g.key) }}"></meter>
         <strong>{{ g.size_bytes|bytes }}</strong></li>
     {% endfor %}
     </ul>
+    {% if result.download_groups|length > 3 %}
+    <label for="more-downloads" class="more-label"><span class="when-closed">{{ t('show_more', n=result.download_groups|length - 3) }}</span><span class="when-open">{{ t('show_less') }}</span></label>
+    {% endif %}
   {% else %}<p class="muted">{{ t('downloads_empty', folder=result.downloads_folder or '~') }}</p>{% endif %}
 </section>
 
 {% if result.snap_stubs %}
-<section><h3>{{ t('snaps') }}</h3><p class="mono">{{ result.snap_stubs|join(', ') }}</p></section>
+<section><h3>{{ t('snaps') }}</h3><p class="mono small">{{ result.snap_stubs|join(', ') }}</p></section>
 {% endif %}
 </aside>
 </div>
