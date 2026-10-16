@@ -38,7 +38,7 @@ Debian/Ubuntu-based Linux and Python 3.10 or newer. Developed on an Ubuntu 24.04
 
 ## Development notes
 
-This project is developed with the help of AI coding assistants. Behavior that touches the system is meant to be covered by automated tests and static analysis; the roadmap shows what exists today.
+Behavior that touches the system is meant to be covered by automated tests and static analysis; the roadmap shows what exists today.
 
 ## License
 
