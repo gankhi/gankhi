@@ -134,6 +134,14 @@
     {% for tool in group %}
       <tr>
         <td class="wrap"><strong>{{ tool.name }}</strong><br><span class="small">{{ tool.description }}</span>
+          {% if tool.fixed_in or tool.unfixable or tool.end_of_support %}
+          <div class="hint{% if tool.state == 'vulnerable' and not tool.fixed_in %} bad{% endif %}">
+            {% if tool.fixed_in %}<p>{{ t('hint_fixed', version=tool.fixed_in) }}</p>{% endif %}
+            {% if tool.unfixable and tool.fixed_in %}<p>{{ t('hint_some_no_fix', n=tool.unfixable) }}</p>
+            {% elif tool.unfixable %}<p>{{ t('hint_no_fix') }}</p>{% endif %}
+            {% if tool.end_of_support %}<p>{{ t('hint_eol') }}</p>{% endif %}
+          </div>
+          {% endif %}
           {% if tool.cves %}
           <details><summary>{{ t('cve_summary', n=tool.cve_count) }}{% if tool.fixed_in %} · {{ t('fixed_in', version=tool.fixed_in) }}{% elif tool.unfixable %} · {{ t('no_fix_yet') }}{% endif %}</summary>
             <ul class="cves">
@@ -152,6 +160,7 @@
           {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
           {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
           {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
+          {% if tool.end_of_support %}<br><span class="state warn">{{ t('chip_eol') }}</span>{% endif %}
         </td>
       </tr>
     {% else %}

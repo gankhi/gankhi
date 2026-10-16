@@ -128,6 +128,10 @@ details summary { cursor: pointer; color: var(--blue); font-size: .85rem; }
 .cves { list-style: none; padding: 0; margin: 8px 0; background: var(--red-bg); border: 1px solid var(--red-line); border-radius: 8px; padding: 8px 12px; }
 .cves li { padding: 4px 0; }
 
+.hint { margin: 6px 0 2px; padding: 6px 10px; border-radius: 8px; background: #0f1a12; border: 1px solid #1f6b38; font-size: .85rem; color: #d0d0d0; }
+.hint.bad { background: var(--red-bg); border-color: var(--red-line); }
+.hint p { margin: 2px 0; }
+
 /* fold: CSS-only, no scripts and no inline styles (see the CSP) */
 .toggle { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .toggle:focus-visible ~ .more-label { outline: 2px solid var(--amber); outline-offset: 2px; }
