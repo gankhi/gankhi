@@ -208,3 +208,49 @@ def test_translate_falls_back_to_english_and_to_the_key():
 def test_every_key_exists_in_both_languages(key):
     assert translate("es", key) != key
     assert translate("en", key) != key
+
+
+# ---------- start-up: the secret key is never printed ----------
+
+
+def test_access_url_is_saved_privately_and_not_printed(tmp_path, monkeypatch, capsys):
+    import stat
+
+    from ganki.web import server
+
+    opened = []
+
+    class FakeApp:
+        def run(self, **_kwargs):
+            return None
+
+    monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path / "cache")
+    monkeypatch.setattr(server, "create_app", lambda *_args: FakeApp())
+    monkeypatch.setattr(server.webbrowser, "open", lambda url: opened.append(url) or True)
+
+    assert server.main(["--port", "8123"]) == 0
+
+    saved = tmp_path / "cache" / server.ACCESS_FILE
+    url = saved.read_text().strip()
+    assert url.startswith("http://127.0.0.1:8123/?access=")
+    assert opened == [url]
+    assert stat.S_IMODE(saved.stat().st_mode) == 0o600
+    assert url.split("access=")[1] not in capsys.readouterr().out
+
+
+def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, monkeypatch, capsys):
+    from ganki.web import server
+
+    class FakeApp:
+        def run(self, **_kwargs):
+            return None
+
+    monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path)
+    monkeypatch.setattr(server, "create_app", lambda *_args: FakeApp())
+    monkeypatch.setattr(server.webbrowser, "open", lambda url: False)
+
+    server.main([])
+    saved = (tmp_path / server.ACCESS_FILE).read_text().strip()
+    output = capsys.readouterr().out
+    assert str(tmp_path / server.ACCESS_FILE) in output
+    assert saved.split("access=")[1] not in output

@@ -48,7 +48,9 @@ def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
         offered = request.args.get("access", "")
         if offered and hmac.compare_digest(offered.encode(), secret.encode()):
             response = redirect(request.path)  # drop the token from the address bar
-            response.set_cookie(SESSION_COOKIE, secret, httponly=True, samesite="Strict", path="/")
+            response.set_cookie(
+                SESSION_COOKIE, secret, httponly=True, secure=True, samesite="Strict", path="/"
+            )
             return response
         if not authorized():
             abort(403)
@@ -79,7 +81,9 @@ def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
         if code not in i18n.LANGUAGES:
             abort(404)
         response = redirect("/")
-        response.set_cookie(LANG_COOKIE, code, samesite="Strict", path="/")
+        response.set_cookie(
+            LANG_COOKIE, code, httponly=True, secure=True, samesite="Strict", path="/"
+        )
         return response
 
     @app.route("/")
