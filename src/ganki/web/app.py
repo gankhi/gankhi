@@ -17,6 +17,8 @@ from collections.abc import Callable
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
+from ganki import inventory
+from ganki.collectors.apt import Package, collect
 from ganki.service import ScanResult
 from ganki.summary import OLD_KERNEL, PROGRAM, RUNNING_KERNEL
 from ganki.web import i18n
@@ -27,12 +29,21 @@ LANG_COOKIE = "ganki_lang"
 ROW_LIMIT = 60  # rows shown per table; the rest is summarised as "and N more"
 CSP = (
     "default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; "
-    "img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    "img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 )
 
 
-def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
-    """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token."""
+def create_app(
+    scan: Callable[[], ScanResult],
+    secret: str,
+    port: int,
+    packages: Callable[[], list[Package]] = collect,
+) -> Flask:
+    """Build the app.
+
+    ``scan`` produces a ``ScanResult``; ``packages`` lists installed packages;
+    ``secret`` is the access token.
+    """
     app = Flask(__name__)
     job = ScanJob(scan)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
@@ -111,6 +122,29 @@ def create_app(scan: Callable[[], ScanResult], secret: str, port: int) -> Flask:
                 total_cves=len({f.cve_id for f in result.findings}),
             )
         return render_template("index.html", **context)
+
+    app.jinja_env.filters["size"] = inventory.human_size
+
+    @app.route("/inventory")
+    def inventory_page() -> str:
+        lang = current_language()
+        sort = request.args.get("sort", "size")
+        sort = sort if sort in inventory.SORTS else "size"
+        query = request.args.get("q", "")[: inventory.MAX_QUERY_CHARS]
+        manual_only = request.args.get("manual") == "1"
+        number = request.args.get("page", 1, type=int)
+        selected = inventory.select(packages(), query, manual_only, sort)
+        return render_template(
+            "inventory.html",
+            lang=lang,
+            t=lambda key, **values: i18n.translate(lang, key, **values),
+            state="idle",
+            page=inventory.paginate(selected, number),
+            q=query,
+            sort=sort,
+            manual=manual_only,
+            sorts=inventory.SORTS,
+        )
 
     @app.route("/api/status")
     def status() -> Response:

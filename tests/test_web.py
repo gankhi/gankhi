@@ -254,3 +254,49 @@ def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, mo
     output = capsys.readouterr().out
     assert str(tmp_path / server.ACCESS_FILE) in output
     assert saved.split("access=")[1] not in output
+
+
+# ---------- inventory page ----------
+
+
+def inventory_client(packages=None):
+    from ganki.collectors.apt import Package
+
+    sample = packages or [
+        Package("vim", "9.1", "amd64", 4000, "text editor", manual=True),
+        Package("zlib", "1.3", "amd64", 50, "compression"),
+    ]
+    app = create_app(make_result, SECRET, PORT, packages=lambda: sample)
+    app.testing = True
+    return login(app.test_client())
+
+
+def test_inventory_requires_the_secret():
+    app = create_app(make_result, SECRET, PORT, packages=lambda: [])
+    assert app.test_client().get("/inventory", base_url=BASE).status_code == 403
+
+
+def test_inventory_lists_packages_and_filters():
+    client = inventory_client()
+    html = client.get("/inventory", base_url=BASE).get_data(as_text=True)
+    assert "vim" in html and "zlib" in html
+    only = client.get("/inventory?manual=1", base_url=BASE).get_data(as_text=True)
+    assert "vim" in only and "zlib" not in only
+    found = client.get("/inventory?q=compress", base_url=BASE).get_data(as_text=True)
+    assert "zlib" in found and "<td>vim</td>" not in found
+
+
+def test_inventory_escapes_the_search_text_and_survives_bad_parameters():
+    client = inventory_client()
+    response = client.get(
+        "/inventory?q=%22%3E%3Cscript%3Ealert(1)%3C/script%3E&page=abc&sort=evil",
+        base_url=BASE,
+    )
+    assert response.status_code == 200
+    assert "<script>alert(1)" not in response.get_data(as_text=True)
+
+
+def test_inventory_is_translated():
+    client = inventory_client()
+    client.get("/lang/es", base_url=BASE)
+    assert "Programas instalados" in client.get("/inventory", base_url=BASE).get_data(as_text=True)
