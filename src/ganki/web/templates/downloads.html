@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card preview">
+  <p><a href="{{ url_for('index') }}">← {{ t('back') }}</a></p>
+  <h2>{{ t('dl_' ~ detail.key) }}</h2>
+  <p class="muted mono">{{ folder_name }} · {{ t('dl_detail_total', files=detail.files, size=detail.size_bytes|bytes) }}</p>
+  <p class="hint">{{ t('dl_detail_hint') }}</p>
+  {% if detail.truncated %}<p class="hint bad" role="status">{{ t('dl_detail_truncated') }}</p>{% endif %}
+
+  {% if detail.files %}
+  <h3>{{ t('dl_detail_folders') }}</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('dl_detail_files') }}</th><th class="num">{{ t('col_size') }}</th></tr></thead>
+    <tbody>
+    {% for f in detail.folders %}
+      <tr><td class="mono">{{ f.name }}{% if f.is_folder %}/{% endif %}</td><td class="num mono">{{ f.files }}</td><td class="num mono">{{ f.size_bytes|bytes }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+
+  <h3>{{ t('dl_detail_kinds') }}</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>{{ t('dl_detail_type') }}</th><th class="num">{{ t('dl_detail_files') }}</th><th class="num">{{ t('col_size') }}</th></tr></thead>
+    <tbody>
+    {% for k in detail.kinds %}
+      <tr><td class="mono">{{ k.extension or t('dl_detail_no_ext') }}</td><td class="num mono">{{ k.files }}</td><td class="num mono">{{ k.size_bytes|bytes }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+
+  <h3>{{ t('dl_detail_biggest') }}</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('col_size') }}</th></tr></thead>
+    <tbody>
+    {% for f in detail.biggest %}
+      <tr><td class="mono">{{ f.path }}</td><td class="num mono">{{ f.size_bytes|bytes }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="muted">{{ t('none') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

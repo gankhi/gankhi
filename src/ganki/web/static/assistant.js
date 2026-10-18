@@ -96,6 +96,14 @@
     })(0);
   }
 
+  // Turn the voice off again after the tour, so moving the mouse around stays silent.
+  function voiceOff() {
+    enabled = false;
+    btnOn.hidden = false;
+    btnPlay.hidden = true;
+    try { sessionStorage.removeItem("ganki_voice"); } catch (e) { /* ignore */ }
+  }
+
   function stop() {
     token += 1;
     stopAudio();
@@ -123,7 +131,12 @@
       var list = data.segments;
       (function next(i) {
         if (mine !== token) { return; }
-        if (i >= list.length) { stop(); show(dock.dataset.ready); return; }
+        if (i >= list.length) {
+          stop();
+          voiceOff();  // the tour is over: from now on pointing at a section only shows text
+          show(dock.dataset.ready);
+          return;
+        }
         mark(list[i].section);
         speak(list[i].text, function () { next(i + 1); }, "/api/speak?seg=" + i);
         // Ask for the next part now, so Ganki has it ready when this one ends.

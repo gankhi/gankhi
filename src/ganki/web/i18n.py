@@ -241,6 +241,19 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_reclaim": "Space you can recover",
         "report_total": "Total",
         "report_caution": "Review everything before cleaning or removing anything.",
+        "dl_detail_total": "{files} files, {size}",
+        "dl_detail_hint": (
+            "This is only a look: Ganki does not delete anything here. Check each item "
+            "yourself before removing it."
+        ),
+        "dl_detail_truncated": "The folder is very large; only part of it was read.",
+        "dl_detail_folders": "Where the space is",
+        "dl_detail_kinds": "File types",
+        "dl_detail_biggest": "Biggest files",
+        "dl_detail_name": "Name",
+        "dl_detail_type": "Type",
+        "dl_detail_files": "Files",
+        "dl_detail_no_ext": "(no extension)",
         "assistant_title": "Assistant",
         "assistant_listen": "Turn on voice",
         "assistant_play": "Explain my system",
@@ -548,6 +561,19 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_reclaim": "Espacio que podés recuperar",
         "report_total": "Total",
         "report_caution": "Revisá todo antes de limpiar o quitar algo.",
+        "dl_detail_total": "{files} archivos, {size}",
+        "dl_detail_hint": (
+            "Esto es solo para mirar: Ganki no borra nada desde acá. Revisá cada cosa "
+            "vos antes de quitarla."
+        ),
+        "dl_detail_truncated": "La carpeta es muy grande; solo se leyó una parte.",
+        "dl_detail_folders": "Dónde está el espacio",
+        "dl_detail_kinds": "Tipos de archivo",
+        "dl_detail_biggest": "Archivos más grandes",
+        "dl_detail_name": "Nombre",
+        "dl_detail_type": "Tipo",
+        "dl_detail_files": "Archivos",
+        "dl_detail_no_ext": "(sin extensión)",
         "assistant_title": "Asistente",
         "assistant_listen": "Activar voz",
         "assistant_play": "Explicar mi sistema",

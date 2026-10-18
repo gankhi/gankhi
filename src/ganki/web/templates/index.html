@@ -221,7 +221,7 @@
     <input type="checkbox" id="more-downloads" class="toggle">
     <ul class="downloads">
     {% for g in result.download_groups %}
-      <li{% if loop.index > 3 %} class="more"{% endif %}><span>{{ t('dl_' ~ g.key) }} · {{ g.files }}</span><strong class="mono">{{ g.size_bytes|bytes }}</strong>
+      <li{% if loop.index > 3 %} class="more"{% endif %}><span><a href="{{ url_for('downloads_detail', key=g.key) }}">{{ t('dl_' ~ g.key) }}</a> · {{ g.files }}</span><strong class="mono">{{ g.size_bytes|bytes }}</strong>
         <meter min="0" max="{{ total_bytes }}" value="{{ g.size_bytes }}" aria-label="{{ t('dl_' ~ g.key) }}"></meter></li>
     {% endfor %}
     </ul>
