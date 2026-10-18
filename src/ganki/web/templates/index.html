@@ -210,6 +210,44 @@
   {% endif %}
 </section>
 
+{% if result.external or result.external_failed %}
+{% set ext_bad = result.external|selectattr('vulnerable')|list %}
+<section class="card" data-explain="external" tabindex="0">
+  <div class="toolshead"><div><h2>{{ t('ext_title') }}</h2><p class="muted">{{ t('ext_sub', n=result.external|length, bad=ext_bad|length) }}</p></div></div>
+  {% if result.external_failed %}<p class="hint bad">{{ t('ext_failed', tools=result.external_failed|join(', ')) }}</p>{% endif %}
+  {% if ext_bad %}
+  <div class="scroll"><table>
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_state') }}</th></tr></thead>
+    <tbody>
+    {% for tool in ext_bad %}
+      <tr>
+        <td class="wrap"><strong>{{ tool.name }}</strong>
+          <div class="hint{% if tool.malicious or not tool.fixed_in %} bad{% endif %}">
+            {% if tool.malicious %}<p>{{ t('ext_malware') }}</p>
+            {% elif tool.fixed_in %}<p>{{ t('ext_fix', version=tool.fixed_in, tool=tool.tool) }}</p>
+            {% else %}<p>{{ t('ext_nofix') }}</p>{% endif %}
+          </div>
+          {% if tool.cves %}
+          <details><summary>{{ t('cve_summary', n=tool.cve_count) }}</summary>
+            <ul class="cves">
+            {% for c in tool.cves %}
+              <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
+            {% endfor %}
+            </ul>
+          </details>
+          {% endif %}
+        </td>
+        <td class="mono">{{ tool.version }}</td>
+        <td class="mono">{{ tool.tool }}</td>
+        <td><span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'ext_no_priority') }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% elif result.external %}<p class="muted">{{ t('ext_none') }}</p>{% endif %}
+</section>
+{% endif %}
+
 <section class="bottom">
 <div class="card" data-explain="downloads" tabindex="0">
   <div class="toolshead"><h2>{{ t('downloads') }}</h2>

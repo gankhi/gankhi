@@ -27,10 +27,13 @@ APT = "/usr/bin/apt"
 APT_GET = "/usr/bin/apt-get"
 PKEXEC = "/usr/bin/pkexec"  # asks for the password in the system's own window
 ENV = "/usr/bin/env"
+PYTHON = "/usr/bin/python3"  # only to ask pip what is installed (see RESTRICTED_ARGUMENTS)
+NPM = "/usr/bin/npm"
+NPM_LOCAL = "/usr/local/bin/npm"
 
 # Read-only commands only. Anything that changes the system must be added
 # deliberately, in its own reviewed change, never here by accident.
-ALLOWED_COMMANDS = frozenset({DPKG_QUERY, APT_MARK, APT, APT_GET})
+ALLOWED_COMMANDS = frozenset({DPKG_QUERY, APT_MARK, APT, APT_GET, PYTHON, NPM, NPM_LOCAL})
 
 # Some executables can change the system, so they are allowed with exact arguments
 # only. ``apt-get`` may only *simulate* (-s) a few operations; Ganki never runs them
@@ -44,7 +47,15 @@ RESTRICTED_ARGUMENTS = {
             ("--print-uris", "-y", "-qq", "full-upgrade"),
         }
     ),
+    # Lists what pip and npm have installed; both only read.
+    PYTHON: frozenset(
+        {("-m", "pip", "list", "-v", "--format=json", "--disable-pip-version-check")}
+    ),
+    NPM: frozenset({("ls", "-g", "--json", "--depth=0")}),
+    NPM_LOCAL: frozenset({("ls", "-g", "--json", "--depth=0")}),
 }
+# These two look in the person's own folders (~/.local, ~/.npm-global), so they need HOME.
+_NEEDS_HOME = frozenset({PYTHON, NPM, NPM_LOCAL})
 PACKAGE_NAME = re.compile(r"[a-z0-9][a-z0-9+.\-]{0,99}(:[a-z0-9]{1,20})?")  # use fullmatch
 _SIMULATIONS_WITH_PACKAGE = (
     ("-s", "remove"),
@@ -151,6 +162,15 @@ def run_privileged(args: Sequence[str], on_line: Callable[[str], None], timeout:
             process.kill()
 
 
+def _environment(command: str) -> dict[str, str]:
+    environment = dict(_ENV)
+    if command in _NEEDS_HOME:
+        environment["PATH"] = "/usr/local/bin:/usr/bin:/bin"  # npm finds its node next to it
+        if os.environ.get("HOME"):
+            environment["HOME"] = os.environ["HOME"]
+    return environment
+
+
 def run(args: Sequence[str], timeout: int = 60) -> str:
     """Run an allowlisted command (no shell) and return its stdout."""
     command = next((known for known in ALLOWED_COMMANDS if args and args[0] == known), None)
@@ -169,6 +189,7 @@ def run(args: Sequence[str], timeout: int = 60) -> str:
         text=True,
         check=True,
         timeout=timeout,
-        env=_ENV,
+        env=_environment(command),
+        cwd="/",  # `python -m` would otherwise import from the current folder
     )
     return result.stdout

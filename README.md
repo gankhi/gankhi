@@ -29,10 +29,18 @@ A local dashboard for Linux that shows what is installed on your computer, what 
 - [x] Update and vulnerability status
 - [x] Web dashboard (English and Spanish)
 - [x] Downloads by type
+- [x] Python (pip) and npm packages, checked against the public OSV lists
 - [x] Packaging (installer and desktop launcher)
 - [ ] Screenshots and duplicates view
 - [ ] Docker images
 - [ ] Guarded removal and cleanup actions
+
+## What Ganki downloads
+
+Two kinds of public files, only when they changed, and never anything about your computer:
+Canonical's Ubuntu vulnerability list, and, only if you have packages installed with `pip` or
+`npm`, the OSV list of that ecosystem (`osv-vulnerabilities.storage.googleapis.com`). The names
+and versions of what you have installed are compared on your computer and never sent.
 
 ## Install and run
 

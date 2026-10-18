@@ -104,6 +104,45 @@ def _label(item: families.Group, kernel: str, components: str) -> str:
     return f"{name} ({components.format(n=item.count)})" + (f": {listed}" if listed else "")
 
 
+def _external_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
+    """Python and npm packages that have notices (the rest are only counted in the summary)."""
+
+    def say(key: str, **values: object) -> str:
+        return i18n.translate(lang, key, **values)
+
+    bad = [t for t in result.external if t.vulnerable]
+    if not (bad or result.external_failed):
+        return
+    pdf.heading(say("report_external"))
+    if bad:
+        rows, tones = [], []
+        for tool in bad[:MAX_ROWS]:
+            if tool.malicious:
+                action = say("ext_malware")
+            elif tool.fixed_in:
+                action = say("ext_fix", version=tool.fixed_in, tool=tool.tool)
+            else:
+                action = say("ext_nofix")
+            priority = say(tool.top_priority) if tool.top_priority else "-"
+            rows.append([tool.name, tool.version, priority, action])
+            tones.append(["", "", PRIORITY_TONE.get(tool.top_priority, ""), ""])
+        pdf.table(
+            [
+                say("ext_col_package"),
+                say("report_version"),
+                say("report_priority"),
+                say("report_action"),
+            ],
+            rows,
+            [0.26, 0.14, 0.16, 0.44],
+            tones,
+        )
+        if len(bad) > MAX_ROWS:
+            pdf.paragraph(say("report_more", n=len(bad) - MAX_ROWS))
+    if result.external_failed:
+        pdf.paragraph(say("ext_failed", tools=", ".join(result.external_failed)), tone="warn")
+
+
 def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     def say(key: str, **values: object) -> str:
         return i18n.translate(lang, key, **values)
@@ -183,6 +222,8 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     waiting = sum(1 for t in result.tools if not t.is_program and t.state == "outdated")
     if waiting:
         pdf.paragraph(say("report_libs_outdated", n=waiting))
+
+    _external_section(pdf, result, lang)
 
     reclaim = result.reclaimable
     if reclaim.total_kib:
