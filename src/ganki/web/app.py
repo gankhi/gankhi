@@ -90,6 +90,25 @@ def uptime_text(seconds: int) -> str:
     return f"{days} d {hours} h" if days else f"{hours} h {rest // 60} min"
 
 
+NEEDS_KEY_PAGE = """<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<meta name="color-scheme" content="dark light"><title>Ganki</title></head>
+<body>
+<h1>Ganki</h1>
+<p><b>Falta la clave de acceso.</b> Abrí Ganki con su ícono del escritorio o desde el menú de
+aplicaciones. Si querés usar otro navegador: en una consola ejecutá <code>ganki --no-open</code>,
+y pegá en tu navegador la dirección completa que está en el archivo
+<code>~/.cache/ganki/dashboard-url</code> (empieza con <code>http://127.0.0.1</code> y termina con
+la clave). La clave cambia cada vez que Ganki arranca.</p>
+<hr>
+<p><b>The access key is missing.</b> Open Ganki from its desktop icon or the applications menu.
+To use another browser: run <code>ganki --no-open</code> in a terminal, then paste into your
+browser the full address found in <code>~/.cache/ganki/dashboard-url</code> (it starts with
+<code>http://127.0.0.1</code> and ends with the key). The key changes every time Ganki starts.</p>
+</body></html>
+"""
+
+
 def create_app(
     scan: Callable[[], ScanResult],
     secret: str,
@@ -154,6 +173,16 @@ def create_app(
             ):
                 abort(403)
         return None
+
+    @app.errorhandler(403)
+    def forbidden(error: Exception) -> Response | tuple[str, int, dict[str, str]]:
+        """Someone opened the page without the key: say how to get in, instead of a blank page.
+
+        No styles or scripts are used: without the key the page cannot even load its own files.
+        """
+        if request.method not in ("GET", "HEAD") or authorized():
+            return error  # type: ignore[return-value]
+        return NEEDS_KEY_PAGE, 403, {"Content-Type": "text/html; charset=utf-8"}
 
     @app.after_request
     def harden(response: Response) -> Response:
