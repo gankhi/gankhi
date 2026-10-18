@@ -27,7 +27,7 @@
 {% set sys = result.system %}
 {% set rec = result.reclaimable %}
 
-<header class="card head">
+<header class="card head" data-explain="system" tabindex="0">
   <div class="headrow">
     <div class="prompt mono">{{ sys.user if sys else 'user' }}@ganki:~$ <span>{{ t('prompt_cmd') }}</span></div>
     <nav class="lang" aria-label="Language">
@@ -63,7 +63,7 @@
 
 <section class="cards">
   {% if sys %}
-  <div class="card ringcard">
+  <div class="card ringcard" data-explain="disk" tabindex="0">
     <h3>{{ t('disk') }}</h3>
     <div class="ringrow">
       {{ ring([(sys.disk_percent, 'ok' if sys.disk_percent < 70 else ('warn' if sys.disk_percent < 85 else 'bad'))], sys.disk_percent ~ '%', t('ring_used'), t('disk')) }}
@@ -73,7 +73,7 @@
       </ul>
     </div>
   </div>
-  <div class="card ringcard">
+  <div class="card ringcard" data-explain="ram" tabindex="0">
     <h3>{{ t('ram') }}</h3>
     <div class="ringrow">
       {{ ring([(sys.ram_percent, 'ok' if sys.ram_percent < 70 else ('warn' if sys.ram_percent < 85 else 'bad'))], sys.ram_percent ~ '%', t('ring_in_use'), t('ram')) }}
@@ -85,7 +85,7 @@
   </div>
   {% endif %}
   {% set total = counts.all or 1 %}
-  <div class="card ringcard">
+  <div class="card ringcard" data-explain="programs" tabindex="0">
     <h3>{{ t('programs') }}</h3>
     <div class="ringrow">
       {{ ring([(100 * counts.ok / total, 'good'), (100 * counts.outdated / total, 'warn'), (100 * counts.vulnerable / total, 'bad')], counts.ok ~ '/' ~ counts.all, t('ring_ok'), t('programs')) }}
@@ -96,7 +96,7 @@
       </ul>
     </div>
   </div>
-  <div class="card wide">
+  <div class="card wide" data-explain="reclaim" tabindex="0">
     <div class="reclaimhead"><h3>{{ t('reclaim') }}</h3><span class="bigsize">{{ rec.total_kib|size }}</span></div>
     <ul class="mini">
       {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><b class="mono">{{ rec.old_kernel_kib|size }}</b></li>{% endif %}
@@ -107,7 +107,7 @@
   </div>
 </section>
 
-<section class="card tools">
+<section class="card tools" data-explain="tools" tabindex="0">
   <div class="toolshead">
     <div><h2>{{ t('tools') }}</h2><p class="muted">{{ t('tools_sub', n=counts.all) }}</p></div>
     <form method="get" action="/" class="search">
@@ -190,7 +190,7 @@
 </section>
 
 <section class="bottom">
-<div class="card">
+<div class="card" data-explain="downloads" tabindex="0">
   <div class="toolshead"><h2>{{ t('downloads') }}</h2>
   {% if result.download_groups %}
     {% set total_files = result.download_groups|sum(attribute='files') %}
@@ -223,4 +223,17 @@
 {% endif %}
 </section>
 {% endif %}
+
+<aside class="assistant" id="assistant" aria-label="{{ t('assistant_title') }}"
+  data-lang="{{ lang }}" data-state="{{ state }}" data-no-voice="{{ t('assistant_no_voice') }}"
+  data-ready="{{ t('assistant_ready') }}">
+  <strong>🔊 {{ t('assistant_title') }}</strong>
+  <p id="assistant-caption" class="caption" aria-live="polite"></p>
+  <div class="assistant-buttons">
+    <button type="button" id="voice-on">{{ t('assistant_listen') }}</button>
+    <button type="button" id="voice-play" class="ghost" hidden>{{ t('assistant_play') }}</button>
+    <button type="button" id="voice-stop" class="ghost" hidden>{{ t('assistant_pause') }}</button>
+  </div>
+  <label class="check"><input type="checkbox" id="voice-hover" checked> {{ t('assistant_hover') }}</label>
+</aside>
 {% endblock %}

@@ -8,19 +8,22 @@
     fetch("/api/status", { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        if (data.state === "running") { setTimeout(poll, 1500); } else { location.reload(); }
+        if (data.state === "running") { setTimeout(poll, 1500); return; }
+        var assistant = window.GankiAssistant;
+        var handled = assistant ? assistant.onScanDone() : false;
+        if (!handled) { location.reload(); }
       })
       .catch(function () { setTimeout(poll, 3000); });
   }
 
-  var button = document.getElementById("rescan");
-  if (button) {
-    button.addEventListener("click", function () {
-      button.disabled = true;
-      fetch("/api/rescan", { method: "POST", headers: headers, credentials: "same-origin" })
-        .then(function () { location.reload(); });
-    });
-  }
+  // Delegated, because the page content can be replaced when a scan finishes.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest ? event.target.closest("#rescan") : null;
+    if (!button) { return; }
+    button.disabled = true;
+    fetch("/api/rescan", { method: "POST", headers: headers, credentials: "same-origin" })
+      .then(function () { location.reload(); });
+  });
   var run = document.getElementById("run");
   if (run) {
     var understood = document.getElementById("understood");
