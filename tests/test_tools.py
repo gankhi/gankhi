@@ -56,7 +56,7 @@ def test_most_urgent_tools_come_first_and_cve_lines_are_capped():
     tools = build_tools(
         [pkg("z-ok"), pkg("b"), pkg("a")],
         many + [finding("CVE-X", "b", priority="critical")],
-        [update("z-ok")],
+        [update("z-ok"), update("a"), update("b")],
     )
     assert [t.name for t in tools] == ["b", "a", "z-ok"]
     assert len(tools[1].cves) == 5
@@ -100,3 +100,30 @@ def test_the_sample_of_notices_keeps_the_ones_without_a_fix():
     assert "CVE-OPEN" in shown
     assert sum(1 for c in tool.cves if c.status != "no_fix") == 5
     assert tool.cve_count == 9
+
+
+def test_the_list_starts_with_what_an_update_can_fix_and_ends_with_what_cannot_be_fixed():
+    findings = [
+        finding("CVE-1", "fixable", fixed="2.0", priority="low"),
+        finding("CVE-2", "no-patch", fixed=None, priority="critical"),
+        finding("CVE-3", "fix-not-offered", fixed="3.0", priority="high"),  # no update in sources
+    ]
+    tools = build_tools(
+        [
+            pkg("up-to-date"),
+            pkg("outdated"),
+            pkg("fixable"),
+            pkg("no-patch"),
+            pkg("fix-not-offered"),
+        ],
+        findings,
+        [update("outdated"), update("fixable"), update("no-patch")],
+    )
+    # fixable (an update fixes it) > outdated > no patch / fix not offered > up to date
+    assert [t.name for t in tools] == [
+        "fixable",
+        "outdated",
+        "no-patch",
+        "fix-not-offered",
+        "up-to-date",
+    ]
