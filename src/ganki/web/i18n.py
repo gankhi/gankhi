@@ -83,7 +83,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "may depend on the old one. Update it where you use it and run your project's tests. "
             "Ganki shows the command; it does not change your projects."
         ),
-        "hint_no_fix": "Use it with care and do not open files from unknown sources.",
+        "hint_no_fix": "There is no patch published for this yet.",
         "hint_some_no_fix": "{n} more notices have no fix yet.",
         "hint_eol": (
             "Its authors no longer publish fixes for this version. Ubuntu may still provide "
@@ -518,7 +518,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "proyectos pueden depender de la anterior. Actualizalo donde lo uses y corré las "
             "pruebas de tu proyecto. Ganki te muestra el comando; no modifica tus proyectos."
         ),
-        "hint_no_fix": ("Usalo con cuidado y no abras archivos de origen dudoso."),
+        "hint_no_fix": "Todavía no hay un parche publicado.",
         "hint_some_no_fix": "{n} avisos más todavía no tienen arreglo.",
         "hint_eol": (
             "Sus autores ya no publican arreglos para esta versión. Ubuntu todavía puede "
