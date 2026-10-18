@@ -131,3 +131,15 @@ def test_the_list_starts_with_what_an_update_fully_fixes_and_ends_with_what_cann
         "fix-not-offered",
         "up-to-date",
     ]
+
+
+def test_a_tool_remembers_whether_its_update_is_a_security_one():
+    from ganki.collectors.updates import Update
+
+    updates = [
+        Update("a", "amd64", "1", "2", "noble-updates,noble-security", True),
+        Update("b", "amd64", "1", "2", "noble-updates", False),
+    ]
+    by_name = {t.name: t for t in build_tools([pkg("a"), pkg("b"), pkg("c")], [], updates)}
+    assert by_name["a"].update_security and "noble-security" in by_name["a"].update_origin
+    assert not by_name["b"].update_security and not by_name["c"].update_security

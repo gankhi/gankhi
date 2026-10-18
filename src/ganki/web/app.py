@@ -258,6 +258,7 @@ def create_app(
                 i18n.translate(lang, generic),
             ),
             "advise_app": lambda app: advice.sandboxed_paragraphs(app, lang),
+            "update_info": lambda tool: advice.update_info(tool, lang),
             "sandboxed_update": sandboxed.update_command,
             "sandboxed_remove": sandboxed.remove_command,
             "sandboxed_shared": sandboxed.is_shared_runtime,

@@ -212,6 +212,8 @@ def test_filters_narrow_the_tools_table():
     assert "virtualbox" in vulnerable and "<strong>git</strong>" not in vulnerable
     outdated = client.get("/?f=outdated", base_url=BASE).get_data(as_text=True)
     assert "<strong>vim</strong>" in outdated and "<strong>openssl</strong>" not in outdated
+    # an outdated program with no notices says whether its update matters
+    assert 'class="tag info">Update<' in outdated
     up_to_date = client.get("/?f=ok", base_url=BASE).get_data(as_text=True)
     assert "<strong>git</strong>" in up_to_date and "<strong>vim</strong>" not in up_to_date
     assert "<strong>virtualbox</strong>" not in up_to_date and "Up to date · 1" in up_to_date
