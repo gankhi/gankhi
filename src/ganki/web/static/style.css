@@ -141,6 +141,12 @@ details summary { cursor: pointer; color: var(--blue); font-size: 1rem; }
 .hint { margin: 6px 0 2px; padding: 6px 10px; border-radius: 8px; background: var(--green-bg); border: 1px solid var(--green-line); font-size: 1rem; color: #d0d0d0; }
 .hint.bad { background: var(--red-bg); border-color: var(--red-line); }
 .hint p { margin: 2px 0; }
+.notes { margin: 6px 0 2px; display: flex; flex-direction: column; gap: 8px; }
+.note p { margin: 3px 0 0; color: #a9aebb; }
+.tag { display: inline-block; font-weight: 500; padding: 1px 8px; border-radius: 4px; color: #0e0f13; }
+.tag.bad { background: #e5786d; }
+.tag.ok { background: #4cc9a0; }
+.tag.old { background: #e8b84a; }
 
 /* fold: CSS-only, no scripts and no inline styles (see the CSP) */
 .toggle { position: absolute; opacity: 0; width: 1px; height: 1px; }

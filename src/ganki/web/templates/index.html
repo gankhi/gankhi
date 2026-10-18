@@ -158,11 +158,11 @@
       <tr>
         <td class="wrap"><strong>{{ tool.name }}</strong><br><span class="small">{{ tool.description }}</span>
           {% if tool.fixed_in or tool.unfixable or tool.end_of_support %}
-          <div class="hint{% if tool.state == 'vulnerable' and not tool.fixed_in %} bad{% endif %}">
-            {% if tool.fixed_in %}<p>{{ t('hint_fixed', version=tool.fixed_in) }}</p>{% endif %}
-            {% if tool.unfixable and tool.fixed_in %}<p>{{ t('hint_some_no_fix', n=tool.unfixable) }}</p>
-            {% elif tool.unfixable %}<p>{{ t('hint_no_fix') }}</p>{% endif %}
-            {% if tool.end_of_support %}<p>{{ t('hint_eol') }}</p>{% endif %}
+          <div class="notes">
+            {% if tool.fixed_in %}<div class="note"><span class="tag ok">{{ t('tag_fixed') }}</span><p>{{ t('hint_fixed', version=tool.fixed_in) }}</p></div>{% endif %}
+            {% if tool.unfixable and tool.fixed_in %}<div class="note"><span class="tag bad">{{ t('tag_no_fix') }}</span><p>{{ t('hint_some_no_fix', n=tool.unfixable) }}</p></div>
+            {% elif tool.unfixable %}<div class="note"><span class="tag bad">{{ t('tag_no_fix') }}</span><p>{{ t('hint_no_fix') }}</p></div>{% endif %}
+            {% if tool.end_of_support %}<div class="note"><span class="tag old">{{ t('tag_eol') }}</span><p>{{ t('hint_eol') }}</p></div>{% endif %}
           </div>
           {% endif %}
           {% if tool.cves %}
@@ -236,10 +236,10 @@
     {% for tool in ext_bad %}
       <tr>
         <td class="wrap"><strong>{{ tool.name }}</strong>
-          <div class="hint{% if tool.malicious or not tool.fixed_in %} bad{% endif %}">
-            {% if tool.malicious %}<p>{{ t('ext_malware') }}</p>
-            {% elif tool.fixed_in %}<p>{{ t('ext_fix', version=tool.fixed_in, tool=tool.tool) }}</p>
-            {% else %}<p>{{ t('ext_nofix') }}</p>{% endif %}
+          <div class="notes">
+            {% if tool.malicious %}<div class="note"><span class="tag bad">{{ t('tag_malware') }}</span><p>{{ t('ext_malware') }}</p></div>
+            {% elif tool.fixed_in %}<div class="note"><span class="tag ok">{{ t('tag_fixed') }}</span><p>{{ t('ext_fix', version=tool.fixed_in, tool=tool.tool) }}</p></div>
+            {% else %}<div class="note"><span class="tag bad">{{ t('tag_no_fix') }}</span><p>{{ t('ext_nofix') }}</p></div>{% endif %}
           </div>
           {% if tool.cves %}
           <details><summary>{{ t('cve_summary', n=tool.cve_count) }}</summary>

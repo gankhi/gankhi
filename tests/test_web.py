@@ -448,7 +448,7 @@ def test_rows_explain_in_plain_words_what_to_do():
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "Fixed in 2.0 with the distribution" in html  # openssl has a fix
-    assert "No fix yet: use it with care" in html  # virtualbox has none
+    assert "No fix yet" in html and "Use it with care" in html  # virtualbox has none
 
 
 URIS = (
