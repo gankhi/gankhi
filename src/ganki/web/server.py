@@ -76,21 +76,7 @@ def port_is_free(port: int) -> bool:
 
 
 # Browsers tried by name when the system has no default one (or cannot open links).
-KNOWN_BROWSERS = (
-    "firefox",
-    "librewolf",
-    "google-chrome",
-    "google-chrome-stable",
-    "chromium",
-    "chromium-browser",
-    "brave-browser",
-    "vivaldi",
-    "microsoft-edge",
-    "opera",
-    "epiphany",
-    "falkon",
-    "midori",
-)
+KNOWN_BROWSERS = tuple(command for command, _label in browsers.KNOWN)
 
 
 def _start(command: list[str]) -> bool:
@@ -114,8 +100,10 @@ def open_in_browser(url: str, browser: str = browsers.DEFAULT) -> bool:
     2. The desktop's own ``xdg-open``.
     3. Any well-known browser that is installed, even if none is the default.
     """
-    if browser not in (browsers.DEFAULT, browsers.CANCELLED) and _start([browser, url]):
-        return True
+    if browser not in (browsers.DEFAULT, browsers.CANCELLED):
+        command = browsers.command_for(browser)
+        if command is not None and _start([*command, url]):
+            return True
     if webbrowser.open(url):
         return True
     opener = shutil.which("xdg-open")
