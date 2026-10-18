@@ -30,7 +30,7 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.45; }
-main { max-width: 1328px; margin: 0 auto; padding: 18px 16px 48px; display: flex; flex-direction: column; gap: 16px; }
+main { max-width: clamp(1328px, 92vw, 1760px); margin: 0 auto; padding: 18px 16px 220px; display: flex; flex-direction: column; gap: 16px; }
 a { color: var(--blue); }
 h2, h3 { margin: 0; font-weight: 600; }
 h2 { font-size: 1.15rem; }
@@ -196,7 +196,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .speaking { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 12px;
   box-shadow: 0 0 0 6px rgba(77, 168, 240, .15); transition: box-shadow .2s; }
 [data-explain]:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
-@media (max-width: 560px) { .assistant { position: static; width: auto; margin: 16px; } }
+@media (max-width: 560px) { .assistant { position: static; width: auto; margin: 16px; } main { padding-bottom: 48px; } }
 
 /* scan progress */
 .scan { display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: start; color: var(--blue); }

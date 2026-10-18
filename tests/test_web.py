@@ -4,6 +4,7 @@
 
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 
@@ -633,3 +634,9 @@ def test_logging_in_always_redirects_to_the_home_page():
         response = client.get(f"{path}?access={SECRET}", base_url=BASE)
         if response.status_code == 302:
             assert response.headers["Location"] == "/"
+
+
+def test_page_width_grows_with_the_screen_instead_of_a_fixed_column():
+    css = (Path(__file__).parent.parent / "src/ganki/web/static/style.css").read_text()
+    main_rule = next(line for line in css.splitlines() if line.startswith("main {"))
+    assert "clamp(" in main_rule and "vw" in main_rule
