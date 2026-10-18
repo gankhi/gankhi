@@ -142,7 +142,13 @@ details summary { cursor: pointer; color: var(--blue); font-size: 1rem; }
 .hint.bad { background: var(--red-bg); border-color: var(--red-line); }
 .hint p { margin: 2px 0; }
 .notes { margin: 6px 0 2px; display: flex; flex-direction: column; gap: 8px; }
-.note p { margin: 3px 0 0; color: #a9aebb; }
+.note p { margin: 6px 0 0; color: #a9aebb; max-width: 70ch; }
+details.note summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; }
+details.note summary::-webkit-details-marker { display: none; }
+details.note summary .tag::after { content: " \25BE"; }
+details.note[open] summary .tag::after { content: " \25B4"; }
+details.note summary:hover .tag, details.note summary:focus-visible .tag { filter: brightness(1.12); }
+details.note summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
 .tag { display: inline-block; font-weight: 500; padding: 1px 8px; border-radius: 4px; color: #0e0f13; }
 .tag.bad { background: #e5786d; }
 .tag.ok { background: #4cc9a0; }

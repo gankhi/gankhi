@@ -678,6 +678,22 @@ def test_assistant_has_a_close_cross_and_the_search_has_a_magnifier():
     assert 'type="submit" class="lupa"' in html  # the magnifier really searches
 
 
+def test_the_fix_labels_open_an_explanation_with_what_to_keep_in_mind():
+    client = login(build().test_client())
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    # each label is the summary of a details element: a keyboard-friendly button, no script
+    assert '<details class="note"><summary><span class="tag ok">' in html
+    assert '<details class="note"><summary><span class="tag bad">' in html
+    assert "What to keep in mind" in html
+
+
+def test_every_explanation_exists_in_both_languages():
+    from ganki.web.i18n import TEXTS as STRINGS
+
+    keys = [k for k in STRINGS["en"] if k.startswith("more_")]
+    assert keys and all(STRINGS["es"].get(k) for k in keys)
+
+
 def test_the_hover_option_is_gone_from_the_assistant():
     client = login(build().test_client())
     html = client.get("/", base_url=BASE).get_data(as_text=True)

@@ -54,6 +54,35 @@ TEXTS: dict[str, dict[str, str]] = {
         "tag_no_fix": "No fix yet",
         "tag_eol": "No support",
         "tag_malware": "Malicious",
+        "more_fixed": (
+            "What to keep in mind: the fix is already in your system's own sources, so you need "
+            "nothing from outside. Press Update on this row. Some updates only take effect after "
+            "you close and reopen the program, or after a restart (the system core, the browser). "
+            "Until then, avoid opening files from unknown sources with it."
+        ),
+        "more_no_fix": (
+            "What to keep in mind: no patch exists yet. That does not mean someone is attacking "
+            "you; many of these notices are low priority and the distribution has not fixed them, "
+            "or has decided not to. Use this program only with files and sites you trust. If you "
+            "do not use it, remove it. Ganki checks again on every scan, so the label disappears "
+            "by itself once a fix is published."
+        ),
+        "more_eol": (
+            "What to keep in mind: this version no longer receives fixes from its authors, so new "
+            "problems will not be corrected. Look for a newer version or an alternative. If you "
+            "must keep it, do not use it with untrusted files or on the internet. Ubuntu Pro can "
+            "extend fixes for some packages."
+        ),
+        "more_malware": (
+            "What to keep in mind: this package is known to be malicious. Do not run it. Remove "
+            "it now. If you have already used it, change the passwords and keys you typed or "
+            "stored on this computer, and check for anything you did not install."
+        ),
+        "more_ext_fix": (
+            "What to keep in mind: updating changes the package's version, and your own projects "
+            "may depend on the old one. Update it where you use it and run your project's tests. "
+            "Ganki shows the command; it does not change your projects."
+        ),
         "hint_no_fix": "Use it with care and do not open files from unknown sources.",
         "hint_some_no_fix": "{n} more notices have no fix yet.",
         "hint_eol": (
@@ -459,6 +488,36 @@ TEXTS: dict[str, dict[str, str]] = {
         "tag_no_fix": "Sin arreglo",
         "tag_eol": "Sin soporte",
         "tag_malware": "Malicioso",
+        "more_fixed": (
+            "Qué tener en cuenta: el arreglo ya está en los orígenes de tu propio sistema, así "
+            "que no necesitás nada de afuera. Apretá Actualizar en esta fila. Algunas "
+            "actualizaciones recién se aplican cuando cerrás y volvés a abrir el programa, o al "
+            "reiniciar (el núcleo del sistema, el navegador). Hasta entonces, evitá abrir con él "
+            "archivos de origen dudoso."
+        ),
+        "more_no_fix": (
+            "Qué tener en cuenta: todavía no existe un parche. Eso no significa que alguien te "
+            "esté atacando; muchos de estos avisos son de prioridad baja y la distribución "
+            "todavía no los corrigió, o decidió no hacerlo. Usá este programa solo con archivos y "
+            "sitios de confianza. Si no lo usás, quitalo. Ganki vuelve a revisar en cada "
+            "análisis, así que la etiqueta desaparece sola cuando se publique un arreglo."
+        ),
+        "more_eol": (
+            "Qué tener en cuenta: esta versión ya no recibe arreglos de sus autores, así que los "
+            "problemas nuevos no se van a corregir. Buscá una versión más nueva o una "
+            "alternativa. Si tenés que conservarla, no la uses con archivos de origen dudoso ni "
+            "en internet. Ubuntu Pro puede extender los arreglos de algunos paquetes."
+        ),
+        "more_malware": (
+            "Qué tener en cuenta: este paquete se conoce como malicioso. No lo ejecutes. Quitalo "
+            "ahora. Si ya lo usaste, cambiá las contraseñas y claves que escribiste o guardaste "
+            "en esta computadora, y revisá si hay algo que no instalaste vos."
+        ),
+        "more_ext_fix": (
+            "Qué tener en cuenta: actualizar cambia la versión del paquete, y tus propios "
+            "proyectos pueden depender de la anterior. Actualizalo donde lo uses y corré las "
+            "pruebas de tu proyecto. Ganki te muestra el comando; no modifica tus proyectos."
+        ),
         "hint_no_fix": ("Usalo con cuidado y no abras archivos de origen dudoso."),
         "hint_some_no_fix": "{n} avisos más todavía no tienen arreglo.",
         "hint_eol": (
