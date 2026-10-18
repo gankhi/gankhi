@@ -331,6 +331,18 @@ TAILS = {
         "ext_no_fix": ("Todavía no hay arreglo: {todo}. Ganki vuelve a revisar en cada análisis."),
         "data": "Qué dicen los avisos: {kinds}. La prioridad más alta es {priority}.",
         "data_more": "Se muestran los primeros {shown} de {total} avisos.",
+        "how": "Cómo se aprovecha, según los avisos: {needs}. Por eso: {todo}.",
+        "how_unknown": (
+            "Los avisos no detallan en qué condiciones se aprovecha, así que va una precaución "
+            "general: {todo}."
+        ),
+        "recheck": "Ganki vuelve a revisar en cada análisis y la etiqueta desaparece sola cuando "
+        "se publique un arreglo.",
+        "eol_short": "Esta versión ya no recibe arreglos de sus autores: buscá una más nueva o "
+        "una alternativa.",
+        "update_available": "Hay una versión nueva disponible ({version}): actualizá con el botón.",
+        "update_missing": "Tu sistema todavía no ofrece una versión más nueva: no hay nada que "
+        "actualizar por ahora.",
     },
     "en": {
         "fixed": (
@@ -358,6 +370,18 @@ TAILS = {
         "ext_no_fix": "There is no fix yet: {todo}. Ganki checks again on every scan.",
         "data": "What the notices say: {kinds}. The highest priority is {priority}.",
         "data_more": "The first {shown} of {total} notices are shown.",
+        "how": "How it can be used, according to the notices: {needs}. So: {todo}.",
+        "how_unknown": (
+            "The notices do not say under which conditions it can be used, so here is a "
+            "general precaution: {todo}."
+        ),
+        "recheck": "Ganki checks again on every scan and the label disappears by itself once "
+        "a fix is published.",
+        "eol_short": "This version no longer gets fixes from its authors: look for a newer "
+        "one or an alternative.",
+        "update_available": "A newer version is available ({version}): update with the button.",
+        "update_missing": "Your system does not offer a newer version yet: there is nothing "
+        "to update for now.",
     },
 }
 
@@ -397,6 +421,78 @@ KINDS: tuple[tuple[str, str, dict[str, str]], ...] = (
 )
 
 
+# How a problem can be reached, found in the notices' own wording: (key, pattern,
+# what it needs, what to do about exactly that) in each language.
+CONDITIONS: tuple[tuple[str, str, dict[str, tuple[str, str]]], ...] = (
+    (
+        "guest",
+        r"\bguest\b",
+        {
+            "es": (
+                "hay que estar adentro de la máquina virtual",
+                "solo importa si lo que corre adentro es hostil o fue comprometido: limitá lo "
+                "que ejecutás adentro y apagá el portapapeles, el arrastrar y las carpetas "
+                "compartidas",
+            ),
+            "en": (
+                "the attacker has to be inside the virtual machine",
+                "it only matters if what runs inside is hostile or compromised: limit what "
+                "you run inside and turn off the shared clipboard, drag and drop and shared "
+                "folders",
+            ),
+        },
+    ),
+    (
+        "local",
+        r"logon to the infrastructure|local (user|attacker|access)|locally|low[- ]privileged"
+        r"|physical access",
+        {
+            "es": (
+                "hace falta tener acceso a una cuenta de tu equipo",
+                "que nadie más use tu usuario o tu sesión y no ejecutes programas de origen "
+                "dudoso con tu usuario",
+            ),
+            "en": (
+                "access to an account on your computer is needed",
+                "do not let anyone else use your user or session and do not run programs of "
+                "doubtful origin as your user",
+            ),
+        },
+    ),
+    (
+        "network",
+        r"remote attacker|over the network|network access|remotely|via (http|https|tcp|udp)"
+        r"|network protocol",
+        {
+            "es": (
+                "los avisos mencionan acceso por red",
+                "no dejes el servicio accesible desde redes que no controlás (red NAT, firewall)",
+            ),
+            "en": (
+                "the notices mention network access",
+                "do not leave the service reachable from networks you do not control (NAT "
+                "network, firewall)",
+            ),
+        },
+    ),
+    (
+        "file",
+        r"crafted (file|document|image|archive|input|request)|malicious (file|document|web)"
+        r"|user interaction|tricks? a user",
+        {
+            "es": (
+                "hace falta abrir un archivo o contenido armado a propósito",
+                "no abras con este programa archivos de origen dudoso",
+            ),
+            "en": (
+                "a file or content crafted on purpose has to be opened",
+                "do not open files of doubtful origin with this program",
+            ),
+        },
+    ),
+)
+
+
 def profile_for(name: str, ecosystem: str = "") -> str | None:
     """The kind of program a package is, from its name (or pip/npm for those packages)."""
     if ecosystem in ("pip", "npm"):
@@ -421,6 +517,12 @@ def notice_kinds(summaries: list[str], lang: str) -> list[str]:
     return [labels[key] for key in sorted(counts, key=lambda k: (-counts[k], k))]
 
 
+def conditions(summaries: list[str], lang: str) -> list[tuple[str, str]]:
+    """(what it needs, what to do) for each way the notices say the problem is reached."""
+    joined = " ".join(summaries).lower()
+    return [texts[lang] for _key, pattern, texts in CONDITIONS if re.search(pattern, joined)]
+
+
 def paragraphs(
     tool: Any, kind: str, lang: str, priority_name: Callable[[str], str], generic: str
 ) -> list[str]:
@@ -443,14 +545,37 @@ def paragraphs(
             line += " " + texts["data_more"].format(shown=len(cves), total=total)
         result.append(line)
 
+    if not kind.startswith("ext_") and kind != "malware":
+        newer = getattr(tool, "update_to", None)
+        if newer:
+            result.append(texts["update_available"].format(version=newer))
+        elif kind in ("no_fix", "eol"):
+            result.append(texts["update_missing"])
+
     profile = profile_for(getattr(tool, "name", ""), getattr(tool, "tool", ""))
     if kind == "malware":
         result.append(texts["malware"])
     elif profile is None:
-        result.append(generic)
+        # A program Ganki does not know by name: still use what its own notices say.
+        reached = conditions([c.summary for c in cves], lang) if kind in ("no_fix", "eol") else []
+        if reached:
+            needs = "; ".join(need for need, _action in reached)
+            actions = "; ".join(action for _need, action in reached)
+            result.append(texts["how"].format(needs=needs, todo=actions))
+            result.append(texts["eol_short" if kind == "eol" else "recheck"])
+        else:
+            result.append(generic)
     else:
         risk, todo = PROFILE_TEXT[profile][lang]
         result.append(risk)
-        tail = {"ext_fix": "ext_fix", "ext_no_fix": "ext_no_fix"}.get(kind, kind)
-        result.append(texts[tail].format(todo=todo.rstrip(".")))
+        reached = conditions([c.summary for c in cves], lang) if kind in ("no_fix", "eol") else []
+        if reached:
+            needs = "; ".join(need for need, _action in reached)
+            actions = "; ".join(action for _need, action in reached)
+            result.append(texts["how"].format(needs=needs, todo=actions))
+            result.append(texts["eol_short" if kind == "eol" else "recheck"])
+        elif cves and kind in ("no_fix", "eol", "ext_no_fix"):
+            result.append(texts["how_unknown"].format(todo=todo.rstrip(".")))
+        else:
+            result.append(texts[kind].format(todo=todo.rstrip(".")))
     return result

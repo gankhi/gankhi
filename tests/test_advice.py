@@ -28,7 +28,7 @@ def test_each_kind_of_program_gets_its_own_explanation():
 
 
 def test_an_unknown_program_falls_back_to_the_general_advice():
-    assert explain(tool("some-odd-tool")) == ["GENERIC"]
+    assert explain(tool("some-odd-tool"))[-1] == "GENERIC"
 
 
 def test_the_notices_own_words_are_summarised():
@@ -73,3 +73,44 @@ def test_no_sentence_ends_with_two_periods():
         for name in ("virtualbox", "nodejs", "vim"):
             for lang in ("es", "en"):
                 assert all(".." not in p for p in explain(tool(name), kind, lang)), (kind, name)
+
+
+ORACLE = (
+    "Vulnerability in the Oracle VM VirtualBox component (subcomponent: Core). Easily "
+    "exploitable vulnerability allows low privileged attacker with logon to the infrastructure"
+)
+KERNEL = "allows guest OS users to cause a denial of service (host OS panic or hang)"
+
+
+def test_precautions_follow_how_the_notices_say_the_problem_is_reached():
+    text = " ".join(explain(tool("virtualbox-qt", [ORACLE, KERNEL])))
+    assert "inside the virtual machine" in text  # from the "guest OS users" notice
+    assert "access to an account on your computer" in text  # from "logon to the infrastructure"
+    assert "network" not in text.split("How it can be used")[1]  # nothing says it is remote
+
+
+def test_without_conditions_in_the_notices_the_precaution_is_declared_general():
+    text = " ".join(explain(tool("nodejs", ["Something happens in the parser"])))
+    assert "do not say under which conditions" in text
+
+
+def test_the_update_line_depends_on_the_data():
+    from dataclasses import replace
+
+    base = tool("virtualbox", [ORACLE])
+    assert any("nothing to update" in p for p in explain(base))
+    newer = replace(base, update_to="7.0.20")
+    assert any("A newer version is available (7.0.20)" in p for p in explain(newer))
+    assert not any("nothing to update" in p for p in explain(newer))
+
+
+def test_a_fixed_notice_keeps_the_update_advice_and_skips_the_conditions():
+    text = " ".join(explain(tool("virtualbox", [ORACLE]), "fixed"))
+    assert "How it can be used" not in text and "Press Update" in text
+
+
+def test_a_program_unknown_to_ganki_still_gets_precautions_from_its_own_notices():
+    text = " ".join(explain(tool("some-new-program", [ORACLE])))
+    assert "access to an account on your computer" in text and "GENERIC" not in text
+    plain = explain(tool("some-new-program", ["Something happens"]))
+    assert plain[-1] == "GENERIC"  # nothing to go on: the general advice
