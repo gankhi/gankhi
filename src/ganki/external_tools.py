@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+import shlex
 from dataclasses import dataclass
 
 from ganki import versions
@@ -25,6 +27,33 @@ class ExternalTool:
     fixed_in: str | None = None  # the version that fixes everything fixable
     malicious: bool = False
     cves: tuple[CveLine, ...] = ()
+
+
+_NAME = re.compile(r"^(?:@[a-z0-9][a-z0-9._-]*/)?[A-Za-z0-9][A-Za-z0-9._-]*$")
+_VERSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9.+!_-]*$")
+
+
+def update_command(tool: ExternalTool) -> str | None:
+    """The command the person can run to get the fixed version; Ganki never runs it itself."""
+    if not tool.fixed_in or not _NAME.match(tool.name) or not _VERSION.match(tool.fixed_in):
+        return None  # an odd name or version is never pasted into a command
+    wanted = shlex.quote(f"{tool.name}>={tool.fixed_in}")
+    if tool.tool == "pip":
+        return f"python3 -m pip install --upgrade {wanted}"
+    if tool.tool == "npm":
+        return f"npm install -g {shlex.quote(f'{tool.name}@>={tool.fixed_in}')}"
+    return None
+
+
+def remove_command(tool: ExternalTool) -> str | None:
+    """The command to remove it, for a package the person does not need."""
+    if not _NAME.match(tool.name):
+        return None
+    if tool.tool == "pip":
+        return f"python3 -m pip uninstall {shlex.quote(tool.name)}"
+    if tool.tool == "npm":
+        return f"npm uninstall -g {shlex.quote(tool.name)}"
+    return None
 
 
 def build_external_tools(

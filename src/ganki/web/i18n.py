@@ -292,6 +292,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "sbx_title": "Snap and Flatpak apps",
         "sbx_sub": "{n} installed. They carry their own libraries, so Ganki does not check them.",
         "sbx_col_source": "Source",
+        "ext_cmd_update": "To update it, copy this command and paste it into a terminal:",
+        "ext_cmd_remove": "If you do not use it, to remove it:",
+        "ext_cmd_npm": (
+            'If npm answers "permission denied" (EACCES), run it again with sudo in front.'
+        ),
+        "ext_cmd_pip": (
+            'If pip answers "externally-managed-environment", the system manages that package: '
+            "update it with apt or inside a virtual environment."
+        ),
+        "ext_cmd_note": "Ganki does not run it for you and never touches your projects.",
         "report_sandboxed": "Snap and Flatpak apps",
         "sbx_note": (
             "{n} apps installed with snap or flatpak. Each one carries its own libraries, "
@@ -747,6 +757,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "sbx_title": "Apps de Snap y Flatpak",
         "sbx_sub": "{n} instaladas. Traen sus propias librerías, así que Ganki no las revisa.",
         "sbx_col_source": "Origen",
+        "ext_cmd_update": "Para actualizarlo, copiá este comando y pegalo en una consola:",
+        "ext_cmd_remove": "Si no lo usás, para quitarlo:",
+        "ext_cmd_npm": (
+            'Si npm responde "permission denied" (EACCES), repetí el comando con sudo adelante.'
+        ),
+        "ext_cmd_pip": (
+            'Si pip responde "externally-managed-environment", ese paquete lo gestiona el sistema: '
+            "actualizalo con apt o dentro de un entorno virtual."
+        ),
+        "ext_cmd_note": "Ganki no lo ejecuta por vos y nunca toca tus proyectos.",
         "report_sandboxed": "Apps de Snap y Flatpak",
         "sbx_note": (
             "{n} apps instaladas con snap o flatpak. Cada una trae sus propias librerías, "

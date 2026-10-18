@@ -135,6 +135,9 @@ td .small { display: inline-block; margin-top: 1px; }
 .p-negligible, .p-unknown { color: var(--muted); }
 details { margin-top: 6px; }
 details summary { cursor: pointer; color: var(--blue); font-size: 1rem; }
+.howto { margin: 8px 0; }
+.howto p { margin: 4px 0; }
+code.cmd { display: block; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; font: .8rem var(--mono); user-select: all; overflow-x: auto; white-space: pre; }
 .cves { list-style: none; padding: 0; margin: 8px 0; background: var(--red-bg); border: 1px solid var(--red-line); border-radius: 8px; padding: 8px 12px; }
 .cves li { padding: 4px 0; }
 

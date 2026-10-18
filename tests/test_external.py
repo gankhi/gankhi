@@ -368,3 +368,32 @@ def test_snap_and_flatpak_sizes_are_read_in_the_same_unit(tmp_path):
         "org.gimp.GIMP\tGIMP\t2.10\tflathub\t245.1\u00a0MB\nx.Y\tY\t1\tflathub\t?\n"
     )
     assert flat[0].size_kib == 245_100_000 // 1024 and flat[1].size_kib is None
+
+
+def test_the_update_and_remove_commands_are_exact_and_safe():
+    from ganki.external_tools import ExternalTool, remove_command, update_command
+
+    pip = ExternalTool("oldlib", "1.0", "pip", "PyPI", True, "high", 2, "2.1")
+    npm = ExternalTool("@scope/lib", "1.0", "npm", "npm", True, "high", 1, "3.0.1")
+    assert update_command(pip) == "python3 -m pip install --upgrade 'oldlib>=2.1'"
+    assert update_command(npm) == "npm install -g '@scope/lib@>=3.0.1'"
+    assert remove_command(pip) == "python3 -m pip uninstall oldlib"
+    assert remove_command(npm) == "npm uninstall -g @scope/lib"
+    no_fix = ExternalTool("oldlib", "1.0", "pip", "PyPI", True, "high", 2, None)
+    assert update_command(no_fix) is None
+    # a name or version with shell characters is never put into a command
+    evil = ExternalTool("x; rm -rf ~", "1.0", "pip", "PyPI", True, "high", 1, "2.0")
+    assert update_command(evil) is None and remove_command(evil) is None
+    odd_version = ExternalTool("lib", "1.0", "pip", "PyPI", True, "high", 1, "2.0$(id)")
+    assert update_command(odd_version) is None
+
+
+def test_the_python_and_npm_rows_show_the_command_to_copy():
+    from test_web import BASE, build, login, wait_until_done
+
+    client = login(build(with_external).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert "python3 -m pip install --upgrade &#39;oldlib&gt;=2.1&#39;" in html
+    assert "python3 -m pip uninstall evilpkg" in html  # malicious: remove, never update

@@ -244,6 +244,15 @@
             {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('ext_fix', version=tool.fixed_in, tool=tool.tool), advise(tool, 'ext_fix', 'more_ext_fix')) }}
             {% else %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'ext_no_fix', 'more_no_fix')) }}{% endif %}
           </div>
+          {% set up = none if tool.malicious else update_command(tool) %}
+          {% set rm = remove_command(tool) %}
+          {% if up or rm %}
+          <div class="howto">
+            {% if up %}<p class="small">{{ t('ext_cmd_update') }}</p><code class="cmd">{{ up }}</code>
+            {% else %}<p class="small">{{ t('ext_cmd_remove') }}</p><code class="cmd">{{ rm }}</code>{% endif %}
+            <p class="small muted">{{ t('ext_cmd_' ~ tool.tool) }} {{ t('ext_cmd_note') }}</p>
+          </div>
+          {% endif %}
           {% if tool.cves %}
           <details><summary>{{ t('cve_summary', n=tool.cve_count) }}</summary>
             <ul class="cves">
