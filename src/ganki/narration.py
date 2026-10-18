@@ -104,7 +104,7 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
     programs = [t for t in result.tools if t.is_program]
     vulnerable = [t for t in programs if t.state == "vulnerable"]
     outdated = [t for t in programs if t.state == "outdated"]
-    libraries = [t for t in result.tools if not t.is_program and t.state == "vulnerable"]
+    libraries, old_kernels = vulnerable_libraries(result)
     everything = vulnerable + libraries
     if vulnerable:
         summary = say("say_tools_summary", vulnerable=len(vulnerable), outdated=len(outdated))
@@ -119,6 +119,8 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
         serious = sum(1 for t in libraries if t.top_priority in SERIOUS)
         key = "say_tools_libs_serious" if serious else "say_tools_libs_mild"
         segments.append(Segment("tools", say(key, n=len(libraries), serious=serious)))
+    if old_kernels:
+        segments.append(Segment("tools", say("say_tools_old_kernels", n=len(old_kernels))))
     if everything:
         segments.append(Segment("tools", say("say_tools_urgent")))
     for text in _advice(_most_urgent(everything), say):
@@ -147,6 +149,19 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
 
 
 MOST_URGENT = 3
+
+
+def vulnerable_libraries(result: ScanResult) -> tuple[list, list]:  # type: ignore[type-arg]
+    """Libraries and system packages with notices, and apart from them the old kernels.
+
+    Old kernels are not running, so their notices are solved by removing them, not by
+    updating; they must not take the place of what is really urgent.
+    """
+    old = set(result.reclaimable.old_kernel_packages)
+    found = [t for t in result.tools if not t.is_program and t.state == "vulnerable"]
+    return [t for t in found if t.name not in old], [t for t in found if t.name in old]
+
+
 SERIOUS = ("critical", "high")
 
 

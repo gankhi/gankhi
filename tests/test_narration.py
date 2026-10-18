@@ -152,3 +152,20 @@ def test_libraries_alone_do_not_read_as_clean():
     text = texts(result, "en")
     assert "Everything is up to date" not in text
     assert "none critical" in text
+
+
+def test_old_kernels_never_take_the_place_of_what_is_urgent():
+    from dataclasses import replace
+
+    result = make_result()
+    result = _with_library(result, "critical", "linux-headers-6.8.0-90")
+    result = _with_library(result, "high", "libreal1")
+    result = replace(
+        result,
+        reclaimable=replace(result.reclaimable, old_kernel_packages=["linux-headers-6.8.0-90"]),
+    )
+    text = texts(result, "en")
+    advice = text.split("My advice")[1]
+    assert "linux-headers-6.8.0-90" not in advice
+    assert "libreal1" in advice
+    assert "old kernels" in text

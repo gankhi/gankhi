@@ -171,6 +171,10 @@ TEXTS: dict[str, dict[str, str]] = {
             "Counting libraries and system packages, {n} more have security notices, "
             "none critical. Updating everything fixes most."
         ),
+        "say_tools_old_kernels": (
+            "{n} more notices come from old kernels you are not using. They are solved by "
+            "removing them, not by updating."
+        ),
         "say_tools_urgent": "These are the most urgent, from programs and libraries together.",
         "say_tools_outdated_only": (
             "I found no security problems. Programs out of date: {outdated}. With Update "
@@ -512,6 +516,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "say_tools_libs_mild": (
             "Contando librerías y paquetes del sistema, hay {n} más con avisos de seguridad, "
             "ninguno crítico. Actualizando todo se arreglan casi todos."
+        ),
+        "say_tools_old_kernels": (
+            "Otros {n} avisos vienen de kernels viejos que no estás usando. Se resuelven "
+            "quitándolos, no actualizando."
         ),
         "say_tools_urgent": "Esto es lo más urgente, entre programas y librerías juntos.",
         "say_tools_outdated_only": (

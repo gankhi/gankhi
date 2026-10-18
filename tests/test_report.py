@@ -78,7 +78,9 @@ def test_a_long_list_is_cut_and_says_so():
     template = next(t for t in result.tools if t.state == "vulnerable" and t.is_program)
     from dataclasses import replace
 
-    many = [replace(template, name=f"prog{i}") for i in range(report.MAX_ROWS + 5)]
+    many = [
+        replace(template, name=f"prog{i}", top_priority="low") for i in range(report.MAX_ROWS + 5)
+    ]
     result = replace(result, tools=many)
     data = report.build_report(result, "en", "now")
     assert b"prog0" in data and b"and 5 more" in data
@@ -120,3 +122,22 @@ def test_the_report_lists_libraries_with_notices():
     library = replace(template, name="libzzz-test", is_program=False, state="vulnerable")
     data = report.build_report(replace(result, tools=[*result.tools, library]), "en", "now")
     assert b"libzzz-test" in data
+
+
+def test_every_critical_or_high_notice_is_listed_even_past_the_limit():
+    from dataclasses import replace
+
+    result = make_result()
+    template = next(t for t in result.tools if t.is_program)
+    many = [
+        replace(
+            template,
+            name=f"libhigh{i}",
+            is_program=False,
+            state="vulnerable",
+            top_priority="high",
+        )
+        for i in range(report.MAX_ROWS + 7)
+    ]
+    data = report.build_report(replace(result, tools=many), "en", "now")
+    assert f"libhigh{report.MAX_ROWS + 6}".encode() in data
