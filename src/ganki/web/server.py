@@ -20,6 +20,8 @@ import socket
 import subprocess  # noqa: S404  (only to hand the address to the desktop's own opener)
 import sys
 import tempfile
+import threading
+import time
 import urllib.error
 import urllib.request
 import webbrowser
@@ -129,6 +131,27 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def wait_until_listening(port: int, seconds: float = 15.0) -> bool:
+    """Wait until the server accepts connections, so the browser never arrives too early."""
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        try:
+            socket.create_connection((HOST, port), timeout=0.2).close()
+        except OSError:
+            time.sleep(0.03)
+        else:
+            return True
+    return False
+
+
+def open_when_ready(url: str, port: int, saved: Path) -> None:
+    """Open the browser as soon as the server is listening (runs beside the server)."""
+    if wait_until_listening(port) and open_in_browser(url):
+        print("Ganki opened in your browser.")
+    else:
+        print(f"To open it, copy the address from this file (only you can read it):\n  {saved}")
+
+
 def looks_like_ganki(url: str) -> bool:
     """Does a copy of Ganki accept this very address? A valid key is answered with a redirect."""
     opener = urllib.request.build_opener(_NoRedirect)
@@ -188,12 +211,12 @@ def _serve(args: argparse.Namespace) -> int:
     url = f"http://{HOST}:{args.port}/?access={access_key}"
     saved = save_access_url(url, default_cache_dir())
 
-    opened = False if args.no_open else open_in_browser(url)
-    if opened:
-        print(f"Ganki is running on http://{HOST}:{args.port}/ and opened in your browser.")
-    else:
-        print(f"Ganki is running on http://{HOST}:{args.port}/")
+    print(f"Ganki is running on http://{HOST}:{args.port}/")
+    if args.no_open:
         print(f"To open it, copy the address from this file (only you can read it):\n  {saved}")
+    else:
+        # The server must be listening before the browser asks, or the first request fails.
+        threading.Thread(target=open_when_ready, args=(url, args.port, saved), daemon=True).start()
     print("Press Ctrl+C to stop.")
     logging.getLogger("werkzeug").addFilter(HideAccessKey())
     try:

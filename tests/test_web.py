@@ -301,6 +301,21 @@ def test_both_languages_have_the_same_keys():
 # ---------- start-up: the secret key is never printed ----------
 
 
+def run_opening_inline(monkeypatch, listening=True):
+    """Make the browser-opening thread run at once and say whether the port is listening."""
+    from ganki.web import server
+
+    class Inline:
+        def __init__(self, target, args=(), daemon=None):
+            self._target, self._args = target, args
+
+        def start(self):
+            self._target(*self._args)
+
+    monkeypatch.setattr(server.threading, "Thread", Inline)
+    monkeypatch.setattr(server, "wait_until_listening", lambda port, seconds=15.0: listening)
+
+
 def test_access_url_is_saved_privately_and_not_printed(tmp_path, monkeypatch, capsys):
     import stat
 
@@ -315,6 +330,7 @@ def test_access_url_is_saved_privately_and_not_printed(tmp_path, monkeypatch, ca
     monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path / "cache")
     monkeypatch.setattr(server, "create_app", lambda *_args, **_kwargs: FakeApp())
     monkeypatch.setattr(server.webbrowser, "open", lambda url: opened.append(url) or True)
+    run_opening_inline(monkeypatch)
 
     assert server.main(["--port", "8123"]) == 0
 
@@ -337,6 +353,7 @@ def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, mo
     monkeypatch.setattr(server, "create_app", lambda *_args, **_kwargs: FakeApp())
     monkeypatch.setattr(server.webbrowser, "open", lambda url: False)
     monkeypatch.setattr(server.shutil, "which", lambda name: None)  # no desktop opener either
+    run_opening_inline(monkeypatch)
 
     server.main([])
     saved = (tmp_path / server.ACCESS_FILE).read_text().strip()
@@ -714,3 +731,32 @@ def test_any_installed_browser_is_used_when_there_is_no_default(monkeypatch):
     monkeypatch.setattr(server.subprocess, "Popen", lambda cmd, **kw: calls.append(cmd))
     assert server.open_in_browser("http://127.0.0.1:1/") is True
     assert calls == [["/usr/bin/librewolf", "http://127.0.0.1:1/"]]
+
+
+def test_the_browser_is_not_opened_before_the_server_listens(tmp_path, monkeypatch, capsys):
+    from ganki.web import server
+
+    class FakeApp:
+        def run(self, **_kwargs):
+            return None
+
+    opened = []
+    monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path)
+    monkeypatch.setattr(server, "create_app", lambda *_args, **_kwargs: FakeApp())
+    monkeypatch.setattr(server.webbrowser, "open", lambda url: opened.append(url) or True)
+    run_opening_inline(monkeypatch, listening=False)
+    server.main(["--port", "8124"])
+    assert opened == []  # it never answered, so the browser was not sent there
+    assert str(tmp_path / server.ACCESS_FILE) in capsys.readouterr().out
+
+
+def test_wait_until_listening_sees_a_real_listener():
+    import socket
+
+    from ganki.web import server
+
+    with socket.socket() as listener:
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        assert server.wait_until_listening(listener.getsockname()[1], seconds=2)
+    assert not server.wait_until_listening(1, seconds=0.2)
