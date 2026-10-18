@@ -998,6 +998,8 @@ def test_a_row_with_fixed_and_unfixed_notices_counts_each_kind():
     # openssl has one notice with a fix and one without: each label says how many
     assert 'tag ok">Fix available: 1<' in html
     assert 'tag bad">No fix yet: 1<' in html
+    # the summary line no longer suggests that every notice is fixed by the update
+    assert "1 fixed in 2.0 · 1 with no fix yet" in html
 
 
 def test_two_names_for_the_same_program_are_listed_once(monkeypatch, tmp_path):

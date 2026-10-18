@@ -10,7 +10,8 @@ def tool(name, summaries=(), priority="high", total=None):
     )
     return Tool(
         name=name, version="1", size_kib=1, description="", is_program=True, state="VULNERABLE",
-        top_priority=priority, cve_count=total or len(cves), unfixable=len(cves), cves=cves,
+        top_priority=priority, cve_count=total or len(cves),
+        unfixable=total or len(cves), cves=cves,
     )  # fmt: skip
 
 
@@ -200,3 +201,35 @@ def test_the_hints_exist_in_both_languages():
     assert {"older", "community"} <= set(advice.TAILS["es"]) & set(advice.TAILS["en"])
     item = versioned("virtualbox", "7.0.16-1", [ORACLE_OLD], component="multiverse")
     assert "Probablemente no te afectan" in " ".join(explain(item, lang="es"))
+
+
+def _mixed_tool():
+    cves = (
+        CveLine("CVE-1", "medium", "Crafted file causes a buffer overflow", "2", "fix_available"),
+        CveLine("CVE-2", "low", "Denial of service in the parser", None, "no_fix"),
+    )
+    return Tool(
+        name="vim-common", version="1", size_kib=1, description="", is_program=True,
+        state="VULNERABLE", update_to="2", top_priority="medium", cve_count=42, fixable=40,
+        unfixable=2, fixed_in="2", cves=cves,
+    )  # fmt: skip
+
+
+def test_each_label_of_a_mixed_row_talks_only_about_its_own_notices():
+    item = _mixed_tool()
+    fixed = explain(item, "fixed")
+    open_ = explain(item, "no_fix")
+    assert "memory errors" in fixed[0] and "first 1 of 40" in fixed[0]
+    assert "crashes or freezes" in open_[0] and "first 1 of 2" in open_[0]
+    assert "memory errors" not in open_[0]
+    assert "The highest priority is low" in open_[0]  # not the medium of the other notice
+    assert any("update with the button" in p for p in fixed)
+    # updating does not fix the open ones, so that label must not tell the person to update
+    assert not any("update with the button" in p for p in open_)
+
+
+def test_a_row_with_no_fix_but_a_newer_version_does_not_promise_that_it_helps():
+    item = _mixed_tool()
+    item = Tool(**{**item.__dict__, "fixed_in": None, "fixable": 0, "unfixable": 2})
+    text = " ".join(explain(item, "no_fix"))
+    assert "does not fix these" in text and "update with the button" not in text

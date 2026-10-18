@@ -89,6 +89,22 @@ def _rank(priority: str) -> int:
     return PRIORITY_ORDER.get(priority, _UNKNOWN)
 
 
+def _sample(unique: dict[str, Finding]) -> tuple[CveLine, ...]:
+    """The most urgent notices of each kind, so the ones without a fix are never left out."""
+    shown = {"fixed": 0, "open": 0}
+    lines = []
+    for found in unique.values():
+        group = "open" if found.status == "no_fix" else "fixed"
+        if shown[group] < MAX_CVE_LINES:
+            shown[group] += 1
+            lines.append(
+                CveLine(
+                    found.cve_id, found.priority, found.summary, found.fixed_version, found.status
+                )
+            )
+    return tuple(lines)
+
+
 def build_tools(
     packages: list[Package],
     findings: list[Finding],
@@ -139,10 +155,7 @@ def build_tools(
                 section=pkg.section,
                 protected=is_protected(pkg, kernel_release),
                 end_of_support=end_of_support(pkg.name, pkg.version),
-                cves=tuple(
-                    CveLine(f.cve_id, f.priority, f.summary, f.fixed_version, f.status)
-                    for f in list(unique.values())[:MAX_CVE_LINES]
-                ),
+                cves=_sample(unique),
             )
         )
     return sorted(

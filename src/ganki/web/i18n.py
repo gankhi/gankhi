@@ -48,6 +48,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "state_vulnerable": "Vulnerability",
         "cve_summary": "CVE: {n}",
         "fixed_in": "Fixed in {version}",
+        "cve_split": "{fixed} fixed in {version} · {open} with no fix yet",
         "no_fix_yet": "no fix published yet",
         "hint_fixed": "Fixed in {version} with the distribution's patch. Update to resolve it.",
         "tag_fixed": "Fix available",
@@ -486,6 +487,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "state_vulnerable": "Vulnerabilidad",
         "cve_summary": "CVE: {n}",
         "fixed_in": "Corregida en {version}",
+        "cve_split": "{fixed} se corrigen en {version} · {open} sin arreglo",
         "no_fix_yet": "sin arreglo publicado",
         "hint_fixed": (
             "Corregida en {version} con parche de la distribución. Actualizá para resolverla."

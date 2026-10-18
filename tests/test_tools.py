@@ -89,3 +89,14 @@ def test_end_of_support_only_flags_well_known_cases():
     assert end_of_support("nodejs", "20.11.0+dfsg-1")
     assert not end_of_support("nodejs", "22.9.0-1")
     assert not end_of_support("git", "1:2.43.0-1")
+
+
+def test_the_sample_of_notices_keeps_the_ones_without_a_fix():
+    # many urgent notices with a fix must not push the few without one out of the list
+    findings = [finding(f"CVE-{n}", priority="high") for n in range(8)]
+    findings.append(finding("CVE-OPEN", fixed=None, priority="low"))
+    (tool,) = build_tools([pkg("a")], findings, [])
+    shown = [c.cve_id for c in tool.cves]
+    assert "CVE-OPEN" in shown
+    assert sum(1 for c in tool.cves if c.status != "no_fix") == 5
+    assert tool.cve_count == 9

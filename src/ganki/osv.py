@@ -113,8 +113,18 @@ def _summary(record: dict[str, Any]) -> str:
     for line in str(text).splitlines():
         line = line.strip()
         if line:
-            return line[:SUMMARY_CHARS]
+            return _shorten(line)
     return ""
+
+
+def _shorten(line: str) -> str:
+    """Cut a long line at the last whole word and say that it was cut."""
+    if len(line) <= SUMMARY_CHARS:
+        return line
+    cut = line[:SUMMARY_CHARS]
+    if line[SUMMARY_CHARS] != " " and " " in cut:
+        cut = cut.rsplit(" ", 1)[0]
+    return cut.rstrip(" ,;:") + "…"
 
 
 def _priority(record: dict[str, Any]) -> str:
