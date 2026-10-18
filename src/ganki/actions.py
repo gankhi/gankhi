@@ -10,7 +10,7 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 
-from ganki.runner import APT_GET, PACKAGE_NAME, run
+from ganki.runner import APT_GET, run, valid_package
 
 UPDATE, REMOVE, UPDATE_ALL = "update", "remove", "all"
 ACTIONS = (UPDATE, REMOVE, UPDATE_ALL)
@@ -156,7 +156,7 @@ def preview(
     sizes_kib = sizes_kib or {}
     if action not in ACTIONS:
         return Preview(action, package, blocked="blocked_unknown")
-    if action != UPDATE_ALL and (not PACKAGE_NAME.match(package) or package not in installed):
+    if action != UPDATE_ALL and (not valid_package(package) or package not in installed):
         return Preview(action, package, blocked="blocked_unknown")
     if action == REMOVE and package in protected:
         return Preview(action, package, blocked="blocked_protected")
