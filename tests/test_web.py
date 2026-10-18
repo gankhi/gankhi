@@ -702,3 +702,15 @@ def test_the_desktop_opener_is_the_fallback_when_no_browser_is_found(monkeypatch
     assert calls == [["/usr/bin/xdg-open", "http://127.0.0.1:1/"]]
     monkeypatch.setattr(server.shutil, "which", lambda name: None)
     assert server.open_in_browser("http://127.0.0.1:1/") is False
+
+
+def test_any_installed_browser_is_used_when_there_is_no_default(monkeypatch):
+    from ganki.web import server
+
+    calls = []
+    monkeypatch.setattr(server.webbrowser, "open", lambda address: False)
+    installed = {"librewolf": "/usr/bin/librewolf"}  # no xdg-open, no default browser
+    monkeypatch.setattr(server.shutil, "which", lambda name: installed.get(name))
+    monkeypatch.setattr(server.subprocess, "Popen", lambda cmd, **kw: calls.append(cmd))
+    assert server.open_in_browser("http://127.0.0.1:1/") is True
+    assert calls == [["/usr/bin/librewolf", "http://127.0.0.1:1/"]]
