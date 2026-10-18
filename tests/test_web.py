@@ -996,3 +996,18 @@ def test_a_row_with_fixed_and_unfixed_notices_counts_each_kind():
     # openssl has one notice with a fix and one without: each label says how many
     assert 'tag ok">Fix available: 1<' in html
     assert 'tag bad">No fix yet: 1<' in html
+
+
+def test_two_names_for_the_same_program_are_listed_once(monkeypatch, tmp_path):
+    program = tmp_path / "opt" / "chrome"
+    program.parent.mkdir()
+    program.write_text("#!/bin/sh\n")
+    program.chmod(0o755)
+    short, stable = tmp_path / "google-chrome", tmp_path / "google-chrome-stable"
+    short.symlink_to(program)
+    stable.symlink_to(program)
+    apps = tmp_path / "apps"
+    _desktop_entry(apps, "chrome.desktop", "Google Chrome", f"{stable} %U")
+    found = {"google-chrome": str(short)}
+    browsers, _ = _browsers_found(monkeypatch, tmp_path, found, folders=[apps])
+    assert [b.label for b in browsers.installed_browsers()] == ["Google Chrome"]

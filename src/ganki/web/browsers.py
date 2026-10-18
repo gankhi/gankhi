@@ -115,7 +115,12 @@ def _identity(argv: tuple[str, ...]) -> str:
         for word in reversed(argv):
             if "." in word and not word.startswith(("-", "@", "/")):
                 return word.lower()
-    return Path(argv[0]).name.lower()
+    # google-chrome and google-chrome-stable are the same program behind two names
+    try:
+        real = Path(shutil.which(argv[0]) or argv[0]).resolve()
+    except (OSError, RuntimeError):
+        real = Path(argv[0])
+    return str(real).lower()
 
 
 def _from_desktop_entry(path: Path) -> Browser | None:
