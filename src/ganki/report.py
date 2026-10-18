@@ -27,6 +27,25 @@ def _rows(tools: list[Tool]) -> list[Tool]:
     return serious + rest[: max(0, MAX_ROWS - len(serious))]
 
 
+PRIORITY_TONE = {
+    "critical": "bad",
+    "high": "bad",
+    "medium": "warn",
+    "low": "ok",
+    "negligible": "ok",
+}
+
+
+def _tones(tools: list[Tool], columns: int, at: int) -> list[list[str]]:
+    """Colour for the priority cell (column ``at``) of each row; the other cells stay plain."""
+    out = []
+    for tool in tools:
+        row = [""] * columns
+        row[at] = PRIORITY_TONE.get(tool.top_priority, "")
+        out.append(row)
+    return out
+
+
 def _action(tool: Tool, lang: str) -> str:
     say = lambda key, **kw: i18n.translate(lang, key, **kw)  # noqa: E731
     if tool.end_of_support:
@@ -46,9 +65,10 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     pdf.rule()
 
     pdf.heading(say("report_summary"))
+    pdf.paragraph(say("report_legend"), size=FONT_SIZE - 1)
     for segment in narration.build(result, lang):
         if not segment.framing:
-            pdf.paragraph(segment.text)
+            pdf.paragraph(segment.text, tone=segment.tone)
 
     system = result.system
     if system is not None:
@@ -91,7 +111,8 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
         pdf.table(
             [*headers, say("report_action")],
             [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(vulnerable)],
-            [0.24, 0.16, 0.12, 0.48],
+            [0.23, 0.15, 0.18, 0.44],
+            _tones(_rows(vulnerable), 4, 2),
         )
         if len(vulnerable) > len(_rows(vulnerable)):
             pdf.paragraph(say("report_more", n=len(vulnerable) - len(_rows(vulnerable))))
@@ -121,7 +142,8 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
                 say("report_action"),
             ],
             [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(libraries)],
-            [0.24, 0.16, 0.12, 0.48],
+            [0.23, 0.15, 0.18, 0.44],
+            _tones(_rows(libraries), 4, 2),
         )
         if len(libraries) > len(_rows(libraries)):
             pdf.paragraph(say("report_more", n=len(libraries) - len(_rows(libraries))))

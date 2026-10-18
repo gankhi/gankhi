@@ -246,6 +246,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_ram": "{percent}% in use - {used} of {total}",
         "report_security": "Programs with security problems",
         "report_outdated": "Programs out of date",
+        "report_legend": (
+            "Colours: red = deal with it first, yellow = worth doing soon, green = no hurry."
+        ),
         "report_libs": "Libraries and system packages with security notices",
         "report_package": "Package",
         "report_libs_outdated": "{n} more libraries and system packages have updates waiting.",
@@ -593,6 +596,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_ram": "{percent}% en uso - {used} de {total}",
         "report_security": "Programas con problemas de seguridad",
         "report_outdated": "Programas desactualizados",
+        "report_legend": (
+            "Colores: rojo = atendelo primero, amarillo = conviene hacerlo pronto, "
+            "verde = sin apuro."
+        ),
         "report_libs": "Librerías y paquetes del sistema con avisos de seguridad",
         "report_package": "Paquete",
         "report_libs_outdated": (
