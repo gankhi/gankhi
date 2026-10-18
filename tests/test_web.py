@@ -651,3 +651,10 @@ def test_times_over_a_minute_are_written_in_minutes_and_dates_in_local_form():
     text = feed_date_text("Sat, 17 Oct 2026 07:57:02 GMT", "es")
     assert "oct 2026" in text and "GMT" not in text
     assert feed_date_text("garbage", "es") == "garbage"
+
+
+def test_assistant_has_a_close_cross_and_the_search_has_a_magnifier():
+    client = login(build().test_client())
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert 'id="assistant-close"' in html and 'id="assistant-open"' in html
+    assert 'class="lupa"' in html
