@@ -159,3 +159,14 @@ def test_nothing_runs_without_the_password_window_tool(tmp_path):
     job = executor.ActionJob(lambda *_: 0, tmp_path, is_available=lambda: False)
     assert not job.start("remove", "vlc")
     assert job.state == executor.IDLE
+
+
+def test_only_the_newest_snapshots_are_kept(tmp_path):
+    for day in range(1, 26):
+        (tmp_path / f"programas-202610{day:02d}-120000.txt").write_text("x")
+    (tmp_path / "notas-mias.txt").write_text("mine")
+    executor.prune_snapshots(tmp_path)
+    kept = sorted(p.name for p in tmp_path.glob("programas-*.txt"))
+    assert len(kept) == executor.KEEP_SNAPSHOTS
+    assert kept[0] == "programas-20261006-120000.txt"  # the 5 oldest are gone
+    assert (tmp_path / "notas-mias.txt").exists()

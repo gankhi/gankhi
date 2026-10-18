@@ -11,6 +11,7 @@ import io
 import json
 import tarfile
 
+from ganki import osv
 from ganki.collectors.apt import Package
 from ganki.osv import MAX_RECORD_BYTES, find_findings, is_snap_stub, load_advisories, parse_record
 
@@ -271,3 +272,56 @@ def test_is_snap_stub_only_matches_the_placeholder_pattern():
     assert is_snap_stub("1:1snap1-0ubuntu2")
     assert not is_snap_stub("128.0-1ubuntu1")
     assert not is_snap_stub("2.76+ubuntu24.04")
+
+
+# ---------- saved index ----------
+
+
+def small_archive(tmp_path):
+    archive = tmp_path / "osv-all.tar.xz"
+    record = make_record(
+        affected=[affected_entry("openssl", fixed="3.0.13-1", versions=["3.0.1-1"])]
+    )
+    make_archive(archive, [("osv/UBUNTU-CVE-2025-1.json", json.dumps(record).encode())])
+    return archive
+
+
+def test_second_load_reuses_the_saved_index(tmp_path, monkeypatch):
+    archive = small_archive(tmp_path)
+    first = load_advisories(archive, ECOSYSTEM)
+
+    def forbidden(*_args):
+        raise AssertionError("the archive should not be read again")
+
+    monkeypatch.setattr(osv, "_parse_archive", forbidden)
+    assert load_advisories(archive, ECOSYSTEM) == first
+    saved = list(tmp_path.glob("osv-index-*.json"))
+    assert len(saved) == 1
+    assert saved[0].stat().st_mode & 0o777 == 0o600
+
+
+def test_a_new_archive_rebuilds_the_index(tmp_path):
+    archive = small_archive(tmp_path)
+    assert set(load_advisories(archive, ECOSYSTEM)) == {"openssl"}
+    other = make_record(affected=[affected_entry("curl", fixed="9-1")])
+    make_archive(archive, [("osv/UBUNTU-CVE-2025-2.json", json.dumps(other).encode())])
+    assert set(load_advisories(archive, ECOSYSTEM)) == {"curl"}
+
+
+def test_a_damaged_index_is_ignored_and_rebuilt(tmp_path):
+    archive = small_archive(tmp_path)
+    load_advisories(archive, ECOSYSTEM)
+    for index in tmp_path.glob("osv-index-*.json"):
+        index.write_text('{"stamp": "x", "advisories": 5}')
+    assert set(load_advisories(archive, ECOSYSTEM)) == {"openssl"}
+    for index in tmp_path.glob("osv-index-*.json"):
+        index.write_text("not json at all")
+    assert set(load_advisories(archive, ECOSYSTEM)) == {"openssl"}
+
+
+def test_the_saved_index_gives_the_same_findings(tmp_path):
+    archive = small_archive(tmp_path)
+    packages = [pkg("openssl", "3.0.1-1")]
+    fresh = find_findings(packages, load_advisories(archive, ECOSYSTEM))
+    saved = find_findings(packages, load_advisories(archive, ECOSYSTEM))
+    assert fresh == saved and fresh
