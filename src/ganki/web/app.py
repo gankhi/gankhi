@@ -76,7 +76,7 @@ STEP_WEIGHTS = {
     "external": 4,
     "analysis": 10,
 }
-FILTERS = ("all", "outdated", "vulnerable")
+FILTERS = ("all", "ok", "outdated", "vulnerable")
 MAX_QUERY_CHARS = 100
 CSP = (
     "default-src 'none'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self'; "
@@ -217,7 +217,7 @@ def create_app(
         chosen = chosen if chosen in FILTERS else "all"
         query = request.args.get("q", "")[:MAX_QUERY_CHARS]
         universe = [t for t in result.tools if t.is_program or show_all]
-        wanted = {"outdated": OUTDATED, "vulnerable": VULNERABLE}.get(chosen)
+        wanted = {"ok": OK, "outdated": OUTDATED, "vulnerable": VULNERABLE}.get(chosen)
         text = query.strip().lower()
         shown = [
             t
