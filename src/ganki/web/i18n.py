@@ -350,7 +350,6 @@ TEXTS: dict[str, dict[str, str]] = {
         "assistant_listen": "Turn on voice",
         "assistant_play": "Explain my system",
         "assistant_pause": "Stop",
-        "assistant_hover": "Explain when I point at a section",
         "assistant_no_voice": (
             "There is no local voice yet. You can still read the captions. For a natural "
             "voice, run scripts/install-voice.sh"
@@ -770,7 +769,6 @@ TEXTS: dict[str, dict[str, str]] = {
         "assistant_listen": "Activar voz",
         "assistant_play": "Explicar mi sistema",
         "assistant_pause": "Detener",
-        "assistant_hover": "Explicar al pasar el mouse por una sección",
         "assistant_no_voice": (
             "Todavía no hay una voz local. Igual podés leer los subtítulos. Para una voz "
             "natural, ejecutá scripts/install-voice.sh"

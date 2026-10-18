@@ -658,3 +658,9 @@ def test_assistant_has_a_close_cross_and_the_search_has_a_magnifier():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert 'id="assistant-close"' in html and 'id="assistant-open"' in html
     assert 'type="submit" class="lupa"' in html  # the magnifier really searches
+
+
+def test_the_hover_option_is_gone_from_the_assistant():
+    client = login(build().test_client())
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert "voice-hover" not in html and 'id="voice-on"' in html
