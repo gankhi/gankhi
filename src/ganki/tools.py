@@ -82,6 +82,8 @@ class Tool:
     component: str = "main"  # main, restricted, universe or multiverse
     installed_version: str = ""  # the full version, to compare with what a notice says
     section: str = ""  # the package's own category in the distribution (net, mail, graphics...)
+    update_security: bool = False  # the newer version comes from Ubuntu's security channel
+    update_origin: str = ""  # where the newer version comes from, as apt reports it
 
 
 def _rank(priority: str) -> int:
@@ -129,12 +131,13 @@ def build_tools(
     for finding in findings:
         for name in finding.packages:
             by_name[name].append(finding)
-    pending = {u.name: u.candidate_version for u in updates}
+    pending = {u.name: u for u in updates}
 
     tools = []
     for pkg in packages:
         found = by_name.get(pkg.name, [])
-        candidate = pending.get(pkg.name.split(":")[0])
+        update = pending.get(pkg.name.split(":")[0])
+        candidate = update.candidate_version if update else None
         if found:
             state = VULNERABLE
         elif candidate:
@@ -158,6 +161,8 @@ def build_tools(
                 is_program=pkg.is_program,
                 state=state,
                 update_to=candidate,
+                update_security=bool(update and update.is_security),
+                update_origin=update.origin if update else "",
                 cve_count=len(unique),
                 top_priority=min((f.priority for f in unique.values()), key=_rank, default=""),
                 fixable=sum(1 for f in unique.values() if f.status != "no_fix"),

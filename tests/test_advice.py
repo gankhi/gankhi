@@ -233,3 +233,35 @@ def test_a_row_with_no_fix_but_a_newer_version_does_not_promise_that_it_helps():
     item = Tool(**{**item.__dict__, "fixed_in": None, "fixable": 0, "unfixable": 2})
     text = " ".join(explain(item, "no_fix"))
     assert "does not fix these" in text and "update with the button" not in text
+
+
+def _outdated(name, origin, security=False, description=""):
+    return Tool(
+        name=name, version="1", size_kib=1, description=description, is_program=True,
+        state="OUTDATED", update_to="2", update_origin=origin, update_security=security,
+    )  # fmt: skip
+
+
+def test_an_update_from_the_security_channel_is_important():
+    info = advice.update_info(_outdated("bash", "noble-updates,noble-security", True), "en")
+    assert info["kind"] == "imp" and info["tag"] == "Important update"
+    assert "security" in info["hint"]
+
+
+def test_a_browser_update_is_important_and_says_when_ganki_has_no_notices_for_it():
+    brave = _outdated("brave-browser", "stable", description="Web browser from Brave")
+    info = advice.update_info(brave, "en")
+    assert info["kind"] == "imp" and "exposed" in info["hint"]
+    assert any("does not come from Ubuntu" in p for p in info["more"])  # honest about the gap
+    ubuntu = _outdated("firefox-esr", "noble-updates", description="Web browser")
+    assert not any(
+        "does not come from Ubuntu" in p for p in advice.update_info(ubuntu, "en")["more"]
+    )
+
+
+def test_any_other_update_is_a_plain_update():
+    info = advice.update_info(_outdated("vim", "noble-updates"), "es")
+    assert info["kind"] == "info" and info["tag"] == "Actualización"
+    assert "no es urgente" in " ".join(info["more"])
+    outside = advice.update_info(_outdated("some-tool", "stable"), "es")
+    assert any("no viene de Ubuntu" in p for p in outside["more"])

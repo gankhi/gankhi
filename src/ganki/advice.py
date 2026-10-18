@@ -719,6 +719,95 @@ def paragraphs(
     return result
 
 
+UPDATE_TEXT = {
+    "es": {
+        "tag_important": "Actualización importante",
+        "tag_normal": "Actualización",
+        "hint_security": "Ubuntu la publicó como corrección de seguridad.",
+        "hint_exposed": "Es un programa muy expuesto a internet.",
+        "hint_normal": "Mejoras o correcciones comunes; no figura como de seguridad.",
+        "security": (
+            "Qué tener en cuenta: esta actualización llega por el canal de seguridad de Ubuntu, "
+            "que corrige fallos que pueden aprovecharse. Instalala pronto. Algunas "
+            "actualizaciones recién se aplican al cerrar y volver a abrir el programa, o al "
+            "reiniciar."
+        ),
+        "exposed": (
+            "Qué tener en cuenta: un navegador abre contenido de cualquier sitio, así que sus "
+            "fallos se aprovechan con más facilidad que los de otros programas. Por eso conviene "
+            "instalar sus actualizaciones pronto, aunque no sepamos qué corrige cada una."
+        ),
+        "normal": (
+            "Qué tener en cuenta: no llega por el canal de seguridad y el programa no figura "
+            "con avisos. Instalala cuando te quede cómodo; no es urgente."
+        ),
+        "outside": (
+            "Este programa no viene de Ubuntu: Ganki no tiene una lista de avisos para él, así "
+            "que no puede decirte qué corrige ni asegurar que no tenga fallos conocidos."
+        ),
+        "inside": "Ubuntu no la marca como corrección de seguridad.",
+    },
+    "en": {
+        "tag_important": "Important update",
+        "tag_normal": "Update",
+        "hint_security": "Ubuntu published it as a security fix.",
+        "hint_exposed": "It is a program very exposed to the internet.",
+        "hint_normal": "Common improvements or fixes; it is not listed as a security update.",
+        "security": (
+            "What to keep in mind: this update comes through Ubuntu's security channel, which "
+            "fixes flaws that can be exploited. Install it soon. Some updates only apply once "
+            "you close and reopen the program, or restart."
+        ),
+        "exposed": (
+            "What to keep in mind: a browser opens content from any site, so its flaws are "
+            "easier to exploit than those of other programs. That is why its updates are worth "
+            "installing soon, even when we cannot tell what each one fixes."
+        ),
+        "normal": (
+            "What to keep in mind: it does not come through the security channel and the "
+            "program has no notices. Install it when convenient; it is not urgent."
+        ),
+        "outside": (
+            "This program does not come from Ubuntu: Ganki has no list of notices for it, so it "
+            "cannot tell you what this fixes or promise that it has no known flaws."
+        ),
+        "inside": "Ubuntu does not mark it as a security fix.",
+    },
+}
+
+_UBUNTU_CHANNELS = ("-security", "-updates", "-backports")
+
+
+def update_info(tool: Any, lang: str) -> dict[str, Any]:
+    """How important a pending update is, with the reason, for a program with no notices.
+
+    Important when Ubuntu ships it through its security channel, or when the program is a
+    browser (the most exposed kind). Everything else is a plain update.
+    """
+    texts = UPDATE_TEXT[lang if lang in UPDATE_TEXT else "en"]
+    origin = getattr(tool, "update_origin", "") or ""
+    from_ubuntu = any(channel in origin for channel in _UBUNTU_CHANNELS)
+    exposed = (
+        profile_for(
+            getattr(tool, "name", ""),
+            "",
+            getattr(tool, "description", ""),
+            getattr(tool, "section", ""),
+        )
+        == "browser"
+    )
+    if getattr(tool, "update_security", False):
+        kind, tag, hint, body = "imp", "tag_important", "hint_security", "security"
+    elif exposed:
+        kind, tag, hint, body = "imp", "tag_important", "hint_exposed", "exposed"
+    else:
+        kind, tag, hint, body = "info", "tag_normal", "hint_normal", "normal"
+    more = [texts[body], texts["inside"] if from_ubuntu else texts["outside"]]
+    if kind == "imp" and body == "security":
+        more = [texts[body]]  # it came from Ubuntu: nothing more to say about the source
+    return {"kind": kind, "tag": texts[tag], "hint": texts[hint], "more": more}
+
+
 SANDBOXED_TEXT = {
     "es": {
         "snap": (

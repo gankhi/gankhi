@@ -169,6 +169,9 @@
             {% if tool.end_of_support %}{{ note('old', t('tag_eol'), t('hint_eol'), advise(tool, 'eol', 'more_eol')) }}{% endif %}
           </div>
           {% endif %}
+          {% if tool.state == 'outdated' and tool.update_to %}{% set ui = update_info(tool) %}
+          <div class="notes">{{ note(ui.kind, ui.tag, ui.hint, ui.more) }}</div>
+          {% endif %}
           {% if tool.cves %}
           <details><summary>{{ t('cve_summary', n=tool.cve_count) }}{% if tool.fixed_in and tool.unfixable %} · {{ t('cve_split', fixed=tool.fixable, version=tool.fixed_in, open=tool.unfixable) }}{% elif tool.fixed_in %} · {{ t('fixed_in', version=tool.fixed_in) }}{% elif tool.unfixable %} · {{ t('no_fix_yet') }}{% endif %}</summary>
             <ul class="cves">
