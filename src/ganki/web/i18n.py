@@ -255,6 +255,15 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "report_libs": "Libraries and system packages with security notices",
         "report_package": "Package",
+        "report_fixable": "Fixed by updating",
+        "report_nofix": "No fix published yet",
+        "report_minor": (
+            "More notices, low or negligible priority and no fix published yet: {n}. "
+            "They need nothing from you for now."
+        ),
+        "report_kernel_name": "Linux kernel",
+        "report_components": "{n} components",
+        "report_versions": "several",
         "report_libs_outdated": "{n} more libraries and system packages have updates waiting.",
         "report_program": "Program",
         "report_version": "Version",
@@ -610,6 +619,15 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "report_libs": "Librerías y paquetes del sistema con avisos de seguridad",
         "report_package": "Paquete",
+        "report_fixable": "Se arreglan actualizando",
+        "report_nofix": "Sin arreglo publicado todavía",
+        "report_minor": (
+            "Avisos más, de prioridad baja o despreciable y sin arreglo publicado: {n}. "
+            "Por ahora no necesitan nada de tu parte."
+        ),
+        "report_kernel_name": "Kernel de Linux",
+        "report_components": "{n} componentes",
+        "report_versions": "varias",
         "report_libs_outdated": (
             "Hay {n} librerías y paquetes del sistema más con actualizaciones esperando."
         ),

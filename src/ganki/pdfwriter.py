@@ -566,9 +566,10 @@ class Pdf:
     def space(self, points: float) -> None:
         self._y -= points
 
-    def heading(self, text: str, size: float = 15.0) -> None:
+    def heading(self, text: str, size: float = 15.0, keep_with: float = 0.0) -> None:
+        """A heading; ``keep_with`` is the room that must follow it on the same page."""
         lines = wrap(text, size, self.width, bold=True)
-        self._room(size * LEADING * len(lines) + 14)
+        self._room(size * LEADING * len(lines) + 14 + keep_with)
         self._y -= 10
         for line in lines:
             self._line(MARGIN, line, size, bold=True)
