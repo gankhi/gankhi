@@ -10,18 +10,12 @@
   var btnOn = document.getElementById("voice-on");
   var btnPlay = document.getElementById("voice-play");
   var btnStop = document.getElementById("voice-stop");
-  var hoverBox = document.getElementById("voice-hover");
 
   var enabled = false;   // the person pressed "turn on voice" (browsers require this gesture)
   var token = 0;         // changes whenever speech is cancelled, so old callbacks do nothing
   var cache = null;      // last /api/narration answer
   var hoverTimer = null;
   var highlighted = null;
-
-  try { hoverBox.checked = localStorage.getItem("ganki_hover") !== "0"; } catch (e) { /* ignore */ }
-  hoverBox.addEventListener("change", function () {
-    try { localStorage.setItem("ganki_hover", hoverBox.checked ? "1" : "0"); } catch (e) { /* ignore */ }
-  });
 
   function pickVoice(lang) {
     var voices = synth ? synth.getVoices() : [];
@@ -185,7 +179,7 @@
 
   // Explain a section when the mouse (or keyboard focus) is on it.
   function explain(el) {
-    if (!hoverBox.checked || !btnStop.hidden) { return; }
+    if (!btnStop.hidden) { return; }
     clearTimeout(hoverTimer);
     hoverTimer = setTimeout(function () {
       var section = el.dataset.explain;
