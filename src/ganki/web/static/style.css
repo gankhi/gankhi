@@ -105,7 +105,10 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .search { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .search label.small { width: 100%; }
 .searchbox { position: relative; display: inline-flex; align-items: center; }
-.searchbox .lupa { position: absolute; left: 10px; color: var(--muted); pointer-events: none; }
+.searchbox .lupa { position: absolute; left: 4px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 0;
+  color: var(--muted); cursor: pointer; border-radius: 8px; }
+.searchbox .lupa:hover, .searchbox .lupa:focus-visible { color: var(--text); }
 .search input[type="search"] { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px;
   padding: 8px 12px 8px 34px; font: inherit; min-width: 240px; }
 .check { color: var(--muted); display: flex; gap: 6px; align-items: center; font-size: .88rem; }
