@@ -56,7 +56,7 @@ Each start creates a new secret key that is kept out of the terminal: the browse
 
 ## Natural voice (optional)
 
-Ganki can explain your system out loud. Browsers on Linux rarely have a local voice, so the optional `scripts/install-voice.sh` adds Piper and an Argentine Spanish voice inside `~/.local/share/ganki/voice`. It downloads about 110 MB once; after that the voice runs on your computer and nothing is sent anywhere. Without it you still get captions. The page allows audio only from Ganki itself (`media-src 'self'`).
+Ganki can explain your system out loud. Browsers on Linux rarely have a local voice, so the optional `scripts/install-voice.sh` adds Piper and an Argentine Spanish voice and an English one inside `~/.local/share/ganki/voice`. It downloads about 170 MB once; after that the voice runs on your computer and nothing is sent anywhere. Without it you still get captions. The page allows audio only from Ganki itself (`media-src 'self'`).
 
 ## Requirements
 
