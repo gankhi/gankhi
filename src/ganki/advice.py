@@ -556,7 +556,15 @@ def paragraphs(
     if kind == "malware":
         result.append(texts["malware"])
     elif profile is None:
-        result.append(generic)
+        # A program Ganki does not know by name: still use what its own notices say.
+        reached = conditions([c.summary for c in cves], lang) if kind in ("no_fix", "eol") else []
+        if reached:
+            needs = "; ".join(need for need, _action in reached)
+            actions = "; ".join(action for _need, action in reached)
+            result.append(texts["how"].format(needs=needs, todo=actions))
+            result.append(texts["eol_short" if kind == "eol" else "recheck"])
+        else:
+            result.append(generic)
     else:
         risk, todo = PROFILE_TEXT[profile][lang]
         result.append(risk)

@@ -107,3 +107,10 @@ def test_the_update_line_depends_on_the_data():
 def test_a_fixed_notice_keeps_the_update_advice_and_skips_the_conditions():
     text = " ".join(explain(tool("virtualbox", [ORACLE]), "fixed"))
     assert "How it can be used" not in text and "Press Update" in text
+
+
+def test_a_program_unknown_to_ganki_still_gets_precautions_from_its_own_notices():
+    text = " ".join(explain(tool("some-new-program", [ORACLE])))
+    assert "access to an account on your computer" in text and "GENERIC" not in text
+    plain = explain(tool("some-new-program", ["Something happens"]))
+    assert plain[-1] == "GENERIC"  # nothing to go on: the general advice
