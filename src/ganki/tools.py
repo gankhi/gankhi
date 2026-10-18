@@ -97,29 +97,34 @@ def _rank(priority: str) -> int:
 def _tier(tool: Tool) -> int:
     """What the person can do about it, so the list starts with what matters most.
 
-    0: urgent (see ``_is_urgent``). 1: updating fixes all of its notices. 2: updating fixes
-    some, others stay open. 3: only outdated. 4: it has notices that no update fixes (no patch
-    yet, or the project is no longer supported). 5: up to date.
+    0: urgent according to Ubuntu (see ``_is_urgent``). 1: an outdated browser, which Ubuntu
+    publishes no notices for but is the most exposed kind of program. 2: updating fixes all of
+    its notices. 3: updating fixes some, others stay open. 4: only outdated. 5: it has notices
+    that no update fixes (no patch yet, or the project is no longer supported). 6: up to date.
     """
     if tool.urgent:
         return 0
     if tool.state == VULNERABLE:
         if tool.fixed_in and tool.update_to:
-            return 2 if tool.unfixable else 1
-        return 4
-    return 3 if tool.state == OUTDATED else 5
+            return 3 if tool.unfixable else 2
+        return 5
+    if tool.state == OUTDATED:
+        return 1 if _is_browser(tool) else 4
+    return 6
+
+
+def _is_browser(tool: Tool) -> bool:
+    return profile_for(tool.name, "", tool.description, tool.section) == "browser"
 
 
 def _is_urgent(tool: Tool) -> bool:
-    """An update is on offer and it fixes serious notices, comes from Ubuntu's security
-    channel, or is for a browser (the most exposed kind of program)."""
+    """An update is on offer and Ubuntu says it matters: it fixes critical or high notices, or
+    it comes from Ubuntu's security channel."""
     if not tool.update_to:
         return False
     if tool.state == VULNERABLE:
         return bool(tool.fixed_in) and tool.fixable_priority in URGENT_PRIORITIES
-    if tool.update_security:
-        return True
-    return profile_for(tool.name, "", tool.description, tool.section) == "browser"
+    return tool.update_security
 
 
 def _sample(unique: dict[str, Finding]) -> tuple[CveLine, ...]:

@@ -171,3 +171,17 @@ def test_urgent_updates_come_first_ordered_by_how_serious_they_are():
     assert by_name["critical-one"].urgent and by_name["sec"].urgent
     # fixes only low notices, has only an open one, or is a plain update: not urgent
     assert not any(by_name[n].urgent for n in ("calm", "only-open-high", "plain"))
+
+
+def test_browsers_come_after_what_ubuntu_marks_as_urgent_and_before_the_rest():
+    findings = [
+        finding("CVE-1", "medium-fix", fixed="2.0", priority="medium"),
+        finding("CVE-2", "critical-fix", fixed="2.0", priority="critical"),
+    ]
+    updates = [update("medium-fix"), update("critical-fix"), update("brave-browser")]
+    browser = Package(
+        "brave-browser", "1.0", "amd64", 10, "The web browser from Brave", has_menu_entry=True
+    )
+    tools = build_tools([pkg("medium-fix"), pkg("critical-fix"), browser], findings, updates)
+    assert [t.name for t in tools] == ["critical-fix", "brave-browser", "medium-fix"]
+    assert not next(t for t in tools if t.name == "brave-browser").urgent
