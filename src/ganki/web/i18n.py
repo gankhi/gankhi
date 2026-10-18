@@ -50,7 +50,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "fixed_in": "Fixed in {version}",
         "no_fix_yet": "no fix published yet",
         "hint_fixed": "Fixed in {version} with the distribution's patch. Update to resolve it.",
-        "hint_no_fix": "No fix yet: use it with care and do not open files from unknown sources.",
+        "tag_fixed": "Fix available",
+        "tag_no_fix": "No fix yet",
+        "tag_eol": "No support",
+        "tag_malware": "Malicious",
+        "hint_no_fix": "Use it with care and do not open files from unknown sources.",
         "hint_some_no_fix": "{n} more notices have no fix yet.",
         "hint_eol": (
             "Its authors no longer publish fixes for this version. Ubuntu may still provide "
@@ -451,9 +455,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "hint_fixed": (
             "Corregida en {version} con parche de la distribución. Actualizá para resolverla."
         ),
-        "hint_no_fix": (
-            "Sin arreglo todavía: usalo con cuidado y no abras archivos de origen dudoso."
-        ),
+        "tag_fixed": "Con arreglo",
+        "tag_no_fix": "Sin arreglo",
+        "tag_eol": "Sin soporte",
+        "tag_malware": "Malicioso",
+        "hint_no_fix": ("Usalo con cuidado y no abras archivos de origen dudoso."),
         "hint_some_no_fix": "{n} avisos más todavía no tienen arreglo.",
         "hint_eol": (
             "Sus autores ya no publican arreglos para esta versión. Ubuntu todavía puede "
