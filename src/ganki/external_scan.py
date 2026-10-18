@@ -39,7 +39,7 @@ def check_ecosystem(
     cached = None if status.downloaded else osv_external.load_cached(kept, key)
     if cached is not None:
         return cached
-    findings = osv_external.find_external(status.path, ecosystem, packages, progress)
+    findings = osv_external.find_external_isolated(status.path, ecosystem, packages, progress)
     osv_external.save_cached(kept, key, findings)
     return findings
 

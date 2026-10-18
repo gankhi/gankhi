@@ -295,3 +295,25 @@ def test_the_page_lists_the_affected_packages_and_a_failed_check():
     assert "Python and npm packages" in page
     assert "calm" not in page.split('data-explain="external"')[1].split("</section>")[0]
     assert "npm" in page
+
+
+def test_the_quick_look_finds_names_however_the_json_is_spaced(tmp_path):
+    archive = tmp_path / "x.zip"
+    with zipfile.ZipFile(archive, "w") as bundle:
+        text = json.dumps(
+            {"id": "G", "affected": [affected("Foo_Bar", events=[{"introduced": "0"}])]}
+        )
+        bundle.writestr("a.json", text.replace('"name": ', '"name":'))
+    found = osv_external.find_external(
+        archive, "PyPI", [ExternalPackage("PyPI", "foo-bar", "1", "pip")]
+    )
+    assert len(found) == 1
+
+
+def test_reading_in_another_process_gives_the_same_answer(tmp_path):
+    archive = tmp_path / "x.zip"
+    make_archive(archive, [{"id": "G", "affected": [affected("a", events=[{"introduced": "0"}])]}])
+    packages = [ExternalPackage("PyPI", "a", "1", "pip")]
+    assert osv_external.find_external_isolated(archive, "PyPI", packages) == (
+        osv_external.find_external(archive, "PyPI", packages)
+    )
