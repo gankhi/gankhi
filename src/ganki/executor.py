@@ -1,7 +1,7 @@
 """Run an update or a removal for real, after the person confirmed it on the preview page.
 
 Order of events, always the same:
-1. save the list of installed programs (so the change can be undone),
+1. save the list of installed programs (a temporary record of what was there),
 2. ask the system for permission (its own password window),
 3. run the one allowlisted ``apt-get`` command and keep its output for the screen.
 
@@ -37,7 +37,7 @@ _fallback_dir: Path | None = None
 
 
 def snapshot_dir() -> Path:
-    """Where the copy for undoing is kept: a place the system empties by itself.
+    """Where the temporary copy of the program list is kept: a place the system empties by itself.
 
     ``$XDG_RUNTIME_DIR`` (``/run/user/<id>``) is memory-backed and private to the person; it is
     emptied when the session ends or the computer is turned off. If it does not exist, a private
