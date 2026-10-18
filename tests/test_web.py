@@ -657,4 +657,4 @@ def test_assistant_has_a_close_cross_and_the_search_has_a_magnifier():
     client = login(build().test_client())
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert 'id="assistant-close"' in html and 'id="assistant-open"' in html
-    assert 'class="lupa"' in html
+    assert 'type="submit" class="lupa"' in html  # the magnifier really searches
