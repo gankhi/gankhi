@@ -20,6 +20,13 @@ def _priority(tool: Tool, lang: str) -> str:
     return i18n.translate(lang, tool.top_priority) if tool.top_priority else "-"
 
 
+def _rows(tools: list[Tool]) -> list[Tool]:
+    """All critical or high notices, then the rest up to MAX_ROWS (most urgent come first)."""
+    serious = [t for t in tools if t.top_priority in narration.SERIOUS]
+    rest = [t for t in tools if t.top_priority not in narration.SERIOUS]
+    return serious + rest[: max(0, MAX_ROWS - len(serious))]
+
+
 def _action(tool: Tool, lang: str) -> str:
     say = lambda key, **kw: i18n.translate(lang, key, **kw)  # noqa: E731
     if tool.end_of_support:
@@ -83,14 +90,11 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     if vulnerable:
         pdf.table(
             [*headers, say("report_action")],
-            [
-                [t.name, t.version, _priority(t, lang), _action(t, lang)]
-                for t in vulnerable[:MAX_ROWS]
-            ],
+            [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(vulnerable)],
             [0.24, 0.16, 0.12, 0.48],
         )
-        if len(vulnerable) > MAX_ROWS:
-            pdf.paragraph(say("report_more", n=len(vulnerable) - MAX_ROWS))
+        if len(vulnerable) > len(_rows(vulnerable)):
+            pdf.paragraph(say("report_more", n=len(vulnerable) - len(_rows(vulnerable))))
     else:
         pdf.paragraph(say("report_none"))
 
@@ -106,7 +110,7 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     else:
         pdf.paragraph(say("report_none"))
 
-    libraries = [t for t in result.tools if not t.is_program and t.state == "vulnerable"]
+    libraries, old_kernels = narration.vulnerable_libraries(result)
     pdf.heading(say("report_libs"))
     if libraries:
         pdf.table(
@@ -116,16 +120,15 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
                 say("report_priority"),
                 say("report_action"),
             ],
-            [
-                [t.name, t.version, _priority(t, lang), _action(t, lang)]
-                for t in libraries[:MAX_ROWS]
-            ],
+            [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(libraries)],
             [0.24, 0.16, 0.12, 0.48],
         )
-        if len(libraries) > MAX_ROWS:
-            pdf.paragraph(say("report_more", n=len(libraries) - MAX_ROWS))
+        if len(libraries) > len(_rows(libraries)):
+            pdf.paragraph(say("report_more", n=len(libraries) - len(_rows(libraries))))
     else:
         pdf.paragraph(say("report_none"))
+    if old_kernels:
+        pdf.paragraph(say("say_tools_old_kernels", n=len(old_kernels)))
     waiting = sum(1 for t in result.tools if not t.is_program and t.state == "outdated")
     if waiting:
         pdf.paragraph(say("report_libs_outdated", n=waiting))
