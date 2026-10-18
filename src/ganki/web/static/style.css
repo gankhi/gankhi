@@ -31,6 +31,7 @@
   --mono: "JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace;
   font-family: var(--sans);
 }
+html { font-size: 17px; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.45; }
 main { max-width: min(2200px, 100%); margin: 0 auto; padding: 18px 16px 220px; display: flex; flex-direction: column; gap: 16px; }
@@ -112,7 +113,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th { text-align: left; font: 500 .72rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; }
-td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); white-space: nowrap; font-size: .92rem; vertical-align: top; }
+td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); white-space: nowrap; font-size: 1rem; vertical-align: top; }
 .num { text-align: right; }
 td.wrap { white-space: normal; min-width: 280px; max-width: 560px; }
 td .small { display: inline-block; margin-top: 1px; }
@@ -152,7 +153,7 @@ tbody.more, .downloads li.more { display: none; }
 .bottom { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
 .bottom h2 + p, .bottom .card > h2:not(:first-child) { margin-top: 12px; }
 .downloads { list-style: none; padding: 0; margin: 4px 0; }
-.downloads li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 5px 0; font-size: .92rem; }
+.downloads li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 5px 0; font-size: 1rem; }
 .downloads meter { grid-column: 1 / -1; width: 100%; height: 8px; }
 meter { -webkit-appearance: none; appearance: none; border: 0; background: var(--track); border-radius: 6px; }
 meter::-webkit-meter-bar { background: var(--track); border: 0; border-radius: 6px; height: 8px; }
@@ -174,7 +175,7 @@ meter::-moz-meter-bar { background: var(--blue); border-radius: 6px; }
 td.actions { display: flex; gap: 8px; flex-wrap: wrap; border-top: 0; }
 tr:has(td.actions) td { border-top: 1px solid var(--line); }
 .preview h3 { margin: 14px 0 6px; }
-.names { list-style: none; padding: 0; margin: 0; columns: 3 220px; font-size: .85rem; }
+.names { list-style: none; padding: 0; margin: 0; columns: 3 220px; font-size: .95rem; }
 .names li.more { display: none; }
 .toggle:checked ~ .names li.more { display: list-item; }
 .commands { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; margin: 8px 0; }
