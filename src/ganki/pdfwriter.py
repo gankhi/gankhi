@@ -487,6 +487,9 @@ def text_width(text: str, size: float, bold: bool = False) -> float:
     return total * size / 1000
 
 
+BREAK_AFTER = "-.+~:_/"
+
+
 def wrap(text: str, size: float, width: float, bold: bool = False) -> list[str]:
     """Break ``text`` into lines that fit ``width`` (long words are cut)."""
     lines: list[str] = []
@@ -503,6 +506,10 @@ def wrap(text: str, size: float, width: float, bold: bool = False) -> list[str]:
                 cut = len(word)
                 while cut > 1 and text_width(word[:cut], size, bold) > width:
                     cut -= 1
+                # Prefer to break after a dash, dot or similar, as a person would.
+                nice = max((word.rfind(c, 0, cut) for c in BREAK_AFTER), default=-1)
+                if nice >= cut // 2:
+                    cut = nice + 1
                 lines.append(word[:cut])
                 word = word[cut:]
             current = word

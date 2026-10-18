@@ -25,6 +25,12 @@ class Segment:
     framing: bool = False  # intro/outro: read in the tour, skipped when hovering a section
 
 
+def thousands(number: int, lang: str) -> str:
+    """``108995`` -> ``108.995`` (``108,995`` in English)."""
+    text = f"{number:,}"
+    return text.replace(",", ".") if lang == "es" else text
+
+
 def spoken_size(kib: int, lang: str) -> str:
     """``2097152`` -> ``2 gigas`` (written the way a voice should read it)."""
     units = (
@@ -148,7 +154,7 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
                 "downloads",
                 say(
                     "say_downloads",
-                    files=files,
+                    files=thousands(files, lang),
                     size=spoken_size(total_bytes // 1024, lang),
                     kind=say(f"dl_{biggest.key}").split(" (")[0].lower(),
                 ),
@@ -178,22 +184,36 @@ def vulnerable_libraries(result: ScanResult) -> tuple[list, list]:  # type: igno
 SERIOUS = ("critical", "high")
 
 
+_KERNEL_FAMILY = re.compile(r"^linux-(image|modules|modules-extra|headers|tools)-\d")
+
+
 def _most_urgent(vulnerable: list) -> list:  # type: ignore[type-arg]
-    """The few programs worth naming: highest Ubuntu priority first, then the ones with a fix."""
+    """The few programs worth naming: highest Ubuntu priority first, then the ones with a fix.
+
+    The pieces of one kernel (image, modules, headers...) count as a single entry.
+    """
     order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "negligible": 4}
     ranked = sorted(
         vulnerable,
         key=lambda t: (order.get(t.top_priority, 5), 0 if t.fixed_in else 1, -t.cve_count, t.name),
     )
-    return ranked[:MOST_URGENT]
+    chosen: list = []  # type: ignore[type-arg]
+    kernel_seen = False
+    for tool in ranked:
+        if _KERNEL_FAMILY.match(tool.name):
+            if kernel_seen:
+                continue
+            kernel_seen = True
+        chosen.append(tool)
+    return chosen[:MOST_URGENT]
 
 
 _VIRTUAL_MACHINES = re.compile(r"virtualbox|qemu|vmware|virt-manager|gnome-boxes")
 MAX_NAMES = 3
 
 
-def _names(tools: list, lang_and: str) -> str:  # type: ignore[type-arg]
-    names = [t.name for t in tools[:MAX_NAMES]]
+def _names(tools: list, lang_and: str, kernel: str) -> str:  # type: ignore[type-arg]
+    names = [kernel if _KERNEL_FAMILY.match(t.name) else t.name for t in tools[:MAX_NAMES]]
     extra = len(tools) - len(names)
     text = ", ".join(names)
     return f"{text} {lang_and}" if extra > 0 else text
@@ -208,13 +228,16 @@ def _advice(vulnerable: list, say) -> list[str]:  # type: ignore[no-untyped-def]
     machines = [t for t in waiting if _VIRTUAL_MACHINES.search(t.name)]
     waiting = [t for t in waiting if t not in machines]
     more = say("say_and_more")
+    kernel = say("say_kernel_name")
 
     if fixable:
-        texts.append(say("say_advice_update", names=_names(fixable, more)))
+        texts.append(say("say_advice_update", names=_names(fixable, more, kernel)))
+        if any(_KERNEL_FAMILY.match(t.name) for t in fixable):
+            texts.append(say("say_advice_restart"))
     if expired:
-        texts.append(say("say_advice_expired", names=_names(expired, more)))
+        texts.append(say("say_advice_expired", names=_names(expired, more, kernel)))
     if machines:
-        texts.append(say("say_advice_vm", names=_names(machines, more)))
+        texts.append(say("say_advice_vm", names=_names(machines, more, kernel)))
     if waiting:
-        texts.append(say("say_advice_waiting", names=_names(waiting, more)))
+        texts.append(say("say_advice_waiting", names=_names(waiting, more, kernel)))
     return texts
