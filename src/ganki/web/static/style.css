@@ -207,7 +207,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .scan-body { color: var(--fg, #e8e8e8); min-width: 0; }
 .scan h2 { margin: 0 0 4px; font-size: 1.1rem; }
 .scan-note { margin: 0 0 6px; color: #b8b8b8; font-size: .9rem; }
-.scan-note.small { font-size: .8rem; opacity: .7; margin-top: 12px; }
+.scan-note.notice { color: #e6c15a; }
 .radar .sweep { transform-origin: 70px 70px; animation: radar-spin 2.6s linear infinite; }
 .radar .blip { fill: var(--green); opacity: 0; animation: blip 2.6s ease-in-out infinite; }
 .radar .b2 { animation-delay: .9s; } .radar .b3 { animation-delay: 1.7s; }
