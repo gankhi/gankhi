@@ -160,6 +160,25 @@
     }
   }
 
+  // The cross puts the assistant away (silent) and leaves a small round button to bring it back.
+  var btnClose = document.getElementById("assistant-close");
+  var btnOpen = document.getElementById("assistant-open");
+  function closeDock() {
+    stop();
+    voiceOff();
+    dock.hidden = true;
+    btnOpen.hidden = false;
+    try { sessionStorage.setItem("ganki_dock", "closed"); } catch (e) { /* ignore */ }
+  }
+  function openDock() {
+    dock.hidden = false;
+    btnOpen.hidden = true;
+    try { sessionStorage.removeItem("ganki_dock"); } catch (e) { /* ignore */ }
+  }
+  btnClose.addEventListener("click", closeDock);
+  btnOpen.addEventListener("click", openDock);
+  try { if (sessionStorage.getItem("ganki_dock") === "closed") { dock.hidden = true; btnOpen.hidden = false; } } catch (e) { /* ignore */ }
+
   btnOn.addEventListener("click", enable);
   btnPlay.addEventListener("click", playAll);
   btnStop.addEventListener("click", stop);
