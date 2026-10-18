@@ -43,6 +43,44 @@ PROFILES: tuple[tuple[str, str], ...] = (
     (r"^(vim|neovim|nano|emacs|gedit|kate|code|sublime-text|mousepad)", "editor"),
 )
 
+# When the name is not known: what the package says it is, then its distribution section.
+DESCRIPTION_PROFILES: tuple[tuple[str, str], ...] = (
+    (r"web browser|internet browser", "browser"),
+    (r"virtual machine|hypervisor|virtuali[sz]ation|emulator", "virtual"),
+    (r"e-?mail (client|program)|mail client|instant messag|chat client|messenger", "messages"),
+    (r"container (runtime|engine)|\bcontainers?\b", "container"),
+    (r"database|sql server", "database"),
+    (r"(web|http|ftp|dns|mail|ssh|file|print) server|daemon|network service", "service"),
+    (
+        r"\bpdf\b|office suite|word processor|spreadsheet|image (viewer|editor)|photo"
+        r"|video (player|editor)|media player|audio (player|editor)|music player|ebook",
+        "documents",
+    ),
+    (r"archiv|compress", "archives"),
+    (r"text editor|code editor|\bide\b", "editor"),
+    (r"download manager|torrent|bittorrent|http client|ftp client|version control", "network"),
+    (r"compiler|debugger|build system", "compiler"),
+)
+SECTION_PROFILES = {
+    "net": "network",
+    "mail": "messages",
+    "web": "service",
+    "graphics": "documents",
+    "video": "documents",
+    "sound": "documents",
+    "doc": "documents",
+    "text": "editor",
+    "editors": "editor",
+    "database": "database",
+    "vcs": "network",
+    "interpreters": "script",
+    "devel": "compiler",
+    "javascript": "node",
+    "golang": "compiler",
+    "rust": "compiler",
+    "java": "java",
+}
+
 # profile -> language -> (what the exposure is, what to do while there is no fix)
 PROFILE_TEXT: dict[str, dict[str, tuple[str, str]]] = {
     "browser": {
@@ -493,15 +531,24 @@ CONDITIONS: tuple[tuple[str, str, dict[str, tuple[str, str]]], ...] = (
 )
 
 
-def profile_for(name: str, ecosystem: str = "") -> str | None:
-    """The kind of program a package is, from its name (or pip/npm for those packages)."""
+def profile_for(
+    name: str, ecosystem: str = "", description: str = "", section: str = ""
+) -> str | None:
+    """The kind of program something is: by name, else by what it says it is, else its section.
+
+    pip and npm packages are told apart by their tool.
+    """
     if ecosystem in ("pip", "npm"):
         return ecosystem
     base = name.split(":")[0].lower()
     for pattern, profile in PROFILES:
         if re.search(pattern, base):
             return profile
-    return None
+    lowered = description.lower()
+    for pattern, profile in DESCRIPTION_PROFILES:
+        if re.search(pattern, lowered):
+            return profile
+    return SECTION_PROFILES.get(section.split("/")[-1].lower())
 
 
 def notice_kinds(summaries: list[str], lang: str) -> list[str]:
@@ -552,7 +599,12 @@ def paragraphs(
         elif kind in ("no_fix", "eol"):
             result.append(texts["update_missing"])
 
-    profile = profile_for(getattr(tool, "name", ""), getattr(tool, "tool", ""))
+    profile = profile_for(
+        getattr(tool, "name", ""),
+        getattr(tool, "tool", ""),
+        getattr(tool, "description", ""),
+        getattr(tool, "section", ""),
+    )
     if kind == "malware":
         result.append(texts["malware"])
     elif profile is None:
@@ -578,4 +630,59 @@ def paragraphs(
             result.append(texts["how_unknown"].format(todo=todo.rstrip(".")))
         else:
             result.append(texts[kind].format(todo=todo.rstrip(".")))
+    return result
+
+
+SANDBOXED_TEXT = {
+    "es": {
+        "snap": (
+            "Esta app es un snap: trae sus propias bibliotecas adentro, y Ubuntu no publica "
+            "avisos de seguridad por cada snap. Por eso Ganki no puede decirte si tiene fallos "
+            'conocidos, y no te muestra un "al día" que no pueda comprobar. Lo que sí se '
+            "sabe: snap revisa y actualiza sus apps solo, varias veces por día. Para forzarlo: "
+            "sudo snap refresh."
+        ),
+        "flatpak": (
+            "Esta app es un Flatpak: trae sus propias bibliotecas adentro, y no hay una lista "
+            "de avisos de seguridad por cada Flatpak. Por eso Ganki no puede decirte si tiene "
+            "fallos conocidos. A diferencia de snap, Flatpak no se actualiza solo: actualizalo "
+            "desde el centro de software o con flatpak update."
+        ),
+        "unknown": (
+            "Ganki no reconoce qué tipo de programa es, así que no puede darte una explicación "
+            "más específica."
+        ),
+    },
+    "en": {
+        "snap": (
+            "This app is a snap: it carries its own libraries, and Ubuntu does not publish "
+            "security notices for each snap. So Ganki cannot tell you whether it has known "
+            'flaws, and it does not show an "up to date" it cannot verify. What is known: '
+            "snap checks and updates its apps by itself, several times a day. To force it: "
+            "sudo snap refresh."
+        ),
+        "flatpak": (
+            "This app is a Flatpak: it carries its own libraries, and there is no list of "
+            "security notices for each Flatpak. So Ganki cannot tell you whether it has known "
+            "flaws. Unlike snap, Flatpak does not update by itself: update it from the "
+            "software centre or with flatpak update."
+        ),
+        "unknown": (
+            "Ganki does not recognise what kind of program this is, so it cannot give a more "
+            "specific explanation."
+        ),
+    },
+}
+
+
+def sandboxed_paragraphs(app: Any, lang: str) -> list[str]:
+    """How Ganki treated a snap or Flatpak app, and what the person can do about it."""
+    lang = lang if lang in SANDBOXED_TEXT else "en"
+    texts = SANDBOXED_TEXT[lang]
+    result = [texts["flatpak" if getattr(app, "tool", "") == "flatpak" else "snap"]]
+    profile = profile_for(getattr(app, "name", ""))
+    if profile is None:
+        result.append(texts["unknown"])
+    else:
+        result.append(PROFILE_TEXT[profile][lang][0])
     return result

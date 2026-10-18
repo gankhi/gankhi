@@ -54,6 +54,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "tag_no_fix": "No fix yet",
         "tag_eol": "No support",
         "tag_malware": "Malicious",
+        "tag_how": "How Ganki checks it",
+        "sbx_how_hint": "It is not compared with vulnerability lists.",
         "more_fixed": (
             "What to keep in mind: the fix is already in your system's own sources, so you need "
             "nothing from outside. Press Update on this row. Some updates only take effect after "
@@ -488,6 +490,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "tag_no_fix": "Sin arreglo",
         "tag_eol": "Sin soporte",
         "tag_malware": "Malicioso",
+        "tag_how": "Cómo lo revisa Ganki",
+        "sbx_how_hint": "No se compara con listas de vulnerabilidades.",
         "more_fixed": (
             "Qué tener en cuenta: el arreglo ya está en los orígenes de tu propio sistema, así "
             "que no necesitás nada de afuera. Apretá Actualizar en esta fila. Algunas "

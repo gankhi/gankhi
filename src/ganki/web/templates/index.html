@@ -219,7 +219,8 @@
     <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('sbx_col_source') }}</th></tr></thead>
     <tbody>
     {% for app in result.sandboxed[:200] %}
-      <tr><td class="wrap"><strong>{{ app.name }}</strong></td><td>{{ app.version }}</td><td>{{ app.tool }}</td><td>{{ app.source }}</td></tr>
+      <tr><td class="wrap"><strong>{{ app.name }}</strong>
+        <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div></td><td>{{ app.version }}</td><td>{{ app.tool }}</td><td>{{ app.source }}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>

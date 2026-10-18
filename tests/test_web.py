@@ -680,6 +680,8 @@ def test_assistant_has_a_close_cross_and_the_search_has_a_magnifier():
 
 def test_the_fix_labels_open_an_explanation_with_what_to_keep_in_mind():
     client = login(build().test_client())
+    client.get("/", base_url=BASE)  # starts the scan
+    wait_until_done(client)  # the page shows the result only once the scan has finished
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     # each label is the summary of a details element: a keyboard-friendly button, no script
     assert '<details class="note"><summary><span class="tag ok">' in html
@@ -693,6 +695,24 @@ def test_every_explanation_exists_in_both_languages():
 
     keys = [k for k in STRINGS["en"] if k.startswith("more_")]
     assert keys and all(STRINGS["es"].get(k) for k in keys)
+
+
+def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
+    from dataclasses import replace
+
+    from ganki.collectors.sandboxed import SandboxedApp
+
+    def scan():
+        return replace(
+            make_result(), sandboxed=[SandboxedApp("firefox", "131.0", "snap", "mozilla**")]
+        )
+
+    client = login(build(scan).test_client())
+    client.get("/", base_url=BASE)  # starts the scan
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert "How Ganki checks it" in html
+    assert "cannot tell you whether it has known flaws" in html
 
 
 def test_the_hover_option_is_gone_from_the_assistant():

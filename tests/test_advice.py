@@ -114,3 +114,47 @@ def test_a_program_unknown_to_ganki_still_gets_precautions_from_its_own_notices(
     assert "access to an account on your computer" in text and "GENERIC" not in text
     plain = explain(tool("some-new-program", ["Something happens"]))
     assert plain[-1] == "GENERIC"  # nothing to go on: the general advice
+
+
+def test_a_program_not_known_by_name_is_recognised_by_what_it_says_it_is():
+    assert advice.profile_for("netsurf", description="small web browser") == "browser"
+    assert advice.profile_for("virt-thing", description="a hypervisor frontend") == "virtual"
+    assert advice.profile_for("zzz", description="reads your e-mail client data") == "messages"
+
+
+def test_a_program_not_known_by_name_or_description_uses_its_section():
+    assert advice.profile_for("zzz", description="does things", section="universe/mail") == (
+        "messages"
+    )
+    assert advice.profile_for("zzz", description="does things", section="libs") is None
+
+
+def test_the_section_reaches_the_explanation():
+    from dataclasses import replace
+
+    item = replace(tool("zzz", [KERNEL]), description="does things", section="net")
+    assert any("servers or repositories you point it to" in p for p in explain(item))
+
+
+class App:
+    def __init__(self, name, tool_name):
+        self.name, self.tool = name, tool_name
+
+
+def test_a_snap_explains_that_ganki_does_not_check_it_and_what_to_do():
+    text = " ".join(advice.sandboxed_paragraphs(App("firefox", "snap"), "en"))
+    assert "cannot tell you whether it has known flaws" in text
+    assert "snap checks and updates its apps by itself" in text
+    assert "A browser reads content from any website" in text  # browser-specific
+    assert "Good practice" not in text  # no premise about a missing patch
+
+
+def test_a_flatpak_says_it_does_not_update_itself():
+    text = " ".join(advice.sandboxed_paragraphs(App("Firefox", "flatpak"), "es"))
+    assert "no se actualiza solo" in text and "flatpak update" in text
+
+
+def test_an_unknown_sandboxed_app_says_so():
+    last = advice.sandboxed_paragraphs(App("Weird Thing", "snap"), "en")[-1]
+    assert "does not recognise" in last
+    assert set(advice.SANDBOXED_TEXT["es"]) == set(advice.SANDBOXED_TEXT["en"])
