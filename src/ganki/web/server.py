@@ -72,20 +72,28 @@ def port_is_free(port: int) -> bool:
     return True
 
 
-def open_in_browser(url: str) -> bool:
-    """Open the address in the person's own browser, whichever it is.
+# Browsers tried by name when the system has no default one (or cannot open links).
+KNOWN_BROWSERS = (
+    "firefox",
+    "librewolf",
+    "google-chrome",
+    "google-chrome-stable",
+    "chromium",
+    "chromium-browser",
+    "brave-browser",
+    "vivaldi",
+    "microsoft-edge",
+    "opera",
+    "epiphany",
+    "falkon",
+    "midori",
+)
 
-    The standard opener goes first (it honours the BROWSER variable and the desktop's default).
-    If it finds nothing, the desktop's own ``xdg-open`` is tried before giving up.
-    """
-    if webbrowser.open(url):
-        return True
-    opener = shutil.which("xdg-open")
-    if opener is None:
-        return False
+
+def _start(command: list[str]) -> bool:
     try:
         subprocess.Popen(  # noqa: S603  (absolute path from which(), fixed arguments, no shell)
-            [opener, url],
+            command,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -93,6 +101,25 @@ def open_in_browser(url: str) -> bool:
     except OSError:
         return False
     return True
+
+
+def open_in_browser(url: str) -> bool:
+    """Open the address in the person's own browser, whichever it is.
+
+    1. The standard opener (honours the BROWSER variable and the desktop's default).
+    2. The desktop's own ``xdg-open``.
+    3. Any well-known browser that is installed, even if none is the default.
+    """
+    if webbrowser.open(url):
+        return True
+    opener = shutil.which("xdg-open")
+    if opener is not None and _start([opener, url]):
+        return True
+    for name in KNOWN_BROWSERS:
+        path = shutil.which(name)
+        if path is not None and _start([path, url]):
+            return True
+    return False
 
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
