@@ -179,6 +179,29 @@ TEXTS: dict[str, dict[str, str]] = {
             "That is all. Use the Update or Remove buttons to see a preview "
             "before anything is changed."
         ),
+        "progress_title": "Analysing this machine",
+        "progress_hint": (
+            "You can see what it is doing right now. Results show up here as they are found."
+        ),
+        "progress_first_run": (
+            "The first scan after a new vulnerability list is published takes longer; "
+            "the next ones are quick."
+        ),
+        "step_system": "Reading system, disk and memory",
+        "step_programs": "Listing installed programs",
+        "step_updates": "Checking available updates",
+        "step_downloads": "Looking at your downloads folder",
+        "step_feed": "Checking the vulnerability list",
+        "step_index": "Reading the vulnerability list",
+        "step_analysis": "Matching vulnerabilities and preparing the report",
+        "fact_system": "System: {os}",
+        "fact_disk": "Disk: {percent}% used, {free} free",
+        "fact_ram": "Memory: {percent}% in use",
+        "fact_packages": "{n} packages installed",
+        "fact_updates": "{n} updates available",
+        "fact_downloads": "Downloads: {files} files, {size}",
+        "fact_feed": "Vulnerability list: {date}",
+        "fact_findings": "{n} vulnerability matches found",
         "assistant_title": "Assistant",
         "assistant_listen": "Turn on voice",
         "assistant_play": "Explain my system",
@@ -427,6 +450,29 @@ TEXTS: dict[str, dict[str, str]] = {
             "Eso es todo. Con los botones Actualizar o Quitar ves una vista previa "
             "antes de cambiar algo."
         ),
+        "progress_title": "Analizando esta máquina",
+        "progress_hint": (
+            "Acá ves qué está haciendo ahora. Los resultados aparecen a medida que se encuentran."
+        ),
+        "progress_first_run": (
+            "El primer análisis después de que se publica una lista nueva de vulnerabilidades "
+            "tarda más; los siguientes son rápidos."
+        ),
+        "step_system": "Leyendo sistema, disco y memoria",
+        "step_programs": "Listando los programas instalados",
+        "step_updates": "Buscando actualizaciones disponibles",
+        "step_downloads": "Mirando tu carpeta de descargas",
+        "step_feed": "Consultando la lista de vulnerabilidades",
+        "step_index": "Leyendo la lista de vulnerabilidades",
+        "step_analysis": "Cruzando vulnerabilidades y preparando el informe",
+        "fact_system": "Sistema: {os}",
+        "fact_disk": "Disco: {percent}% usado, {free} libres",
+        "fact_ram": "Memoria: {percent}% en uso",
+        "fact_packages": "{n} paquetes instalados",
+        "fact_updates": "{n} actualizaciones disponibles",
+        "fact_downloads": "Descargas: {files} archivos, {size}",
+        "fact_feed": "Lista de vulnerabilidades: {date}",
+        "fact_findings": "{n} coincidencias de vulnerabilidades encontradas",
         "assistant_title": "Asistente",
         "assistant_listen": "Activar voz",
         "assistant_play": "Explicar mi sistema",

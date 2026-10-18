@@ -19,7 +19,27 @@
 
 {% block content %}
 {% if not (result and state in ('done', 'running')) %}<nav class="lang solo" aria-label="Language"><a href="/lang/es">ES</a><a href="/lang/en">EN</a></nav>{% endif %}
-{% if state == 'running' %}<p class="notice" role="status">{{ t('scanning') }}</p>{% endif %}
+{% if state == 'running' %}
+<section class="card scan" id="progress" aria-live="polite">
+  <svg class="radar" viewBox="0 0 140 140" width="120" height="120" aria-hidden="true">
+    <circle cx="70" cy="70" r="62" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+    <circle cx="70" cy="70" r="42" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+    <circle cx="70" cy="70" r="22" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+    <g class="sweep"><path d="M70 70 L70 8 A62 62 0 0 1 120 33 Z" fill="currentColor" fill-opacity=".25"/><line x1="70" y1="70" x2="70" y2="8" stroke="currentColor" stroke-width="2"/></g>
+    <circle class="blip b1" cx="98" cy="48" r="3"/><circle class="blip b2" cx="46" cy="92" r="3"/><circle class="blip b3" cx="88" cy="100" r="3"/>
+  </svg>
+  <div class="scan-body">
+    <h2>{{ t('progress_title') }}</h2>
+    <p class="scan-note">{{ t('progress_hint') }}</p>
+    <svg class="bar" viewBox="0 0 100 4" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="{{ t('progress_title') }}">
+      <rect width="100" height="4" class="bar-track"/><rect id="bar-fill" width="0" height="4" class="bar-fill"/>
+    </svg>
+    <ol id="steps" class="steps"></ol>
+    <ul id="facts" class="facts mono"></ul>
+    <p class="scan-note small">{{ t('progress_first_run') }}</p>
+  </div>
+</section>
+{% endif %}
 {% if state == 'error' %}<p class="notice bad" role="alert">{{ t('error') }}</p>{% endif %}
 {% if state == 'unsupported' %}<p class="notice bad" role="alert">{{ t('unsupported') }}</p>{% endif %}
 

@@ -312,7 +312,7 @@ def test_access_url_is_saved_privately_and_not_printed(tmp_path, monkeypatch, ca
             return None
 
     monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path / "cache")
-    monkeypatch.setattr(server, "create_app", lambda *_args: FakeApp())
+    monkeypatch.setattr(server, "create_app", lambda *_args, **_kwargs: FakeApp())
     monkeypatch.setattr(server.webbrowser, "open", lambda url: opened.append(url) or True)
 
     assert server.main(["--port", "8123"]) == 0
@@ -333,7 +333,7 @@ def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, mo
             return None
 
     monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path)
-    monkeypatch.setattr(server, "create_app", lambda *_args: FakeApp())
+    monkeypatch.setattr(server, "create_app", lambda *_args, **_kwargs: FakeApp())
     monkeypatch.setattr(server.webbrowser, "open", lambda url: False)
 
     server.main([])

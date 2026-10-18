@@ -24,11 +24,16 @@ from __future__ import annotations
 
 import json
 import logging
+import multiprocessing
 import os
 import re
+import sqlite3
 import tarfile
 import tempfile
-from collections import defaultdict
+from collections import deque
+from collections.abc import Callable, Iterator, Mapping
+from concurrent.futures import Future, ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -173,102 +178,123 @@ def parse_record(record: dict[str, Any], ecosystem: str) -> list[Advisory]:
     return [replace(adv, pro_fixed_version=pro_fixed.get(name)) for name, adv in plain.items()]
 
 
-INDEX_FORMAT = 1
+INDEX_FORMAT = 2
+CHUNK_RECORDS = 300  # records handed to one worker at a time
+MAX_WORKERS = 4
 log = logging.getLogger(__name__)
 
 
 def _index_path(archive: Path, ecosystem: str) -> Path:
     safe = re.sub(r"[^A-Za-z0-9.]+", "-", ecosystem).strip("-")
-    return archive.with_name(f"osv-index-{safe}.json")
+    return archive.with_name(f"osv-index-{safe}.sqlite")
 
 
-def _archive_stamp(archive: Path) -> list[int]:
+def _archive_stamp(archive: Path) -> str:
     stat = archive.stat()
-    return [INDEX_FORMAT, stat.st_size, stat.st_mtime_ns]
+    return f"{INDEX_FORMAT}:{stat.st_size}:{stat.st_mtime_ns}"
 
 
-def _advisory_to_list(a: Advisory) -> list[Any]:
-    return [
+def _advisory_to_row(a: Advisory) -> tuple[Any, ...]:
+    return (
+        a.source_package,
         a.cve_id,
         a.summary,
         a.priority,
-        a.source_package,
         a.fixed_version,
-        sorted(a.affected_versions),
+        # the exact versions only matter when no fix was published (see _is_affected)
+        json.dumps(
+            sorted(a.affected_versions) if a.fixed_version is None else [], separators=(",", ":")
+        ),
         a.pro_fixed_version,
-    ]
+    )
 
 
-def _advisory_from_list(row: list[Any]) -> Advisory:
-    cve_id, summary, priority, source, fixed, versions, pro = row
-    if not all(isinstance(x, str) for x in (cve_id, summary, priority, source)):
-        raise ValueError("bad advisory")
-    if not (fixed is None or isinstance(fixed, str)) or not (pro is None or isinstance(pro, str)):
-        raise ValueError("bad advisory")
-    if not isinstance(versions, list) or not all(isinstance(v, str) for v in versions):
-        raise ValueError("bad advisory")
-    return Advisory(cve_id, summary, priority, source, fixed, frozenset(versions), pro)
+def _advisory_from_row(row: tuple[Any, ...]) -> Advisory:
+    source, cve_id, summary, priority, fixed, versions, pro = row
+    return Advisory(
+        cve_id=cve_id,
+        summary=summary,
+        priority=priority,
+        source_package=source,
+        fixed_version=fixed,
+        affected_versions=frozenset(json.loads(versions)),
+        pro_fixed_version=pro,
+    )
 
 
-def _read_index(path: Path, stamp: list[int]) -> dict[str, list[Advisory]] | None:
+_COLUMNS = "source, cve, summary, priority, fixed, versions, pro"
+
+
+class AdvisoryIndex(Mapping[str, list[Advisory]]):
+    """Advisories by source package, read from the saved index on demand.
+
+    Only the packages that are asked for are read, so opening it is instant and it does
+    not hold the whole feed in memory.
+    """
+
+    def __init__(self, path: Path) -> None:
+        self._db = sqlite3.connect(f"file:{path}?mode=ro", uri=True, check_same_thread=False)
+
+    def __getitem__(self, name: str) -> list[Advisory]:
+        rows = self._db.execute(
+            f"SELECT {_COLUMNS} FROM adv WHERE source = ? ORDER BY rowid",  # noqa: S608
+            (name,),
+        ).fetchall()
+        if not rows:
+            raise KeyError(name)
+        return [_advisory_from_row(row) for row in rows]
+
+    def __iter__(self) -> Iterator[str]:
+        for (name,) in self._db.execute("SELECT DISTINCT source FROM adv ORDER BY source"):
+            yield name
+
+    def __len__(self) -> int:
+        return int(self._db.execute("SELECT COUNT(DISTINCT source) FROM adv").fetchone()[0])
+
+    def close(self) -> None:
+        self._db.close()
+
+
+def _open_if_current(path: Path, stamp: str) -> AdvisoryIndex | None:
     """The saved index, or ``None`` if it is missing, stale or damaged (then it is rebuilt)."""
+    if not path.is_file():
+        return None
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        if data.get("stamp") != stamp:
+        index = AdvisoryIndex(path)
+        row = index._db.execute("SELECT value FROM meta WHERE key = 'stamp'").fetchone()
+        if row is None or row[0] != stamp:
+            index.close()
             return None
-        return {
-            str(name): [_advisory_from_list(row) for row in rows]
-            for name, rows in data["advisories"].items()
-        }
-    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return index
+    except sqlite3.Error:
         return None
 
 
-def _write_index(path: Path, stamp: list[int], index: dict[str, list[Advisory]]) -> None:
-    payload = {
-        "stamp": stamp,
-        "advisories": {n: [_advisory_to_list(a) for a in rows] for n, rows in index.items()},
-    }
-    try:
-        fd, tmp = tempfile.mkstemp(dir=path.parent, prefix="osv-index-", suffix=".part")  # 600
-    except OSError:
-        return  # a read-only cache folder only costs speed
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            json.dump(payload, handle, separators=(",", ":"))
-        os.replace(tmp, path)  # atomic: a half-written index is never read
-    except BaseException:
-        Path(tmp).unlink(missing_ok=True)
-        raise
+def _rows_from_raw(chunk: list[bytes], ecosystem: str) -> list[tuple[Any, ...]]:
+    """Parse a batch of raw records into rows. Runs in a worker process (so it is top-level)."""
+    rows: list[tuple[Any, ...]] = []
+    for raw in chunk:
+        try:
+            record = json.loads(raw)
+        except (ValueError, UnicodeDecodeError):
+            continue  # one broken record must not stop the scan
+        if isinstance(record, dict):
+            rows.extend(_advisory_to_row(a) for a in parse_record(record, ecosystem))
+    return rows
 
 
-def load_advisories(archive: Path, ecosystem: str) -> dict[str, list[Advisory]]:
-    """Advisories indexed by source package name.
-
-    Reading the whole archive is slow, so the result is saved next to it and reused until
-    the archive changes (a new feed is downloaded).
-    """
-    index_file = _index_path(archive, ecosystem)
-    stamp = _archive_stamp(archive)
-    saved = _read_index(index_file, stamp)
-    if saved is not None:
-        return saved
-    index = _parse_archive(archive, ecosystem)
-    try:
-        _write_index(index_file, stamp, index)
-    except OSError:
-        log.warning("Could not save the advisory index; the next scan will be slower.")
-    return index
-
-
-def _parse_archive(archive: Path, ecosystem: str) -> dict[str, list[Advisory]]:
-    """Read the feed archive (slow: decompresses and parses every record)."""
-    index: dict[str, list[Advisory]] = defaultdict(list)
+def _raw_records(
+    archive: Path, ecosystem: str, on_progress: Callable[[float], None] | None
+) -> Iterator[bytes]:
+    """The raw JSON of every record that mentions this release (slow: decompresses it all)."""
     needle = ecosystem.encode()
-    with tarfile.open(archive, mode="r:xz") as tar:
+    total = max(archive.stat().st_size, 1)
+    with archive.open("rb") as raw, tarfile.open(fileobj=raw, mode="r:xz") as tar:
         for count, member in enumerate(tar):
             if count >= MAX_MEMBERS:
                 break
+            if on_progress and count % 500 == 0:
+                on_progress(min(raw.tell() / total, 0.99))  # how much of the file was read
             name = Path(member.name).name
             if not (member.isfile() and name.startswith("UBUNTU-CVE-") and name.endswith(".json")):
                 continue
@@ -277,18 +303,117 @@ def _parse_archive(archive: Path, ecosystem: str) -> dict[str, list[Advisory]]:
             handle = tar.extractfile(member)  # in-memory read, nothing written to disk
             if handle is None:
                 continue
-            raw = handle.read()
-            if needle not in raw:
-                continue  # the record does not mention this release: skip the JSON parse
+            data = handle.read()
+            if needle in data:  # a record that does not mention this release is skipped
+                yield data
+
+
+def _make_pool() -> ProcessPoolExecutor | None:
+    workers = min(MAX_WORKERS, os.cpu_count() or 1)
+    if workers < 2:
+        return None
+    try:
+        return ProcessPoolExecutor(
+            max_workers=workers, mp_context=multiprocessing.get_context("spawn")
+        )
+    except (OSError, ValueError):
+        return None
+
+
+def _build_index(
+    archive: Path,
+    ecosystem: str,
+    target: Path,
+    stamp: str,
+    on_progress: Callable[[float], None] | None,
+) -> None:
+    """Read the archive and save the index to ``target`` (parsing in several processes)."""
+    fd, tmp_name = tempfile.mkstemp(dir=target.parent, prefix="osv-index-", suffix=".part")
+    os.close(fd)  # created as 600
+    tmp = Path(tmp_name)
+    pool: ProcessPoolExecutor | None = None
+    try:
+        db = sqlite3.connect(tmp)
+        db.execute(
+            "CREATE TABLE adv (source TEXT, cve TEXT, summary TEXT, priority TEXT,"
+            " fixed TEXT, versions TEXT, pro TEXT)"
+        )
+        db.execute("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT)")
+        pending: deque[tuple[Future[list[tuple[Any, ...]]], list[bytes]]] = deque()
+        broken = False
+
+        def store(rows: list[tuple[Any, ...]]) -> None:
+            db.executemany("INSERT INTO adv VALUES (?,?,?,?,?,?,?)", rows)
+
+        def drain(limit: int) -> None:
+            nonlocal broken
+            while len(pending) > limit:
+                future, batch = pending.popleft()
+                try:
+                    store(future.result())
+                except (BrokenProcessPool, OSError):
+                    broken = True  # the workers could not run: do this batch here instead
+                    store(_rows_from_raw(batch, ecosystem))
+
+        def submit(chunk: list[bytes]) -> None:
+            nonlocal pool, broken
+            if pool is None and not broken and len(chunk) == CHUNK_RECORDS:
+                pool = _make_pool()
+                broken = pool is None
+            if pool is None or broken:
+                store(_rows_from_raw(chunk, ecosystem))
+                return
             try:
-                record = json.loads(raw)
-            except (ValueError, UnicodeDecodeError):
-                continue  # one broken record must not stop the scan
-            if not isinstance(record, dict):
-                continue
-            for advisory in parse_record(record, ecosystem):
-                index[advisory.source_package].append(advisory)
-    return dict(index)
+                pending.append((pool.submit(_rows_from_raw, chunk, ecosystem), chunk))
+            except (BrokenProcessPool, OSError, RuntimeError):
+                broken = True
+                store(_rows_from_raw(chunk, ecosystem))
+                return
+            drain(MAX_WORKERS * 2)  # keep only a few batches in memory at a time
+
+        chunk: list[bytes] = []
+        for data in _raw_records(archive, ecosystem, on_progress):
+            chunk.append(data)
+            if len(chunk) >= CHUNK_RECORDS:
+                submit(chunk)
+                chunk = []
+        if chunk:
+            submit(chunk)
+        drain(0)
+        db.execute("CREATE INDEX adv_source ON adv (source)")
+        db.execute("INSERT INTO meta VALUES ('stamp', ?)", (stamp,))
+        db.commit()
+        db.close()
+        os.replace(tmp, target)  # atomic: a half-written index is never read
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+    finally:
+        if pool is not None:
+            pool.shutdown(wait=False, cancel_futures=True)
+
+
+def load_advisories(
+    archive: Path,
+    ecosystem: str,
+    on_progress: Callable[[float], None] | None = None,
+) -> AdvisoryIndex:
+    """Advisories indexed by source package name.
+
+    Reading the whole archive is slow, so the result is saved next to it as a small
+    database and reused until the archive changes (a new feed is downloaded).
+    """
+    target = _index_path(archive, ecosystem)
+    stamp = _archive_stamp(archive)
+    current = _open_if_current(target, stamp)
+    if current is None:
+        _build_index(archive, ecosystem, target, stamp, on_progress)
+        for old in archive.parent.glob("osv-index-*.json"):  # saved by an earlier version
+            old.unlink(missing_ok=True)
+        current = AdvisoryIndex(target)
+    if on_progress:
+        on_progress(1.0)
+    return current
 
 
 def _is_affected(advisory: Advisory, installed: str) -> bool:
@@ -299,7 +424,7 @@ def _is_affected(advisory: Advisory, installed: str) -> bool:
     return installed in advisory.affected_versions
 
 
-def find_findings(packages: list[Package], index: dict[str, list[Advisory]]) -> list[Finding]:
+def find_findings(packages: list[Package], index: Mapping[str, list[Advisory]]) -> list[Finding]:
     """Match installed packages against advisories.
 
     Results are grouped per (CVE, source package, installed version), so a source

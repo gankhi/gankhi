@@ -19,7 +19,9 @@ def test_main_prints_a_summary(monkeypatch, capsys):
     monkeypatch.setattr(
         service, "refresh", lambda: FeedStatus(Path("x"), "today", downloaded=False)
     )
-    monkeypatch.setattr(service, "load_advisories", lambda path, eco: {"demo": [advisory]})
+    monkeypatch.setattr(
+        service, "load_advisories", lambda path, eco, progress=None: {"demo": [advisory]}
+    )
     monkeypatch.setattr(service, "collect", lambda: [package])
     monkeypatch.setattr(service, "collect_updates", lambda: [])
 

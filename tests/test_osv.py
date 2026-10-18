@@ -289,15 +289,24 @@ def small_archive(tmp_path):
 def test_second_load_reuses_the_saved_index(tmp_path, monkeypatch):
     archive = small_archive(tmp_path)
     first = load_advisories(archive, ECOSYSTEM)
+    assert set(first) == {"openssl"}
 
     def forbidden(*_args):
         raise AssertionError("the archive should not be read again")
 
-    monkeypatch.setattr(osv, "_parse_archive", forbidden)
-    assert load_advisories(archive, ECOSYSTEM) == first
-    saved = list(tmp_path.glob("osv-index-*.json"))
+    monkeypatch.setattr(osv, "_build_index", forbidden)
+    again = load_advisories(archive, ECOSYSTEM)
+    assert again["openssl"] == first["openssl"]
+    saved = list(tmp_path.glob("osv-index-*.sqlite"))
     assert len(saved) == 1
     assert saved[0].stat().st_mode & 0o777 == 0o600
+    assert not list(tmp_path.glob("*.part"))
+
+
+def test_the_index_answers_missing_packages_like_a_dict(tmp_path):
+    index = load_advisories(small_archive(tmp_path), ECOSYSTEM)
+    assert index.get("not-installed", []) == []
+    assert "openssl" in index and len(index) == 1
 
 
 def test_a_new_archive_rebuilds_the_index(tmp_path):
@@ -311,12 +320,37 @@ def test_a_new_archive_rebuilds_the_index(tmp_path):
 def test_a_damaged_index_is_ignored_and_rebuilt(tmp_path):
     archive = small_archive(tmp_path)
     load_advisories(archive, ECOSYSTEM)
-    for index in tmp_path.glob("osv-index-*.json"):
-        index.write_text('{"stamp": "x", "advisories": 5}')
+    for index in tmp_path.glob("osv-index-*.sqlite"):
+        index.write_text("not a database at all")
     assert set(load_advisories(archive, ECOSYSTEM)) == {"openssl"}
-    for index in tmp_path.glob("osv-index-*.json"):
-        index.write_text("not json at all")
-    assert set(load_advisories(archive, ECOSYSTEM)) == {"openssl"}
+
+
+def test_an_index_from_an_older_version_is_removed(tmp_path):
+    archive = small_archive(tmp_path)
+    old = tmp_path / "osv-index-Ubuntu-24.04-LTS.json"
+    old.write_text("{}")
+    load_advisories(archive, ECOSYSTEM)
+    assert not old.exists()
+
+
+def test_progress_is_reported_up_to_done(tmp_path):
+    seen = []
+    load_advisories(small_archive(tmp_path), ECOSYSTEM, seen.append)
+    assert seen[-1] == 1.0
+
+
+def test_many_records_are_parsed_in_workers_with_the_same_result(tmp_path):
+    archive = tmp_path / "osv-all.tar.xz"
+    members = []
+    for i in range(osv.CHUNK_RECORDS * 2 + 7):
+        record = make_record(
+            cve=f"UBUNTU-CVE-2025-{i}", affected=[affected_entry(f"pkg{i % 5}", fixed="2-1")]
+        )
+        members.append((f"osv/UBUNTU-CVE-2025-{i}.json", json.dumps(record).encode()))
+    make_archive(archive, members)
+    index = load_advisories(archive, ECOSYSTEM)
+    assert sorted(index) == [f"pkg{n}" for n in range(5)]
+    assert sum(len(index[name]) for name in index) == osv.CHUNK_RECORDS * 2 + 7
 
 
 def test_the_saved_index_gives_the_same_findings(tmp_path):

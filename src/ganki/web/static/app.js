@@ -4,14 +4,54 @@
   "use strict";
   var headers = { "X-Ganki": "1" };
 
+  function finished() {
+    var assistant = window.GankiAssistant;
+    var handled = assistant ? assistant.onScanDone() : false;
+    if (!handled) { location.reload(); }
+  }
+
+  // While the scan runs: show each step and the first facts as they arrive.
+  var panel = document.getElementById("progress");
+  var stepsList = document.getElementById("steps");
+  var factsList = document.getElementById("facts");
+  var barFill = document.getElementById("bar-fill");
+  var shownFacts = 0;
+
+  function paint(data) {
+    var rows = stepsList.children;
+    data.steps.forEach(function (step, i) {
+      var li = rows[i];
+      if (!li) {
+        li = document.createElement("li");
+        var dot = document.createElement("span");
+        dot.className = "dot";
+        var label = document.createElement("span");
+        var time = document.createElement("span");
+        time.className = "time";
+        li.appendChild(dot); li.appendChild(label); li.appendChild(time);
+        stepsList.appendChild(li);
+      }
+      li.className = step.state;
+      li.children[1].textContent = step.label;
+      li.children[2].textContent = step.detail;
+    });
+    for (; shownFacts < data.facts.length; shownFacts++) {
+      var fact = document.createElement("li");
+      fact.textContent = data.facts[shownFacts];
+      factsList.appendChild(fact);
+    }
+    barFill.setAttribute("width", String(data.percent));
+    panel.querySelector(".bar").setAttribute("aria-valuenow", String(data.percent));
+  }
+
   function poll() {
-    fetch("/api/status", { credentials: "same-origin" })
+    var url = panel ? "/api/progress" : "/api/status";
+    fetch(url, { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        if (data.state === "running") { setTimeout(poll, 1500); return; }
-        var assistant = window.GankiAssistant;
-        var handled = assistant ? assistant.onScanDone() : false;
-        if (!handled) { location.reload(); }
+        if (panel && data.steps) { paint(data); }
+        if (data.state === "running") { setTimeout(poll, panel ? 700 : 1500); return; }
+        finished();
       })
       .catch(function () { setTimeout(poll, 3000); });
   }

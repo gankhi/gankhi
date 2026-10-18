@@ -197,3 +197,29 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   box-shadow: 0 0 0 6px rgba(77, 168, 240, .15); transition: box-shadow .2s; }
 [data-explain]:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
 @media (max-width: 560px) { .assistant { position: static; width: auto; margin: 16px; } }
+
+/* scan progress */
+.scan { display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: start; color: var(--blue); }
+.scan-body { color: var(--fg, #e8e8e8); min-width: 0; }
+.scan h2 { margin: 0 0 4px; font-size: 1.1rem; }
+.scan-note { margin: 0 0 6px; color: #b8b8b8; font-size: .9rem; }
+.scan-note.small { font-size: .8rem; opacity: .7; margin-top: 12px; }
+.radar .sweep { transform-origin: 70px 70px; animation: radar-spin 2.6s linear infinite; }
+.radar .blip { fill: var(--green); opacity: 0; animation: blip 2.6s ease-in-out infinite; }
+.radar .b2 { animation-delay: .9s; } .radar .b3 { animation-delay: 1.7s; }
+@keyframes radar-spin { to { transform: rotate(360deg); } }
+@keyframes blip { 0%, 100% { opacity: 0; } 20% { opacity: 1; } 60% { opacity: 0; } }
+.bar { width: 100%; height: 8px; margin: 10px 0; border-radius: 4px; overflow: hidden; display: block; }
+.bar-track { fill: #1e1e1e; } .bar-fill { fill: var(--green); transition: width .4s ease; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.steps li { display: flex; gap: 10px; align-items: center; font-size: .92rem; opacity: .55; }
+.steps li.running, .steps li.done { opacity: 1; }
+.steps li .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #555; flex: none; box-sizing: border-box; }
+.steps li.done .dot { background: var(--green); border-color: var(--green); }
+.steps li.running .dot { border-color: var(--blue); border-top-color: transparent; animation: radar-spin 0.9s linear infinite; }
+.steps li .time { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: .8rem; opacity: .7; }
+.facts { list-style: none; margin: 12px 0 0; padding: 10px 0 0; border-top: 1px solid var(--line); display: grid; gap: 3px; font-size: .85rem; }
+.facts li { animation: fact-in .4s ease; }
+@keyframes fact-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .radar .sweep, .steps li.running .dot, .facts li, .radar .blip { animation: none; } .radar .blip { opacity: 1; } }
+@media (max-width: 560px) { .scan { grid-template-columns: 1fr; } .radar { width: 90px; height: 90px; } }

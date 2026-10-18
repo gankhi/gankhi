@@ -15,12 +15,15 @@ import hmac
 import subprocess
 from collections.abc import Callable
 from datetime import datetime
+from typing import Any
 
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
 from ganki import actions, narration, paging, speech
 from ganki.executor import ActionJob
+from ganki.progress import RUNNING as STEP_RUNNING
+from ganki.progress import Progress
 from ganki.runner import CommandNotAllowedError
 from ganki.service import ScanResult
 from ganki.summary import RUNNING_KERNEL
@@ -30,6 +33,15 @@ from ganki.web.jobs import DONE, IDLE, RUNNING, ScanJob
 
 SESSION_COOKIE = "ganki_session"
 LANG_COOKIE = "ganki_lang"
+STEP_WEIGHTS = {
+    "system": 4,
+    "programs": 8,
+    "updates": 6,
+    "downloads": 4,
+    "feed": 4,
+    "index": 64,
+    "analysis": 10,
+}
 FILTERS = ("all", "outdated", "vulnerable")
 MAX_QUERY_CHARS = 100
 CSP = (
@@ -52,6 +64,7 @@ def create_app(
     simulator: actions.Simulator = actions.simulate,
     executor: ActionJob | None = None,
     speaker: speech.Speaker | None = None,
+    progress: Progress | None = None,
 ) -> Flask:
     """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token.
 
@@ -59,7 +72,7 @@ def create_app(
     confirmed action for real (both replaced in tests).
     """
     app = Flask(__name__)
-    job = ScanJob(scan)
+    job = ScanJob(scan, progress)
     voice = speaker or speech.Speaker()
     runner_job = executor or ActionJob(on_done=job.start)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
@@ -241,6 +254,68 @@ def create_app(
         if audio is None:
             abort(503)
         return Response(audio, mimetype="audio/wav")
+
+    @app.route("/api/progress")
+    def scan_progress() -> Response:
+        """What the scan is doing now, with short texts the page can show as they are."""
+        lang = current_language()
+
+        def say(key: str, **values: object) -> str:
+            return i18n.translate(lang, key, **values)
+
+        snap = job.progress.snapshot()
+        facts: dict[str, Any] = snap["facts"]
+        steps = []
+        done_weight = 0.0
+        for item in snap["steps"]:
+            fraction = item["fraction"] or 0.0
+            done_weight += STEP_WEIGHTS[item["key"]] * (
+                1.0 if item["state"] == "done" else fraction
+            )
+            if item["state"] == "pending":
+                detail = ""
+            elif item["state"] == STEP_RUNNING and item["fraction"]:
+                detail = f"{int(item['fraction'] * 100)} %"
+            else:
+                detail = f"{item['seconds']} s" if item["seconds"] is not None else ""
+            steps.append(
+                {
+                    "key": item["key"],
+                    "label": say(f"step_{item['key']}"),
+                    "state": item["state"],
+                    "detail": detail,
+                }
+            )
+        lines = []
+        if "os_name" in facts:
+            pct = (
+                round(100 * facts["disk_used"] / facts["disk_total"]) if facts["disk_total"] else 0
+            )
+            ram = (
+                round(100 * facts["ram_used_kib"] / facts["ram_total_kib"])
+                if facts["ram_total_kib"]
+                else 0
+            )
+            free = paging.human_size((facts["disk_total"] - facts["disk_used"]) // 1024)
+            lines += [
+                say("fact_system", os=str(facts["os_name"])[:60]),
+                say("fact_disk", percent=pct, free=free),
+                say("fact_ram", percent=ram),
+            ]
+        if "packages" in facts:
+            lines.append(say("fact_packages", n=facts["packages"]))
+        if "updates" in facts:
+            lines.append(say("fact_updates", n=facts["updates"]))
+        if "download_files" in facts:
+            size = paging.human_size(int(facts["download_bytes"]) // 1024)
+            lines.append(say("fact_downloads", files=facts["download_files"], size=size))
+        if facts.get("feed_date"):
+            lines.append(say("fact_feed", date=str(facts["feed_date"])[:40]))
+        if "findings" in facts:
+            lines.append(say("fact_findings", n=facts["findings"]))
+        return jsonify(
+            state=job.state, steps=steps, facts=lines, percent=min(100, round(done_weight))
+        )
 
     @app.route("/api/status")
     def status() -> Response:
