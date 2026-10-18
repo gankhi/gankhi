@@ -184,3 +184,16 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .terminal { background: #000; border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 12px 0 4px;
   max-height: 340px; overflow: auto; white-space: pre-wrap; font-size: .82rem; color: #d0d0d0; }
 .terminal[hidden] { display: none; }
+
+/* assistant */
+.assistant { position: fixed; right: 16px; bottom: 16px; z-index: 10; width: min(340px, calc(100vw - 32px));
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .6); display: flex; flex-direction: column; gap: 8px; }
+.assistant .caption { margin: 0; font-size: .88rem; color: #d8d8d8; max-height: 140px; overflow: auto; white-space: pre-line; }
+.assistant .caption:empty { display: none; }
+.assistant-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.assistant button[hidden] { display: none; }
+.speaking { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 12px;
+  box-shadow: 0 0 0 6px rgba(77, 168, 240, .15); transition: box-shadow .2s; }
+[data-explain]:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+@media (max-width: 560px) { .assistant { position: static; width: auto; margin: 16px; } }

@@ -427,15 +427,18 @@ def test_install_prompts_accept_a_spanish_yes():
         assert "|s|S|" in script
 
 
+CTX = {"t": lambda key, **_: key, "lang": "en"}
+
+
 def test_long_ring_labels_use_the_smaller_text():
     app = build()
     template = app.jinja_env.from_string(
-        "{% from 'index.html' import ring %}{{ ring([(50, 'ok')], center, 'x', 'y') }}"
+        "{% from 'index.html' import ring with context %}{{ ring([(50, 'ok')], center, 'x', 'y') }}"
     )
     with app.test_request_context():
-        assert "ring-big long" in template.render(center="42/147")
-        assert "ring-big long" not in template.render(center="60%")
-        assert "ring-big xlong" in template.render(center="2097/3097")
+        assert "ring-big long" in template.render(center="42/147", **CTX)
+        assert "ring-big long" not in template.render(center="60%", **CTX)
+        assert "ring-big xlong" in template.render(center="2097/3097", **CTX)
 
 
 def test_rows_explain_in_plain_words_what_to_do():

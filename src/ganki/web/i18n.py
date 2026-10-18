@@ -109,6 +109,86 @@ TEXTS: dict[str, dict[str, str]] = {
         "run_failed": "It did not finish. Read the output above; nothing else was changed.",
         "run_refused": "Ganki refused to run this. Reload the preview and try again.",
         "run_saved": "List of programs saved in",
+        "say_scanning": ("We are analysing your system. This can take a few minutes, please wait."),
+        "say_intro": "I have just finished analysing your system. Let me explain what I found.",
+        "say_system": (
+            "You are running {os}, with the user {user}. The computer has been on for {uptime}."
+        ),
+        "say_reboot": "It needs a restart to use the updated kernel.",
+        "say_disk_ok": (
+            "The disk is {percent} percent used and still has {free} free. You have plenty of room."
+        ),
+        "say_disk_busy": (
+            "The disk is {percent} percent used, with {free} free. It is getting full, "
+            "so keep an eye on it before big updates."
+        ),
+        "say_disk_tight": (
+            "Careful: the disk is {percent} percent used and only {free} are free. "
+            "It is worth freeing space before updating anything."
+        ),
+        "say_ram_ok": "Memory is at {percent} percent. The computer is running comfortably.",
+        "say_ram_busy": "Memory is at {percent} percent. That is a normal load.",
+        "say_ram_high": (
+            "Memory is at {percent} percent, which is high. Closing some programs would help."
+        ),
+        "say_programs": (
+            "I found {total} programs. {ok} are up to date, {outdated} have an update waiting "
+            "and {vulnerable} have known security problems."
+        ),
+        "say_vuln_none": "None of your programs has a known security problem. Good news.",
+        "say_vuln": (
+            "About the security problems: {n} programs are affected. {fixable} of them are "
+            "already fixed in a newer version, so updating solves them. {unfixable} have no fix "
+            "published yet; use those with care and do not open files from unknown sources."
+        ),
+        "say_vuln_eol": (
+            "Some of them are out of support, which means their authors no longer publish fixes. "
+            "It is better to move to a supported version."
+        ),
+        "say_vuln_hidden": (
+            "Besides programs, {n} libraries and system packages also have notices. "
+            "Most come from the kernel and are solved by updating and removing old kernels."
+        ),
+        "say_reclaim": "You can recover about {total}: {parts}. Review it before cleaning.",
+        "say_reclaim_kernels": "{size} in old kernels",
+        "say_reclaim_cache": "{size} in downloaded packages",
+        "say_reclaim_orphans": "{size} in packages nobody uses",
+        "say_downloads": (
+            "In your downloads folder there are {files} files taking {size}. "
+            "The biggest group is {kind}."
+        ),
+        "say_and_more": "and others",
+        "say_advice_update": (
+            "My advice, first: update {names}. The fix already exists, so it is the safest step."
+        ),
+        "say_advice_expired": (
+            "{names} is out of support. You can keep using it for work on this computer, but do "
+            "not run it as a server reachable from the internet, and do not run code you do not "
+            "trust. When you can, move to a version that still gets fixes."
+        ),
+        "say_advice_vm": (
+            "{names} has known problems and no fix yet. Many people keep using it and that is "
+            "fine, as long as you only run machines you trust, do not browse the web inside "
+            "them, and do not expose them to the internet."
+        ),
+        "say_advice_waiting": (
+            "{names} has no fix published yet. You can keep using it, but only with files "
+            "and sites you trust, and keep it away from the open internet."
+        ),
+        "say_outro": (
+            "That is all. Use the Update or Remove buttons to see a preview "
+            "before anything is changed."
+        ),
+        "assistant_title": "Assistant",
+        "assistant_listen": "Turn on voice",
+        "assistant_play": "Explain my system",
+        "assistant_pause": "Stop",
+        "assistant_hover": "Explain when I point at a section",
+        "assistant_no_voice": (
+            "There is no local voice in this browser. You can still read the captions. "
+            "On Linux you can install one with: sudo apt install speech-dispatcher espeak-ng"
+        ),
+        "assistant_ready": "Scan finished. Do you want me to explain it?",
         "details_note": "Source: Ubuntu security data, compared locally.",
         "downloads": "Downloads by type",
         "downloads_summary": "{n} files, {size}",
@@ -269,6 +349,94 @@ TEXTS: dict[str, dict[str, str]] = {
         "run_failed": "No terminó. Leé la salida de arriba; no se cambió nada más.",
         "run_refused": "Ganki se negó a ejecutarlo. Recargá la vista previa y probá de nuevo.",
         "run_saved": "Lista de programas guardada en",
+        "say_scanning": (
+            "Estamos analizando tu sistema. Puede tardar unos minutos, esperá un momento."
+        ),
+        "say_intro": "Acabo de analizar tu sistema. Te voy a explicar lo que encontré.",
+        "say_system": (
+            "Estás usando {os}, con el usuario {user}. La computadora lleva encendida {uptime}."
+        ),
+        "say_reboot": "Hace falta reiniciar para usar el kernel actualizado.",
+        "say_disk_ok": (
+            "El disco está ocupado al {percent} por ciento y todavía tiene {free} libres. "
+            "Tenés bastante espacio."
+        ),
+        "say_disk_busy": (
+            "El disco está ocupado al {percent} por ciento, con {free} libres. "
+            "Se está llenando, así que cuidalo antes de hacer actualizaciones grandes."
+        ),
+        "say_disk_tight": (
+            "Atención: el disco está ocupado al {percent} por ciento y solo quedan {free} libres. "
+            "Conviene liberar espacio antes de actualizar."
+        ),
+        "say_ram_ok": "La memoria está al {percent} por ciento. La computadora anda con comodidad.",
+        "say_ram_busy": "La memoria está al {percent} por ciento. Es una carga normal.",
+        "say_ram_high": (
+            "La memoria está al {percent} por ciento, que es alto. "
+            "Cerrar algunos programas ayudaría."
+        ),
+        "say_programs": (
+            "Encontré {total} programas. {ok} están al día, {outdated} tienen una actualización "
+            "esperando y {vulnerable} tienen problemas de seguridad conocidos."
+        ),
+        "say_vuln_none": (
+            "Ninguno de tus programas tiene un problema de seguridad conocido. Buenas noticias."
+        ),
+        "say_vuln": (
+            "Sobre los problemas de seguridad: hay {n} programas afectados. {fixable} ya están "
+            "corregidos en una versión más nueva, así que actualizando se resuelven. "
+            "{unfixable} todavía no tienen arreglo publicado; usalos con cuidado "
+            "y no abras archivos de origen dudoso."
+        ),
+        "say_vuln_eol": (
+            "Algunos están fuera de soporte, es decir que sus autores ya no publican arreglos. "
+            "Conviene pasar a una versión vigente."
+        ),
+        "say_vuln_hidden": (
+            "Además de los programas, hay {n} bibliotecas y paquetes del sistema con avisos. "
+            "La mayoría vienen del kernel y se resuelven actualizando y quitando kernels viejos."
+        ),
+        "say_reclaim": "Podés recuperar unos {total}: {parts}. Revisalo antes de limpiar.",
+        "say_reclaim_kernels": "{size} en kernels viejos",
+        "say_reclaim_cache": "{size} en paquetes descargados",
+        "say_reclaim_orphans": "{size} en paquetes que nadie usa",
+        "say_downloads": (
+            "En tu carpeta de descargas hay {files} archivos que ocupan {size}. "
+            "El grupo más grande es {kind}."
+        ),
+        "say_and_more": "y otros",
+        "say_advice_update": (
+            "Mi consejo, primero: actualizá {names}. El arreglo ya existe, es el paso más seguro."
+        ),
+        "say_advice_expired": (
+            "{names} está fuera de soporte. Podés seguir usándolo para trabajar en esta "
+            "computadora, pero no lo dejes como servidor accesible desde internet ni ejecutes "
+            "código que no conozcas. Cuando puedas, pasá a una versión que todavía reciba "
+            "arreglos."
+        ),
+        "say_advice_vm": (
+            "{names} tiene problemas conocidos y todavía no hay arreglo. Mucha gente lo sigue "
+            "usando y está bien, siempre que solo corras máquinas de confianza, no navegues "
+            "por internet dentro de ellas y no las expongas a la red."
+        ),
+        "say_advice_waiting": (
+            "{names} todavía no tiene arreglo publicado. Podés seguir usándolo, pero solo con "
+            "archivos y sitios de confianza, y lejos de internet abierto."
+        ),
+        "say_outro": (
+            "Eso es todo. Con los botones Actualizar o Quitar ves una vista previa "
+            "antes de cambiar algo."
+        ),
+        "assistant_title": "Asistente",
+        "assistant_listen": "Activar voz",
+        "assistant_play": "Explicar mi sistema",
+        "assistant_pause": "Detener",
+        "assistant_hover": "Explicar al pasar el mouse por una sección",
+        "assistant_no_voice": (
+            "Este navegador no tiene una voz local. Igual podés leer los subtítulos. "
+            "En Linux podés instalar una con: sudo apt install speech-dispatcher espeak-ng"
+        ),
+        "assistant_ready": "Terminó el análisis. ¿Querés que te lo explique?",
         "details_note": "Fuente: datos de seguridad de Ubuntu, comparados en tu equipo.",
         "downloads": "Descargas por tipo",
         "downloads_summary": "{n} archivos, {size}",

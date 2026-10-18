@@ -19,7 +19,7 @@ from datetime import datetime
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
-from ganki import actions, paging
+from ganki import actions, narration, paging
 from ganki.executor import ActionJob
 from ganki.runner import CommandNotAllowedError
 from ganki.service import ScanResult
@@ -196,6 +196,21 @@ def create_app(
             can_run=runner_job.available and not view.blocked,
             needs_ack=bool(view.warnings),
             warning_text=lambda key, value: i18n.translate(lang, key, n=value, name=value),
+        )
+
+    @app.route("/api/narration")
+    def narration_data() -> Response:
+        """The spoken explanation, built from the scan with fixed rules (no AI, no network)."""
+        lang = current_language()
+        result = job.result
+        ready = result is not None and job.state == DONE
+        segments = narration.build(result, lang) if ready and result is not None else []
+        return jsonify(
+            lang=lang,
+            scanning=narration.scanning_message(lang),
+            segments=[
+                {"section": i.section, "text": i.text, "framing": i.framing} for i in segments
+            ],
         )
 
     @app.route("/api/status")
