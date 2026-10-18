@@ -102,26 +102,30 @@ def test_the_sample_of_notices_keeps_the_ones_without_a_fix():
     assert tool.cve_count == 9
 
 
-def test_the_list_starts_with_what_an_update_can_fix_and_ends_with_what_cannot_be_fixed():
+def test_the_list_starts_with_what_an_update_fully_fixes_and_ends_with_what_cannot_be_fixed():
     findings = [
         finding("CVE-1", "fixable", fixed="2.0", priority="low"),
-        finding("CVE-2", "no-patch", fixed=None, priority="critical"),
-        finding("CVE-3", "fix-not-offered", fixed="3.0", priority="high"),  # no update in sources
+        finding("CVE-2", "mixed", fixed="2.0", priority="critical"),
+        finding("CVE-3", "mixed", fixed=None, priority="critical"),  # this one stays open
+        finding("CVE-4", "no-patch", fixed=None, priority="critical"),
+        finding("CVE-5", "fix-not-offered", fixed="3.0", priority="high"),  # no update in sources
     ]
     tools = build_tools(
         [
             pkg("up-to-date"),
             pkg("outdated"),
             pkg("fixable"),
+            pkg("mixed"),
             pkg("no-patch"),
             pkg("fix-not-offered"),
         ],
         findings,
-        [update("outdated"), update("fixable"), update("no-patch")],
+        [update("outdated"), update("fixable"), update("mixed"), update("no-patch")],
     )
-    # fixable (an update fixes it) > outdated > no patch / fix not offered > up to date
+    # an update fully fixes it > fixes only part > outdated > nothing to do > up to date
     assert [t.name for t in tools] == [
         "fixable",
+        "mixed",
         "outdated",
         "no-patch",
         "fix-not-offered",

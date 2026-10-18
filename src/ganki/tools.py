@@ -91,12 +91,15 @@ def _rank(priority: str) -> int:
 def _tier(tool: Tool) -> int:
     """What the person can do about it, so the list starts with what can be fixed now.
 
-    0: it has a notice and updating fixes it. 1: only outdated. 2: it has notices that no
-    update fixes (no patch yet, or the project is no longer supported). 3: up to date.
+    0: updating fixes all of its notices. 1: updating fixes some, others stay open. 2: only
+    outdated. 3: it has notices that no update fixes (no patch yet, or the project is no
+    longer supported). 4: up to date.
     """
     if tool.state == VULNERABLE:
-        return 0 if tool.fixed_in and tool.update_to else 2
-    return 1 if tool.state == OUTDATED else 3
+        if tool.fixed_in and tool.update_to:
+            return 1 if tool.unfixable else 0
+        return 3
+    return 2 if tool.state == OUTDATED else 4
 
 
 def _sample(unique: dict[str, Finding]) -> tuple[CveLine, ...]:
