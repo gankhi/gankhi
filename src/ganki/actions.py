@@ -167,6 +167,6 @@ def preview(
     elif not result.disk_change_bytes and result.removals:
         freed = sum(sizes_kib.get(name, 0) for name in result.removals) * 1024
         result = replace(result, disk_change_bytes=-freed)
-    if action == REMOVE and any(name in protected for name in result.removals):
+    if any(name in protected for name in result.removals):
         return Preview(action, package, blocked="blocked_drags_protected")
     return replace(result, warnings=warnings_for(result))

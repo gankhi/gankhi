@@ -49,3 +49,14 @@ def test_unknown_packages_never_reach_the_simulator():
 
     for name in ("missing", "-rf", "a b", ""):
         assert preview(REMOVE, name, {"vlc"}, set(), simulator).blocked == "blocked_unknown"
+
+
+def test_updating_everything_is_refused_when_it_would_remove_protected_software():
+    def simulator(_action, _name, _uris=False):
+        return "Inst vim [9.1] (9.2 noble-updates [amd64])\nRemv systemd-sysv [255]\n"
+
+    blocked = preview(UPDATE_ALL, "", {"vim"}, {"systemd-sysv"}, simulator)
+    assert blocked.blocked == "blocked_drags_protected"
+    assert blocked.commands == []
+    # the same update is fine when what it removes is not protected
+    assert not preview(UPDATE_ALL, "", {"vim"}, set(), simulator).blocked
