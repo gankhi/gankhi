@@ -7,18 +7,26 @@ Every command goes through ``run()``, which enforces three rules:
 3. The environment is minimal and fixed (C locale so output is parseable).
 
 Keeping this in one module makes it easy to audit what Ganki can execute.
+
+``run()`` is read-only. The only code path that can change the system is
+``run_privileged()``, which accepts nothing but the exact lists built by
+``privileged_apt()`` (remove, update one package, update all) and goes through the
+system's own password window (pkexec).
 """
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 DPKG_QUERY = "/usr/bin/dpkg-query"
 APT_MARK = "/usr/bin/apt-mark"
 APT = "/usr/bin/apt"
 APT_GET = "/usr/bin/apt-get"
+PKEXEC = "/usr/bin/pkexec"  # asks for the password in the system's own window
+ENV = "/usr/bin/env"
 
 # Read-only commands only. Anything that changes the system must be added
 # deliberately, in its own reviewed change, never here by accident.
@@ -45,6 +53,9 @@ _SIMULATIONS_WITH_PACKAGE = (
 )
 
 _ENV = {"LC_ALL": "C", "LANG": "C", "PATH": "/usr/bin:/bin"}
+# What pkexec needs to find the password window of the running desktop session.
+_SESSION_VARIABLES = ("DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS", "XDG_RUNTIME_DIR")
+_KEEP_CONFIG = ["-o", "Dpkg::Options::=--force-confold"]  # never overwrite the person's settings
 
 
 class CommandNotAllowedError(ValueError):
@@ -66,6 +77,58 @@ def _arguments_allowed(
         ):
             return True
     return False
+
+
+def privileged_apt(action: str, package: str = "") -> list[str]:
+    """The only commands that may change the system, written out exactly.
+
+    ``action`` is "remove", "update" (one package) or "all". Nothing else is built
+    here, and ``run_privileged`` refuses any list that differs from these.
+    """
+    head = [PKEXEC, ENV, "DEBIAN_FRONTEND=noninteractive", APT_GET]
+    if action == "remove":
+        return [*head, "remove", "-y", package]
+    if action == "update":
+        return [*head, "install", "--only-upgrade", "-y", *_KEEP_CONFIG, package]
+    return [*head, "full-upgrade", "-y", *_KEEP_CONFIG]
+
+
+def _privileged_allowed(args: Sequence[str]) -> bool:
+    candidate = list(args)
+    if candidate == privileged_apt("all"):
+        return True
+    name = candidate[-1] if candidate else ""
+    return bool(PACKAGE_NAME.match(name)) and any(
+        candidate == privileged_apt(action, name) for action in ("remove", "update")
+    )
+
+
+def run_privileged(args: Sequence[str], on_line: Callable[[str], None], timeout: int = 7200) -> int:
+    """Run one of the ``privileged_apt`` commands, passing each output line to ``on_line``.
+
+    Returns the exit code. The password is asked by the system's own window; Ganki never
+    sees it. stdin is closed so nothing can wait for typed input.
+    """
+    if not _privileged_allowed(args):
+        raise CommandNotAllowedError(f"not an allowed privileged command: {list(args)[:6]}")
+    env = dict(_ENV)
+    env.update({key: os.environ[key] for key in _SESSION_VARIABLES if key in os.environ})
+    process = subprocess.Popen(  # noqa: S603  (exact allowlisted list, absolute paths, no shell)
+        list(args),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        env=env,
+    )
+    try:
+        assert process.stdout is not None  # noqa: S101 (PIPE was requested above)
+        for line in process.stdout:
+            on_line(line.rstrip("\n"))
+        return process.wait(timeout=timeout)
+    finally:
+        if process.poll() is None:
+            process.kill()
 
 
 def run(args: Sequence[str], timeout: int = 60) -> str:

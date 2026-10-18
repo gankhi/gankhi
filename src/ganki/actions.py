@@ -24,6 +24,12 @@ _DISK_USED = re.compile(r"After this operation, ([\d.,]+) ([kMG]?B) of additiona
 _DISK_FREED = re.compile(r"After this operation, ([\d.,]+) ([kMG]?B) disk space will be freed")
 _UNITS = {"B": 1, "kB": 1000, "MB": 1000**2, "GB": 1000**3}
 
+# Programs that usually look after data of their own (databases, containers, servers).
+_HOLDS_DATA = re.compile(
+    r"^(mysql|mariadb|postgresql|redis|mongodb|docker|containerd|podman|nginx|apache2|libvirt)"
+)
+BIG_DOWNLOAD_BYTES = 1_000_000_000
+
 Simulator = Callable[[str, str, bool], str]  # (action, package, want_download_sizes)
 
 
@@ -38,6 +44,7 @@ class Preview:
     disk_change_bytes: int = 0  # positive: uses more space, negative: frees space
     blocked: str = ""  # message key when Ganki refuses to preview this
     simulation: str = ""  # the simulation command, shown as text
+    warnings: tuple[tuple[str, str], ...] = ()  # (message key, value shown in it)
 
     @property
     def commands(self) -> list[str]:
@@ -45,6 +52,21 @@ class Preview:
         if self.blocked:
             return []
         return [SNAPSHOT_COMMAND, real_command(self.action, self.package)]
+
+
+def warnings_for(result: Preview) -> tuple[tuple[str, str], ...]:
+    """Things the person should know before confirming. Any warning asks for a tick."""
+    found: list[tuple[str, str]] = []
+    extra = len(result.removals) - (1 if result.action == REMOVE else 0)
+    if extra > 0:
+        found.append(("warn_drags", str(extra)))
+    if result.action == REMOVE and _HOLDS_DATA.match(result.package):
+        found.append(("warn_data", result.package))
+    if any(name.startswith("linux-image") for name in result.upgrades + result.installs):
+        found.append(("warn_reboot", ""))
+    if result.download_bytes >= BIG_DOWNLOAD_BYTES:
+        found.append(("warn_big", ""))
+    return tuple(found)
 
 
 def real_command(action: str, package: str) -> str:
@@ -146,4 +168,4 @@ def preview(
         result = replace(result, disk_change_bytes=-freed)
     if action == REMOVE and any(name in protected for name in result.removals):
         return Preview(action, package, blocked="blocked_drags_protected")
-    return result
+    return replace(result, warnings=warnings_for(result))

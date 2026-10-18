@@ -76,9 +76,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "prev_list_new": "Would be installed",
         "prev_list_gone": "Would be removed",
         "prev_simulation": "Simulation (nothing is changed)",
-        "prev_run_title": "To do it",
+        "prev_run_title": "Or do it yourself",
         "prev_run_note": (
-            "Ganki does not change anything. Copy these two lines into a terminal: "
+            "To do it from a terminal instead, copy these two lines: "
             "the first saves your list of programs so you can undo, the second does it."
         ),
         "prev_reboot": "If a new kernel is installed, restart the computer afterwards.",
@@ -86,6 +86,29 @@ TEXTS: dict[str, dict[str, str]] = {
         "blocked_protected": "The system needs this program, so Ganki will not remove it.",
         "blocked_drags_protected": "Removing it would also remove software the system depends on.",
         "blocked_failed": "The simulation could not run. Try again after scanning.",
+        "everything": "everything",
+        "sure_title": "Are you sure you want to continue with {name}?",
+        "info_remove": "Removing a program does not delete your documents or personal files.",
+        "warn_drags": "{n} more package(s) will also be removed.",
+        "warn_data": (
+            "{name} may look after data of its own (databases, containers). Back it up first."
+        ),
+        "warn_reboot": "A new kernel will be installed: restart the computer afterwards.",
+        "warn_big": "This is a big download and needs free disk space. Check the numbers above.",
+        "understood": "I read the warnings and want to continue.",
+        "password_note": (
+            "Your password is asked by the system's own window, never by Ganki. "
+            "Your list of programs is saved first, so the change can be undone."
+        ),
+        "confirm_remove": "Yes, remove {name}",
+        "confirm_update": "Yes, update {name}",
+        "confirm_all": "Yes, update everything",
+        "cancel": "Cancel",
+        "run_waiting": "Waiting for you to type your password in the system window...",
+        "run_ok": "Done. Scanning again to refresh the numbers.",
+        "run_failed": "It did not finish. Read the output above; nothing else was changed.",
+        "run_refused": "Ganki refused to run this. Reload the preview and try again.",
+        "run_saved": "List of programs saved in",
         "details_note": "Source: Ubuntu security data, compared locally.",
         "downloads": "Downloads by type",
         "downloads_summary": "{n} files, {size}",
@@ -210,9 +233,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "prev_list_new": "Se instalarían",
         "prev_list_gone": "Se quitarían",
         "prev_simulation": "Simulación (no cambia nada)",
-        "prev_run_title": "Para hacerlo",
+        "prev_run_title": "O hacelo vos",
         "prev_run_note": (
-            "Ganki no cambia nada. Copiá estas dos líneas en una terminal: "
+            "Para hacerlo desde una terminal, copiá estas dos líneas: "
             "la primera guarda tu lista de programas para poder deshacer, la segunda lo hace."
         ),
         "prev_reboot": "Si se instala un kernel nuevo, reiniciá la computadora después.",
@@ -220,6 +243,32 @@ TEXTS: dict[str, dict[str, str]] = {
         "blocked_protected": "El sistema depende de este programa. Ganki no ofrece quitarlo.",
         "blocked_drags_protected": "Quitarlo también quitaría software del que depende el sistema.",
         "blocked_failed": "No se pudo hacer la simulación. Probá de nuevo después de escanear.",
+        "everything": "todo",
+        "sure_title": "¿Seguro que querés continuar con {name}?",
+        "info_remove": "Quitar un programa no borra tus documentos ni tus archivos personales.",
+        "warn_drags": "También se quitarán {n} paquete(s) más.",
+        "warn_data": (
+            "{name} puede cuidar datos propios (bases de datos, "
+            "contenedores). Hacé una copia antes."
+        ),
+        "warn_reboot": "Se instalará un kernel nuevo: reiniciá la computadora después.",
+        "warn_big": (
+            "Es una descarga grande y necesita espacio libre en disco. Mirá las cifras de arriba."
+        ),
+        "understood": "Leí las advertencias y quiero continuar.",
+        "password_note": (
+            "La contraseña la pide la ventana del sistema, nunca Ganki. "
+            "Antes se guarda tu lista de programas, así se puede deshacer."
+        ),
+        "confirm_remove": "Sí, quitar {name}",
+        "confirm_update": "Sí, actualizar {name}",
+        "confirm_all": "Sí, actualizar todo",
+        "cancel": "Cancelar",
+        "run_waiting": "Esperando que escribas tu contraseña en la ventana del sistema...",
+        "run_ok": "Listo. Escaneando de nuevo para actualizar las cifras.",
+        "run_failed": "No terminó. Leé la salida de arriba; no se cambió nada más.",
+        "run_refused": "Ganki se negó a ejecutarlo. Recargá la vista previa y probá de nuevo.",
+        "run_saved": "Lista de programas guardada en",
         "details_note": "Fuente: datos de seguridad de Ubuntu, comparados en tu equipo.",
         "downloads": "Descargas por tipo",
         "downloads_summary": "{n} archivos, {size}",
