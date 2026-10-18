@@ -115,3 +115,14 @@ def test_cards_are_coloured_with_the_same_limits_as_the_spoken_summary():
     assert level_tone(narration.DISK_TIGHT, narration.DISK_BUSY, narration.DISK_TIGHT) == "bad"
     assert level_tone(narration.DISK_BUSY, narration.DISK_BUSY, narration.DISK_TIGHT) == "warn"
     assert level_tone(10, narration.DISK_BUSY, narration.DISK_TIGHT) == "ok"
+
+
+def test_the_first_scan_notice_is_shown_right_under_the_title():
+    app, release = slow_app()
+    client = login(app.test_client())
+    client.set_cookie("ganki_lang", "es", domain="127.0.0.1")
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    title = html.index("Analizando esta máquina")
+    notice = html.index("varios minutos")
+    assert title < notice < html.index('id="steps"')
+    release.set()

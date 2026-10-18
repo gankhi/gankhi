@@ -225,8 +225,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "You can see what it is doing right now. Results show up here as they are found."
         ),
         "progress_first_run": (
-            "The first scan after a new vulnerability list is published takes longer; "
-            "the next ones are quick."
+            "The first scan, or the first one after restarting the computer, can take several "
+            "minutes. The next ones are faster."
         ),
         "step_system": "Reading system, disk and memory",
         "step_programs": "Listing installed programs",
@@ -640,8 +640,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Acá ves qué está haciendo ahora. Los resultados aparecen a medida que se encuentran."
         ),
         "progress_first_run": (
-            "El primer análisis después de que se publica una lista nueva de vulnerabilidades "
-            "tarda más; los siguientes son rápidos."
+            "El primer análisis, o el primero después de reiniciar la computadora, puede tardar "
+            "varios minutos. Los siguientes son más rápidos."
         ),
         "step_system": "Leyendo sistema, disco y memoria",
         "step_programs": "Listando los programas instalados",
