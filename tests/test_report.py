@@ -141,3 +141,16 @@ def test_every_critical_or_high_notice_is_listed_even_past_the_limit():
     ]
     data = report.build_report(replace(result, tools=many), "en", "now")
     assert f"libhigh{report.MAX_ROWS + 6}".encode() in data
+
+
+def test_priorities_are_coloured_and_the_words_stay():
+    data = report.build_report(make_result(), "es", "now")
+    assert b"0.620 0.000 0.120 rg" in data  # red text for critical or high
+    from ganki.web import i18n
+
+    words = {
+        i18n.translate("es", t.top_priority).encode("cp1252")
+        for t in make_result().tools
+        if t.top_priority in ("critical", "high")
+    }
+    assert words and any(word in data for word in words)  # colour is never the only signal

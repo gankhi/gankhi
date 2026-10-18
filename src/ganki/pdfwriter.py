@@ -515,6 +515,19 @@ def _escape(text: str) -> bytes:
     return raw.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)")
 
 
+# Print-friendly tones: (background, text). Meaning never depends on colour alone: the words stay.
+TONES = {
+    "bad": ((1.0, 0.86, 0.87), (0.62, 0.0, 0.12)),
+    "warn": ((1.0, 0.93, 0.74), (0.5, 0.32, 0.0)),
+    "ok": ((0.84, 0.95, 0.88), (0.04, 0.38, 0.2)),
+}
+ROW_TINT = {"bad": (1.0, 0.95, 0.95)}
+
+
+def _rgb(color: tuple[float, float, float]) -> bytes:
+    return b"%.3f %.3f %.3f" % color
+
+
 @dataclass
 class _Page:
     ops: list[bytes]
@@ -537,10 +550,11 @@ class Pdf:
             self._pages.append(_Page([]))
             self._y = PAGE_HEIGHT - MARGIN
 
-    def _line(self, x: float, text: str, size: float, bold: bool = False) -> None:
+    def _line(self, x: float, text: str, size: float, bold: bool = False, tone: str = "") -> None:
         font = b"/F2" if bold else b"/F1"
-        op = b"BT " + font + b" %.1f Tf %.2f %.2f Td (" % (size, x, self._y - size)
-        self._pages[-1].ops.append(op + _escape(text) + b") Tj ET")
+        color = _rgb(TONES[tone][1]) + b" rg " if tone in TONES else b""
+        op = color + b"BT " + font + b" %.1f Tf %.2f %.2f Td (" % (size, x, self._y - size)
+        self._pages[-1].ops.append(op + _escape(text) + b") Tj ET" + (b" 0 g" if color else b""))
 
     def space(self, points: float) -> None:
         self._y -= points
@@ -554,11 +568,23 @@ class Pdf:
             self._y -= size * LEADING
         self._y -= 2
 
-    def paragraph(self, text: str, size: float | None = None, indent: float = 0.0) -> None:
+    def paragraph(
+        self, text: str, size: float | None = None, indent: float = 0.0, tone: str = ""
+    ) -> None:
+        """A paragraph; with a tone it gets a coloured bar at its side and bold text."""
         size = size or self.size
-        for line in wrap(text, size, self.width - indent):
+        lines = wrap(text, size, self.width - indent - (8 if tone in TONES else 0), bold=bool(tone))
+        for line in lines:
             self._room(size * LEADING)
-            self._line(MARGIN + indent, line, size)
+            if tone in TONES:
+                bar = _rgb(TONES[tone][1])
+                self._pages[-1].ops.append(
+                    bar
+                    + b" rg %.2f %.2f 3 %.2f re f 0 g"
+                    % (MARGIN, self._y - size * LEADING, size * LEADING)
+                )
+            left = MARGIN + indent + (8 if tone in TONES else 0)
+            self._line(left, line, size, bold=bool(tone), tone=tone)
             self._y -= size * LEADING
         self._y -= size * 0.5
 
@@ -570,15 +596,27 @@ class Pdf:
         )
         self._y -= 8
 
-    def table(self, headers: list[str], rows: list[list[str]], fractions: list[float]) -> None:
-        """A table whose columns take the given fractions of the page width."""
+    def table(
+        self,
+        headers: list[str],
+        rows: list[list[str]],
+        fractions: list[float],
+        tones: list[list[str]] | None = None,
+    ) -> None:
+        """A table whose columns take the given fractions of the page width.
+
+        ``tones`` (optional) gives each cell "bad", "warn", "ok" or "": coloured cells are
+        written in bold, and a row with a "bad" cell gets a faint red band.
+        """
         size = self.size - 1
         widths = [self.width * f for f in fractions]
         pad = 4.0
 
-        def cells(values: list[str], bold: bool) -> None:
+        def cells(values: list[str], bold: bool, marks: list[str] | None = None) -> None:
+            marks = marks or [""] * len(values)
             wrapped = [
-                wrap(v, size, w - 2 * pad, bold=bold) for v, w in zip(values, widths, strict=True)
+                wrap(v, size, w - 2 * pad, bold=bold or m in TONES)
+                for v, w, m in zip(values, widths, marks, strict=True)
             ]
             height = max(len(w) for w in wrapped) * size * LEADING + 2 * pad
             self._room(height)
@@ -587,12 +625,23 @@ class Pdf:
                     b"0.92 g %.2f %.2f %.2f %.2f re f 0 g"
                     % (MARGIN, self._y - height, self.width, height)
                 )
+            if "bad" in marks:
+                self._pages[-1].ops.append(
+                    _rgb(ROW_TINT["bad"])
+                    + b" rg %.2f %.2f %.2f %.2f re f 0 g"
+                    % (MARGIN, self._y - height, self.width, height)
+                )
             x = MARGIN
-            for lines, width in zip(wrapped, widths, strict=True):
+            for lines, width, mark in zip(wrapped, widths, marks, strict=True):
                 top = self._y
+                if mark in TONES:
+                    self._pages[-1].ops.append(
+                        _rgb(TONES[mark][0])
+                        + b" rg %.2f %.2f %.2f %.2f re f 0 g" % (x, self._y - height, width, height)
+                    )
                 self._y -= pad
                 for line in lines:
-                    self._line(x + pad, line, size, bold=bold)
+                    self._line(x + pad, line, size, bold=bold or mark in TONES, tone=mark)
                     self._y -= size * LEADING
                 self._y = top
                 x += width
@@ -603,8 +652,8 @@ class Pdf:
             )
 
         cells(headers, True)
-        for row in rows:
-            cells(row, False)
+        for number, row in enumerate(rows):
+            cells(row, False, tones[number] if tones else None)
         self._y -= 8
 
     # -- file ---------------------------------------------------------------------------

@@ -21,6 +21,7 @@ RAM_HIGH, RAM_BUSY = 85, 60
 class Segment:
     section: str  # matches a data-explain attribute on the page
     text: str
+    tone: str = ""  # bad / warn / ok: how the report colours it (never spoken)
     framing: bool = False  # intro/outro: read in the tour, skipped when hovering a section
 
 
@@ -70,8 +71,13 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
             if system.disk_percent >= DISK_BUSY
             else "ok"
         )
+        tones = {"tight": "bad", "busy": "warn", "ok": "ok"}
         segments.append(
-            Segment("disk", say(f"say_disk_{level}", percent=system.disk_percent, free=free))
+            Segment(
+                "disk",
+                say(f"say_disk_{level}", percent=system.disk_percent, free=free),
+                tones[level],
+            )
         )
         level = (
             "high"
@@ -89,6 +95,7 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
                     used=spoken_size(system.ram_used_kib, lang),
                     total=spoken_size(system.ram_total_kib, lang),
                 ),
+                {"high": "bad", "busy": "warn", "ok": "ok"}[level],
             )
         )
 
@@ -114,17 +121,23 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
         summary = say("say_tools_outdated_only", outdated=len(outdated))
     else:
         summary = say("say_tools_clean")
-    segments.append(Segment("tools", summary))
+    serious_any = any(t.top_priority in SERIOUS for t in everything)
+    tone = "bad" if serious_any else "warn" if everything else "ok"
+    segments.append(Segment("tools", summary, tone))
     if libraries:
         serious = sum(1 for t in libraries if t.top_priority in SERIOUS)
         key = "say_tools_libs_serious" if serious else "say_tools_libs_mild"
-        segments.append(Segment("tools", say(key, n=len(libraries), serious=serious)))
+        segments.append(
+            Segment(
+                "tools", say(key, n=len(libraries), serious=serious), "bad" if serious else "warn"
+            )
+        )
     if old_kernels:
         segments.append(Segment("tools", say("say_tools_old_kernels", n=len(old_kernels))))
     if everything:
         segments.append(Segment("tools", say("say_tools_urgent")))
     for text in _advice(_most_urgent(everything), say):
-        segments.append(Segment("tools", text))
+        segments.append(Segment("tools", text, "bad" if serious_any else "warn"))
 
     if result.download_groups:
         total_bytes = sum(g.size_bytes for g in result.download_groups)
@@ -143,7 +156,7 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
         )
 
     if system is not None and system.reboot_required:
-        segments.append(Segment("system", say("say_reboot")))
+        segments.append(Segment("system", say("say_reboot"), "warn"))
     segments.append(Segment("tools", say("say_outro"), framing=True))
     return segments
 
