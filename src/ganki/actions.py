@@ -47,6 +47,7 @@ class Preview:
     # of updates do not print it)
     disk_change_bytes: int | None = None
     blocked: str = ""  # message key when Ganki refuses to preview this
+    blocked_names: tuple[str, ...] = ()  # the protected packages behind the refusal
     simulation: str = ""  # the simulation command, shown as text
     warnings: tuple[tuple[str, str], ...] = ()  # (message key, value shown in it)
 
@@ -190,6 +191,7 @@ def preview(
         result = replace(result, disk_change_bytes=-freed)
     if action == AUTOREMOVE and not result.removals:
         return Preview(action, "", blocked="blocked_nothing_to_remove")
-    if any(name in protected for name in result.removals):
-        return Preview(action, package, blocked="blocked_drags_protected")
+    hit = tuple(name for name in result.removals if name in protected)
+    if hit:
+        return Preview(action, package, blocked="blocked_drags_protected", blocked_names=hit)
     return replace(result, warnings=warnings_for(result))
