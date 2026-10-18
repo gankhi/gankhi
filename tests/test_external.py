@@ -397,3 +397,37 @@ def test_the_python_and_npm_rows_show_the_command_to_copy():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "python3 -m pip install --upgrade &#39;oldlib&gt;=2.1&#39;" in html
     assert "python3 -m pip uninstall evilpkg" in html  # malicious: remove, never update
+
+
+def test_snap_and_flatpak_commands_are_exact_and_safe():
+    from ganki.collectors.sandboxed import (
+        SandboxedApp,
+        is_shared_runtime,
+        parse_flatpak,
+        remove_command,
+        update_command,
+    )
+
+    snap = SandboxedApp("thunderbird", "1", "snap", "canonical", None, "thunderbird")
+    assert update_command(snap) == "sudo snap refresh thunderbird"
+    assert remove_command(snap) == "sudo snap remove thunderbird"
+    (flat,) = parse_flatpak("org.gimp.GIMP\tGIMP\t2.10\tflathub\t245.1 MB\n")
+    assert flat.app_id == "org.gimp.GIMP"
+    assert update_command(flat) == "flatpak update org.gimp.GIMP"
+    assert remove_command(flat) == "flatpak uninstall org.gimp.GIMP"
+    odd = SandboxedApp("x", "1", "snap", "me", None, "x; rm -rf ~")
+    assert update_command(odd) is None and remove_command(odd) is None
+    base = SandboxedApp("mesa-2404", "1", "snap", "canonical", None, "mesa-2404")
+    assert is_shared_runtime(base) and not is_shared_runtime(snap)
+
+
+def test_the_rows_offer_to_remove_as_well_as_update():
+    from test_web import BASE, build, login, wait_until_done
+
+    client = login(build(with_external).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    update = html.index("pip install --upgrade")
+    assert "python3 -m pip uninstall oldlib" in html[update:]  # both for the same package
+    assert "python3 -m pip show NAME" in html  # check what needs it before removing

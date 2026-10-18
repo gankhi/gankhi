@@ -706,8 +706,9 @@ def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
         return replace(
             make_result(),
             sandboxed=[
-                SandboxedApp("firefox", "131.0", "snap", "mozilla**", 3 * 1024),
-                SandboxedApp("ghost", "1", "snap", "someone", None),
+                SandboxedApp("firefox", "131.0", "snap", "mozilla**", 3 * 1024, "firefox"),
+                SandboxedApp("ghost", "1", "snap", "someone", None, "ghost"),
+                SandboxedApp("mesa-2404", "1", "snap", "canonical", None, "mesa-2404"),
             ],
         )
 
@@ -722,6 +723,8 @@ def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
     snap = html[html.index("Snap and Flatpak apps") :]
     order = [snap.index(w) for w in ("Package", "Installed with", "Version", "Size", "Source")]
     assert order == sorted(order)
+    assert "sudo snap refresh firefox" in html and "sudo snap remove firefox" in html
+    assert html.count("looks like a base that other apps") == 1  # only for the shared runtime
     assert "3.0 MiB" in html and '<td class="num mono">—</td>' in html  # size, or a dash
 
 

@@ -23,6 +23,7 @@ from flask import Flask, abort, jsonify, make_response, redirect, render_templat
 from werkzeug.wrappers import Response
 
 from ganki import actions, advice, downloads, external_tools, narration, paging, report, speech
+from ganki.collectors import sandboxed
 from ganki.executor import ActionJob
 from ganki.progress import RUNNING as STEP_RUNNING
 from ganki.progress import Progress
@@ -257,6 +258,9 @@ def create_app(
                 i18n.translate(lang, generic),
             ),
             "advise_app": lambda app: advice.sandboxed_paragraphs(app, lang),
+            "sandboxed_update": sandboxed.update_command,
+            "sandboxed_remove": sandboxed.remove_command,
+            "sandboxed_shared": sandboxed.is_shared_runtime,
             "update_command": external_tools.update_command,
             "remove_command": external_tools.remove_command,
             "state": job.state,
