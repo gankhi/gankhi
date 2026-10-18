@@ -105,7 +105,7 @@ def test_the_sample_of_notices_keeps_the_ones_without_a_fix():
 def test_the_list_starts_with_what_an_update_fully_fixes_and_ends_with_what_cannot_be_fixed():
     findings = [
         finding("CVE-1", "fixable", fixed="2.0", priority="low"),
-        finding("CVE-2", "mixed", fixed="2.0", priority="critical"),
+        finding("CVE-2", "mixed", fixed="2.0", priority="medium"),
         finding("CVE-3", "mixed", fixed=None, priority="critical"),  # this one stays open
         finding("CVE-4", "no-patch", fixed=None, priority="critical"),
         finding("CVE-5", "fix-not-offered", fixed="3.0", priority="high"),  # no update in sources
@@ -143,3 +143,31 @@ def test_a_tool_remembers_whether_its_update_is_a_security_one():
     by_name = {t.name: t for t in build_tools([pkg("a"), pkg("b"), pkg("c")], [], updates)}
     assert by_name["a"].update_security and "noble-security" in by_name["a"].update_origin
     assert not by_name["b"].update_security and not by_name["c"].update_security
+
+
+def test_urgent_updates_come_first_ordered_by_how_serious_they_are():
+    findings = [
+        finding("CVE-1", "calm", fixed="2.0", priority="low"),
+        finding("CVE-2", "serious", fixed="2.0", priority="high"),
+        finding("CVE-3", "critical-one", fixed="2.0", priority="critical"),
+        finding("CVE-4", "critical-one", fixed=None, priority="critical"),  # stays open
+        finding("CVE-5", "only-open-high", fixed=None, priority="high"),
+    ]
+    updates = [
+        update("calm"),
+        update("serious"),
+        update("critical-one"),
+        update("only-open-high"),
+        update("plain"),
+        Update("sec", "amd64", "1.0", "1.5", "noble-security", True),
+    ]
+    tools = build_tools(
+        [pkg(n) for n in ("calm", "serious", "critical-one", "only-open-high", "plain", "sec")],
+        findings,
+        updates,
+    )
+    by_name = {t.name: t for t in tools}
+    assert [t.name for t in tools][:3] == ["critical-one", "serious", "sec"]
+    assert by_name["critical-one"].urgent and by_name["sec"].urgent
+    # fixes only low notices, has only an open one, or is a plain update: not urgent
+    assert not any(by_name[n].urgent for n in ("calm", "only-open-high", "plain"))
