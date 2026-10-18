@@ -760,3 +760,17 @@ def test_wait_until_listening_sees_a_real_listener():
         listener.listen()
         assert server.wait_until_listening(listener.getsockname()[1], seconds=2)
     assert not server.wait_until_listening(1, seconds=0.2)
+
+
+def test_opening_without_the_key_explains_how_to_get_in():
+    app = build()
+    client = app.test_client()
+    for path in ("/", "/?access=", "/?access=wrong"):
+        reply = client.get(path, base_url=BASE)
+        html = reply.get_data(as_text=True)
+        assert reply.status_code == 403
+        assert "ganki --no-open" in html and "dashboard-url" in html
+        assert SECRET not in html and "style=" not in html and "<script" not in html
+    # with the key it still works, and a POST without the session is still a plain refusal
+    assert login(app.test_client()).get("/", base_url=BASE).status_code == 200
+    assert client.post("/api/anything", base_url=BASE).status_code == 403
