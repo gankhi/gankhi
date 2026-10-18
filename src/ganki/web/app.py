@@ -256,6 +256,7 @@ def create_app(
                 lambda priority: i18n.translate(lang, priority or "unknown"),
                 i18n.translate(lang, generic),
             ),
+            "advise_app": lambda app: advice.sandboxed_paragraphs(app, lang),
             "state": job.state,
             "result": result,
             "now": datetime.now(),

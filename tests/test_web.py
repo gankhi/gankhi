@@ -695,6 +695,21 @@ def test_every_explanation_exists_in_both_languages():
     assert keys and all(STRINGS["es"].get(k) for k in keys)
 
 
+def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
+    from dataclasses import replace
+
+    from ganki.collectors.sandboxed import SandboxedApp
+
+    def scan():
+        return replace(
+            make_result(), sandboxed=[SandboxedApp("firefox", "131.0", "snap", "mozilla**")]
+        )
+
+    html = login(build(scan).test_client()).get("/", base_url=BASE).get_data(as_text=True)
+    assert "How Ganki checks it" in html
+    assert "cannot tell you whether it has known flaws" in html
+
+
 def test_the_hover_option_is_gone_from_the_assistant():
     client = login(build().test_client())
     html = client.get("/", base_url=BASE).get_data(as_text=True)
