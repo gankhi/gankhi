@@ -121,6 +121,14 @@ table { width: 100%; border-collapse: collapse; }
 th { text-align: left; font: 500 .72rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; }
 td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); white-space: nowrap; font-size: 1rem; vertical-align: top; }
 .num { text-align: right; }
+table.aligned { table-layout: fixed; min-width: 960px; }
+table.aligned col.c-name { width: 34%; }
+table.aligned col.c-origin { width: 11%; }
+table.aligned col.c-version { width: 20%; }
+table.aligned col.c-size { width: 10%; }
+table.aligned col.c-state { width: 14%; }
+table.aligned col.c-last { width: 11%; }
+table.aligned td { white-space: normal; overflow-wrap: anywhere; }
 td.wrap { white-space: normal; min-width: 280px; max-width: 560px; }
 td .small { display: inline-block; margin-top: 1px; }
 .new { color: var(--green); }

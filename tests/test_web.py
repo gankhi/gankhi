@@ -717,6 +717,11 @@ def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "How Ganki checks it" in html
     assert "cannot tell you whether it has known flaws" in html
+    # every table lines up on the same columns: name, origin, version, size
+    assert html.count('<table class="aligned">') == 2
+    snap = html[html.index("Snap and Flatpak apps") :]
+    order = [snap.index(w) for w in ("Package", "Installed with", "Version", "Size", "Source")]
+    assert order == sorted(order)
     assert "3.0 MiB" in html and '<td class="num mono">—</td>' in html  # size, or a dash
 
 
