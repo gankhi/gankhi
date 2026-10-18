@@ -185,3 +185,25 @@ def test_the_pieces_of_one_kernel_are_one_entry_and_a_restart_is_advised():
     assert "the system kernel" in advice
     assert "linux-image" not in advice and "linux-modules" not in advice
     assert "restart the computer" in advice
+
+
+def test_with_a_full_disk_the_advice_is_to_clean_before_updating():
+    from dataclasses import replace
+
+    from ganki import cleanup
+
+    result = make_result()
+    roomy = replace(result.system, disk_used=10, disk_total=1010)
+    full = replace(result.system, disk_used=900, disk_total=1000)
+    reclaim = cleanup.Reclaimable(apt_cache_kib=4_000_000)
+    base = replace(result, reclaimable=reclaim, pending_updates=5)
+    assert "clean first" not in texts(replace(base, system=roomy), "en")
+    assert "clean first" in texts(replace(base, system=full), "en")
+
+
+@pytest.mark.parametrize("lang", ["en", "es"])
+def test_end_of_support_wording_does_not_overstate(lang):
+    from ganki.web import i18n
+
+    for key in ("say_advice_expired", "hint_eol", "report_act_eol"):
+        assert "Ubuntu Pro" in i18n.translate(lang, key, names="x")
