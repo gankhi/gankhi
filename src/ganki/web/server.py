@@ -22,6 +22,7 @@ import webbrowser
 from pathlib import Path
 
 from ganki.feed import default_cache_dir
+from ganki.progress import Progress
 from ganki.service import run_scan
 from ganki.web.app import create_app
 
@@ -92,7 +93,8 @@ def _serve(args: argparse.Namespace) -> int:
         return 1
 
     access_key = secrets.token_urlsafe(32)
-    app = create_app(run_scan, access_key, args.port)
+    progress = Progress()
+    app = create_app(lambda: run_scan(progress), access_key, args.port, progress=progress)
     url = f"http://{HOST}:{args.port}/?access={access_key}"
     saved = save_access_url(url, default_cache_dir())
 

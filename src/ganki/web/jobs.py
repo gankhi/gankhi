@@ -6,6 +6,7 @@ import logging
 import threading
 from collections.abc import Callable
 
+from ganki.progress import Progress
 from ganki.release import UnsupportedReleaseError
 from ganki.service import ScanResult
 
@@ -17,8 +18,9 @@ IDLE, RUNNING, DONE, ERROR, UNSUPPORTED = "idle", "running", "done", "error", "u
 class ScanJob:
     """At most one scan at a time; the latest result is kept in memory."""
 
-    def __init__(self, scan: Callable[[], ScanResult]) -> None:
+    def __init__(self, scan: Callable[[], ScanResult], progress: Progress | None = None) -> None:
         self._scan = scan
+        self.progress = progress or Progress()
         self._lock = threading.Lock()
         self.state = IDLE
         self.result: ScanResult | None = None
@@ -29,6 +31,7 @@ class ScanJob:
             if self.state == RUNNING:
                 return False
             self.state = RUNNING
+        self.progress.reset()
         threading.Thread(target=self._run, daemon=True).start()
         return True
 
