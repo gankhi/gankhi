@@ -126,11 +126,16 @@ TEXTS: dict[str, dict[str, str]] = {
             "Careful: the disk is {percent} percent used and only {free} are free. "
             "It is worth freeing space before updating anything."
         ),
-        "say_ram_ok": "Memory is at {percent} percent. The computer is running comfortably.",
-        "say_ram_busy": "Memory is at {percent} percent. That is a normal load.",
+        "say_ram_ok": (
+            "Memory: {used} of {total} in use, {percent} percent. "
+            "The computer is running comfortably."
+        ),
+        "say_ram_busy": (
+            "Memory: {used} of {total} in use, {percent} percent. That is a normal load."
+        ),
         "say_ram_high": (
-            "Memory is at {percent} percent, which is very tight. You should review what you "
-            "have open."
+            "Memory: {used} of {total} in use, {percent} percent, which is very tight. "
+            "You should review what you have open."
         ),
         "say_programs": (
             "I found {total} programs. {ok} are up to date, {outdated} have an update waiting "
@@ -153,9 +158,20 @@ TEXTS: dict[str, dict[str, str]] = {
         "say_reclaim_brief": "By doing some cleaning you can recover about {total}.",
         "say_reclaim_updates": "You also have {n} updates ready to install.",
         "say_tools_summary": (
-            "Programs with security problems: {vulnerable}. Out of date: {outdated}. "
-            "These are the most urgent."
+            "Programs with security problems: {vulnerable}. Out of date: {outdated}."
         ),
+        "say_tools_programs_ok": (
+            "None of your programs has a known security problem. Programs out of date: {outdated}."
+        ),
+        "say_tools_libs_serious": (
+            "Counting libraries and system packages, {n} more have security notices, "
+            "{serious} of them critical or high priority. Updating everything fixes most."
+        ),
+        "say_tools_libs_mild": (
+            "Counting libraries and system packages, {n} more have security notices, "
+            "none critical. Updating everything fixes most."
+        ),
+        "say_tools_urgent": "These are the most urgent, from programs and libraries together.",
         "say_tools_outdated_only": (
             "I found no security problems. Programs out of date: {outdated}. With Update "
             "everything you bring them up to date."
@@ -226,6 +242,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_ram": "{percent}% in use - {used} of {total}",
         "report_security": "Programs with security problems",
         "report_outdated": "Programs out of date",
+        "report_libs": "Libraries and system packages with security notices",
+        "report_package": "Package",
+        "report_libs_outdated": "{n} more libraries and system packages have updates waiting.",
         "report_program": "Program",
         "report_version": "Version",
         "report_priority": "Priority",
@@ -444,10 +463,15 @@ TEXTS: dict[str, dict[str, str]] = {
             "Atención: el disco está ocupado al {percent} por ciento y solo quedan {free} libres. "
             "Conviene liberar espacio antes de actualizar."
         ),
-        "say_ram_ok": "La memoria está al {percent} por ciento. La computadora anda con comodidad.",
-        "say_ram_busy": "La memoria está al {percent} por ciento. Es una carga normal.",
+        "say_ram_ok": (
+            "Memoria: {used} en uso de {total}, el {percent} por ciento. "
+            "La computadora anda con comodidad."
+        ),
+        "say_ram_busy": (
+            "Memoria: {used} en uso de {total}, el {percent} por ciento. Es una carga normal."
+        ),
         "say_ram_high": (
-            "La memoria está al {percent} por ciento, muy ajustada. "
+            "Memoria: {used} en uso de {total}, el {percent} por ciento, muy ajustada. "
             "Deberías revisar qué tenés abierto."
         ),
         "say_programs": (
@@ -474,9 +498,22 @@ TEXTS: dict[str, dict[str, str]] = {
         "say_reclaim_brief": "Haciendo algunas limpiezas podés recuperar unos {total}.",
         "say_reclaim_updates": "Además tenés {n} actualizaciones listas para instalar.",
         "say_tools_summary": (
-            "Programas con problemas de seguridad: {vulnerable}. Desactualizados: {outdated}. "
-            "Estos son los más urgentes."
+            "Programas con problemas de seguridad: {vulnerable}. Desactualizados: {outdated}."
         ),
+        "say_tools_programs_ok": (
+            "Ninguno de tus programas tiene un problema de seguridad conocido. "
+            "Programas desactualizados: {outdated}."
+        ),
+        "say_tools_libs_serious": (
+            "Contando librerías y paquetes del sistema, hay {n} más con avisos de seguridad, "
+            "{serious} de ellos de prioridad crítica o alta. Actualizando todo se arreglan "
+            "casi todos."
+        ),
+        "say_tools_libs_mild": (
+            "Contando librerías y paquetes del sistema, hay {n} más con avisos de seguridad, "
+            "ninguno crítico. Actualizando todo se arreglan casi todos."
+        ),
+        "say_tools_urgent": "Esto es lo más urgente, entre programas y librerías juntos.",
         "say_tools_outdated_only": (
             "No encontré problemas de seguridad. Programas desactualizados: {outdated}. "
             "Con Actualizar todo los ponés al día."
@@ -548,6 +585,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_ram": "{percent}% en uso - {used} de {total}",
         "report_security": "Programas con problemas de seguridad",
         "report_outdated": "Programas desactualizados",
+        "report_libs": "Librerías y paquetes del sistema con avisos de seguridad",
+        "report_package": "Paquete",
+        "report_libs_outdated": (
+            "Hay {n} librerías y paquetes del sistema más con actualizaciones esperando."
+        ),
         "report_program": "Programa",
         "report_version": "Versión",
         "report_priority": "Prioridad",

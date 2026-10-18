@@ -106,9 +106,29 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     else:
         pdf.paragraph(say("report_none"))
 
-    hidden = sum(1 for t in result.tools if t.state == "vulnerable" and not t.is_program)
-    if hidden:
-        pdf.paragraph(say("say_vuln_hidden", n=hidden))
+    libraries = [t for t in result.tools if not t.is_program and t.state == "vulnerable"]
+    pdf.heading(say("report_libs"))
+    if libraries:
+        pdf.table(
+            [
+                say("report_package"),
+                say("report_version"),
+                say("report_priority"),
+                say("report_action"),
+            ],
+            [
+                [t.name, t.version, _priority(t, lang), _action(t, lang)]
+                for t in libraries[:MAX_ROWS]
+            ],
+            [0.24, 0.16, 0.12, 0.48],
+        )
+        if len(libraries) > MAX_ROWS:
+            pdf.paragraph(say("report_more", n=len(libraries) - MAX_ROWS))
+    else:
+        pdf.paragraph(say("report_none"))
+    waiting = sum(1 for t in result.tools if not t.is_program and t.state == "outdated")
+    if waiting:
+        pdf.paragraph(say("report_libs_outdated", n=waiting))
 
     reclaim = result.reclaimable
     if reclaim.total_kib:

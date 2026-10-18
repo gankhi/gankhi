@@ -110,3 +110,13 @@ def test_the_page_links_to_the_report_in_a_new_tab():
     assert 'href="/report.pdf"' in html and 'target="_blank"' in html and "noopener" in html
     other = client.get("/", base_url=BASE)
     assert "Content-Security-Policy" in other.headers  # every other page keeps the policy
+
+
+def test_the_report_lists_libraries_with_notices():
+    from dataclasses import replace
+
+    result = make_result()
+    template = next(t for t in result.tools if t.is_program)
+    library = replace(template, name="libzzz-test", is_program=False, state="vulnerable")
+    data = report.build_report(replace(result, tools=[*result.tools, library]), "en", "now")
+    assert b"libzzz-test" in data
