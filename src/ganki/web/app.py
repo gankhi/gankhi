@@ -20,7 +20,7 @@ from typing import Any
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
-from ganki import actions, narration, paging, report, speech
+from ganki import actions, downloads, narration, paging, report, speech
 from ganki.executor import ActionJob
 from ganki.progress import RUNNING as STEP_RUNNING
 from ganki.progress import Progress
@@ -330,6 +330,22 @@ def create_app(
         response.headers["Content-Disposition"] = 'inline; filename="ganki-report.pdf"'
         response.headers["X-Ganki-No-CSP"] = "1"  # see harden(): the PDF viewer needs this
         return response
+
+    @app.route("/downloads/<key>")
+    def downloads_detail(key: str) -> str:
+        """What is inside one kind of download (read-only; names relative to Downloads)."""
+        if key not in downloads.known_keys():
+            abort(404)
+        lang = current_language()
+        folder = downloads.downloads_dir()
+        return render_template(
+            "downloads.html",
+            lang=lang,
+            t=lambda k, **values: i18n.translate(lang, k, **values),
+            state=job.state,
+            detail=downloads.group_detail(folder, key),
+            folder_name="~/" + folder.name,
+        )
 
     @app.route("/api/status")
     def status() -> Response:
