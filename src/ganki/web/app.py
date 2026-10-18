@@ -282,6 +282,7 @@ def create_app(
                 {t.name for t in result.tools if t.protected},
                 simulator,
                 {t.name: t.size_kib for t in result.tools},
+                result.reclaimable.apt_cache_kib,
             )
         except (CommandNotAllowedError, subprocess.SubprocessError, OSError):
             return actions.Preview(action, package, blocked="blocked_failed")

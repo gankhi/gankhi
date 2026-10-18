@@ -7,6 +7,10 @@
   {% if view.blocked %}
     <p class="hint bad" role="alert">{{ t(view.blocked) }}</p>
   {% else %}
+    {% if view.action == 'clean' %}
+    <p>{{ t('prev_clean_summary') }}</p>
+    <p class="muted">{{ t('prev_frees', size=(-view.disk_change_bytes)|bytes) }}</p>
+    {% else %}
     <p>{{ t('prev_summary', up=view.upgrades|length, new=view.installs|length, gone=view.removals|length) }}</p>
     <p class="muted">
       {% if view.download_bytes %}{{ t('prev_download', size=view.download_bytes|bytes) }}{% endif %}
@@ -29,10 +33,11 @@
     {% endfor %}
 
     <p class="small mono">{{ t('prev_simulation') }}: apt-get {{ view.simulation }}</p>
+    {% endif %}
 
     {% if can_run %}
     <section class="runbox">
-      <h3>{{ t('sure_title', name=view.package or t('everything')) }}</h3>
+      <h3>{{ t('sure_title', name=t('prev_clean_name') if view.action == 'clean' else (view.package or t('everything'))) }}</h3>
       {% if view.action == 'remove' %}<p class="hint"><span>{{ t('info_remove') }}</span></p>{% endif %}
       {% if view.warnings %}
       <div class="hint bad" role="alert">
@@ -40,7 +45,7 @@
       </div>
       <label class="check"><input type="checkbox" id="understood"> {{ t('understood') }}</label>
       {% endif %}
-      <p class="small">{{ t('password_note') }}</p>
+      <p class="small">{{ t('password_note_clean' if view.action == 'clean' else 'password_note') }}</p>
       <button type="button" id="run" class="{{ 'danger-solid' if view.action == 'remove' else '' }}"
         data-action="{{ view.action }}" data-pkg="{{ view.package }}" data-ack="{{ 1 if needs_ack else 0 }}"
         data-waiting="{{ t('run_waiting') }}" data-ok="{{ t('run_ok') }}" data-failed="{{ t('run_failed') }}"
@@ -52,11 +57,11 @@
     {% endif %}
 
     <h3>{{ t('prev_run_title') }}</h3>
-    <p class="small">{{ t('prev_run_note') }}</p>
+    <p class="small">{{ t('prev_run_note_clean' if view.action == 'clean' else 'prev_run_note') }}</p>
     <pre class="commands mono" id="commands">{% for command in view.commands %}{{ command }}
 {% endfor %}</pre>
     <button type="button" id="copy" data-target="commands" data-done="{{ t('copied') }}">{{ t('copy') }}</button>
-    {% if view.action != 'remove' %}<p class="small">{{ t('prev_reboot') }}</p>{% endif %}
+    {% if view.action in ('update', 'all') %}<p class="small">{{ t('prev_reboot') }}</p>{% endif %}
   {% endif %}
 </section>
 {% endblock %}

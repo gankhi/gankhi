@@ -12,8 +12,8 @@ from dataclasses import dataclass, field, replace
 
 from ganki.runner import APT_GET, run, valid_package
 
-UPDATE, REMOVE, UPDATE_ALL = "update", "remove", "all"
-ACTIONS = (UPDATE, REMOVE, UPDATE_ALL)
+UPDATE, REMOVE, UPDATE_ALL, CLEAN = "update", "remove", "all", "clean"
+ACTIONS = (UPDATE, REMOVE, UPDATE_ALL, CLEAN)
 
 # A private temporary file: it is emptied by the system, so copies never pile up in the home.
 SNAPSHOT_COMMAND = 'dpkg --get-selections > "$(mktemp -t ganki-programas.XXXXXX)"'
@@ -54,6 +54,8 @@ class Preview:
         """What the person can copy and run: first save the list, then the change."""
         if self.blocked:
             return []
+        if self.action == CLEAN:
+            return [real_command(CLEAN, "")]  # only deletes downloaded files: nothing to save
         return [SNAPSHOT_COMMAND, real_command(self.action, self.package)]
 
 
@@ -73,6 +75,8 @@ def warnings_for(result: Preview) -> tuple[tuple[str, str], ...]:
 
 
 def real_command(action: str, package: str) -> str:
+    if action == CLEAN:
+        return "sudo apt-get clean"
     if action == REMOVE:
         return f"sudo apt-get remove {package}"
     if action == UPDATE:
@@ -154,11 +158,17 @@ def preview(
     protected: set[str],
     simulator: Simulator = simulate,
     sizes_kib: dict[str, int] | None = None,
+    cache_kib: int = 0,
 ) -> Preview:
     """Simulate ``action``; refuse (``blocked``) when it would touch protected software."""
     sizes_kib = sizes_kib or {}
     if action not in ACTIONS:
         return Preview(action, package, blocked="blocked_unknown")
+    if action == CLEAN:
+        # Nothing to simulate: it only empties apt's folder of downloaded packages.
+        if cache_kib <= 0:
+            return Preview(action, "", blocked="blocked_nothing_to_clean")
+        return Preview(action, "", disk_change_bytes=-cache_kib * 1024)
     if action != UPDATE_ALL and (not valid_package(package) or package not in installed):
         return Preview(action, package, blocked="blocked_unknown")
     if action == REMOVE and package in protected:

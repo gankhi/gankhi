@@ -1046,3 +1046,15 @@ def test_system_entries_that_only_claim_to_be_browsers_are_left_out(monkeypatch,
     found["/opt/wolf/net"] = "/y"
     browsers, _ = _browsers_found(monkeypatch, tmp_path, found, folders=[apps])
     assert [b.label for b in browsers.installed_browsers()] == ["LibreWolf"]
+
+
+def test_emptying_the_download_cache_has_its_own_preview_and_runs_without_a_package():
+    executor = FakeExecutor()
+    client = run_client(executor)
+    html = client.get("/preview?action=clean", base_url=BASE).get_data(as_text=True)
+    assert "Frees 1.9 GiB" in html and "sudo apt-get clean" in html
+    assert "dpkg --get-selections" not in html and "updated," not in html
+    assert "list of programs" not in html  # nothing is saved when only downloads are deleted
+    assert "action=clean" in client.get("/", base_url=BASE).get_data(as_text=True)
+    response = post_run(client, {"action": "clean", "pkg": "", "confirm": True})
+    assert response.status_code == 202 and executor.started == [("clean", "")]

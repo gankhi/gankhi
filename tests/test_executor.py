@@ -30,6 +30,7 @@ def test_privileged_commands_are_written_out_exactly():
         "vim",
     ]
     assert privileged_apt("all") == [*head, "full-upgrade", "-y", *keep]
+    assert privileged_apt("clean") == [*head, "clean"]
 
 
 @pytest.mark.parametrize(
@@ -43,6 +44,8 @@ def test_privileged_commands_are_written_out_exactly():
         privileged_apt("remove", "vlc;reboot"),
         privileged_apt("remove", "Vlc"),
         privileged_apt("update", ""),
+        [*privileged_apt("clean"), "--purge"],
+        [*privileged_apt("clean")[:-1], "autoclean"],
         ["/usr/bin/sudo", "apt-get", "remove", "vlc"],
         [],
     ],
@@ -229,3 +232,11 @@ def test_the_copy_for_undoing_lives_where_the_system_empties_it(tmp_path, monkey
     assert str(folder).startswith(str(tmp_path)) and ".local" not in str(folder)
     assert oct(folder.parent.stat().st_mode & 0o777) == "0o700"
     assert executor.snapshot_dir() == folder  # the same folder for the whole run
+
+
+def test_cleaning_the_cache_does_not_save_the_program_list(tmp_path, monkeypatch):
+    job = make_job(tmp_path, monkeypatch, lambda _args, _on_line: 0)
+    assert job.start("clean", "")
+    finished(job)
+    assert job.state == executor.DONE and job.snapshot == "" and not list(tmp_path.iterdir())
+    assert job.command.endswith("apt-get clean")

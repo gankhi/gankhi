@@ -2,7 +2,7 @@
 """Previews are parsed from apt simulations; nothing here touches the real system."""
 
 from ganki import actions
-from ganki.actions import REMOVE, UPDATE, UPDATE_ALL, Preview, download_total, parse, preview
+from ganki.actions import CLEAN, REMOVE, UPDATE, UPDATE_ALL, Preview, download_total, parse, preview
 
 SIM = """Inst vim [9.1] (9.2 noble-updates [amd64])
 Inst newlib (1.0 noble [amd64])
@@ -68,3 +68,15 @@ def test_the_disk_change_is_unknown_when_apt_does_not_say():
         is None
     )
     assert parse(UPDATE, "vim", SIM).disk_change_bytes == 12_500_000
+
+
+def test_emptying_the_cache_needs_no_simulation_and_shows_what_it_frees():
+    def simulator(*_args):
+        raise AssertionError("must not run")
+
+    result = preview(CLEAN, "ignored", set(), set(), simulator, cache_kib=2048)
+    assert not result.blocked and result.disk_change_bytes == -2048 * 1024
+    assert result.commands == ["sudo apt-get clean"]  # nothing to save first
+    assert preview(CLEAN, "", set(), set(), simulator, cache_kib=0).blocked == (
+        "blocked_nothing_to_clean"
+    )
