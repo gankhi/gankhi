@@ -37,7 +37,18 @@ APPLICATIONS_DIR = "/usr/share/applications/"
 # (git, python, docker...). Libraries, the kernel, fonts and system plumbing
 # are deliberately absent: they are dependencies, not programs.
 TOOL_SECTIONS = frozenset(
-    {"vcs", "interpreters", "devel", "database", "web", "javascript", "golang", "rust", "java"}
+    {
+        "vcs",
+        "interpreters",
+        "devel",
+        "database",
+        "web",
+        "javascript",
+        "golang",
+        "rust",
+        "java",
+        "games",  # a game installed on purpose is something to decide about, menu entry or not
+    }
 )
 SYSTEM_PRIORITIES = frozenset({"required", "important"})
 # Support packages that live in tool sections but are not tools themselves:

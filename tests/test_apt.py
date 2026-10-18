@@ -137,3 +137,12 @@ def test_the_component_comes_from_the_section_prefix():
     universe = _row("git", "1", "amd64", "5", "ii ", "vcs", "git", "1", "universe/vcs", "x", "no")
     main = _row("curl", "1", "amd64", "5", "ii ", "web", "curl", "1", "web", "optional", "no")
     assert [p.component for p in parse_dpkg_query(universe + "\n" + main)] == ["universe", "main"]
+
+
+def test_a_game_installed_on_purpose_is_listed_even_without_a_menu_entry():
+    def game(name, **values):
+        return Package(name, "1", "amd64", 1, "", section="games", **values)
+
+    assert game("sl", manual=True, priority="optional").is_program
+    assert not game("sl", manual=False).is_program  # pulled in, not chosen
+    assert not game("foo-data", manual=True).is_program  # game data, not a game
