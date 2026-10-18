@@ -11,6 +11,8 @@ import re
 from collections.abc import Callable
 from typing import Any
 
+from ganki import debversion
+
 # (pattern on the package name, profile). The first one that matches wins.
 PROFILES: tuple[tuple[str, str], ...] = (
     (
@@ -378,6 +380,15 @@ TAILS = {
         "se publique un arreglo.",
         "eol_short": "Esta versión ya no recibe arreglos de sus autores: buscá una más nueva o "
         "una alternativa.",
+        "older": (
+            "{n} de los avisos dicen «anteriores a {limit}» y la versión instalada ({version}) "
+            "es más nueva. Probablemente no te afectan, aunque Ubuntu no lo confirmó."
+        ),
+        "community": (
+            "Este programa viene de «{component}»: Ubuntu no garantiza revisar ni arreglar su "
+            "seguridad, y por eso hay avisos que pueden quedar abiertos sin que nadie los haya "
+            "evaluado."
+        ),
         "update_available": "Hay una versión nueva disponible ({version}): actualizá con el botón.",
         "update_missing": "Tu sistema todavía no ofrece una versión más nueva: no hay nada que "
         "actualizar por ahora.",
@@ -417,6 +428,15 @@ TAILS = {
         "a fix is published.",
         "eol_short": "This version no longer gets fixes from its authors: look for a newer "
         "one or an alternative.",
+        "older": (
+            '{n} of the notices say "prior to {limit}" and the installed version '
+            "({version}) is newer. They probably do not affect you, although Ubuntu has not "
+            "confirmed it."
+        ),
+        "community": (
+            'This program comes from "{component}": Ubuntu does not promise to review or fix '
+            "its security, so some notices can stay open without anyone having evaluated them."
+        ),
         "update_available": "A newer version is available ({version}): update with the button.",
         "update_missing": "Your system does not offer a newer version yet: there is nothing "
         "to update for now.",
@@ -570,6 +590,38 @@ def conditions(summaries: list[str], lang: str) -> list[tuple[str, str]]:
     return [texts[lang] for _key, pattern, texts in CONDITIONS if re.search(pattern, joined)]
 
 
+_LIMITS = re.compile(r"(?:prior to|before|earlier than)\s+(\d+(?:\.\d+)+)", re.IGNORECASE)
+_UPSTREAM = re.compile(r"^(?:\d+:)?(\d+(?:\.\d+)*)")
+
+
+def older_than_installed(tool: Any) -> tuple[int, str, str]:
+    """Notices that say "prior to X" about this very program while the installed one is newer.
+
+    Returns (how many, the highest X, the installed upstream version). Only notices that name
+    the program are used, so a kernel notice cannot be mistaken for one about this program.
+    """
+    match = _UPSTREAM.match(getattr(tool, "installed_version", "") or "")
+    word = re.split(r"[-_.]", getattr(tool, "name", "").split(":")[0].lower())[0]
+    if match is None or len(word) < 3:
+        return 0, "", ""
+    installed = match.group(1)
+    count, highest = 0, ""
+    for cve in getattr(tool, "cves", ()) or ():
+        text = cve.summary
+        limits = _LIMITS.findall(text)
+        if not limits or word not in text.lower().replace(" ", ""):
+            continue
+        top = limits[0]
+        for limit in limits[1:]:
+            if debversion.compare(limit, top) > 0:
+                top = limit
+        if all(debversion.compare(installed, limit) >= 0 for limit in limits):
+            count += 1
+            if not highest or debversion.compare(top, highest) > 0:
+                highest = top
+    return count, highest, installed
+
+
 def paragraphs(
     tool: Any, kind: str, lang: str, priority_name: Callable[[str], str], generic: str
 ) -> list[str]:
@@ -598,6 +650,14 @@ def paragraphs(
             result.append(texts["update_available"].format(version=newer))
         elif kind in ("no_fix", "eol"):
             result.append(texts["update_missing"])
+
+    if kind in ("no_fix", "eol"):
+        count, limit, installed = older_than_installed(tool)
+        if count:
+            result.append(texts["older"].format(n=count, limit=limit, version=installed))
+        component = getattr(tool, "component", "main")
+        if component in ("universe", "multiverse"):
+            result.append(texts["community"].format(component=component))
 
     profile = profile_for(
         getattr(tool, "name", ""),

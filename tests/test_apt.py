@@ -131,3 +131,9 @@ def test_menu_packages_find_only_visible_launchers(tmp_path, monkeypatch):
     (info / "bash.list").write_text("/bin/bash\n")
     monkeypatch.setattr(apt, "APPLICATIONS_DIR", f"{apps}/")
     assert menu_packages(info) == {"vlc"}
+
+
+def test_the_component_comes_from_the_section_prefix():
+    universe = _row("git", "1", "amd64", "5", "ii ", "vcs", "git", "1", "universe/vcs", "x", "no")
+    main = _row("curl", "1", "amd64", "5", "ii ", "web", "curl", "1", "web", "optional", "no")
+    assert [p.component for p in parse_dpkg_query(universe + "\n" + main)] == ["universe", "main"]

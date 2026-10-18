@@ -79,6 +79,10 @@ ORACLE = (
     "Vulnerability in the Oracle VM VirtualBox component (subcomponent: Core). Easily "
     "exploitable vulnerability allows low privileged attacker with logon to the infrastructure"
 )
+ORACLE_OLD = (
+    "Vulnerability in the Oracle VM VirtualBox component. Supported versions that are "
+    "affected are Prior to 5.2.10"
+)
 KERNEL = "allows guest OS users to cause a denial of service (host OS panic or hang)"
 
 
@@ -158,3 +162,41 @@ def test_an_unknown_sandboxed_app_says_so():
     last = advice.sandboxed_paragraphs(App("Weird Thing", "snap"), "en")[-1]
     assert "does not recognise" in last
     assert set(advice.SANDBOXED_TEXT["es"]) == set(advice.SANDBOXED_TEXT["en"])
+
+
+def versioned(name, installed, summaries, component="main"):
+    from dataclasses import replace
+
+    return replace(tool(name, summaries), installed_version=installed, component=component)
+
+
+def test_a_notice_about_older_versions_is_flagged_when_the_installed_one_is_newer():
+    item = versioned("virtualbox-qt", "7.0.16-dfsg-2ubuntu1.3", [ORACLE_OLD, KERNEL])
+    text = " ".join(explain(item))
+    assert "1 of the notices say" in text and "prior to 5.2.10" in text
+    assert "(7.0.16)" in text and "probably do not affect you" in text
+
+
+def test_it_is_not_flagged_when_the_installed_version_is_inside_the_range():
+    item = versioned("virtualbox", "5.2.4-dfsg-1", [ORACLE_OLD])
+    assert "probably do not affect you" not in " ".join(explain(item))
+
+
+def test_a_notice_about_another_program_is_never_used_for_the_version_hint():
+    kernel_text = "The Linux kernel before 4.17.2 has a flaw in a virtualbox driver"
+    item = versioned("nodejs", "20.1.0", ["nodejs is mentioned? no", kernel_text])
+    assert "probably do not affect you" not in " ".join(explain(item))
+    other = versioned("virtualbox", "7.0.16", ["An issue in the Linux kernel before 4.17.2"])
+    assert "probably do not affect you" not in " ".join(explain(other))
+
+
+def test_community_components_say_ubuntu_does_not_promise_security_fixes():
+    text = " ".join(explain(versioned("virtualbox", "7.0", [ORACLE], component="multiverse")))
+    assert 'comes from "multiverse"' in text
+    assert "comes from" not in " ".join(explain(versioned("virtualbox", "7.0", [ORACLE])))
+
+
+def test_the_hints_exist_in_both_languages():
+    assert {"older", "community"} <= set(advice.TAILS["es"]) & set(advice.TAILS["en"])
+    item = versioned("virtualbox", "7.0.16-1", [ORACLE_OLD], component="multiverse")
+    assert "Probablemente no te afectan" in " ".join(explain(item, lang="es"))

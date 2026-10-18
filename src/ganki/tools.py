@@ -80,6 +80,8 @@ class Tool:
     cves: tuple[CveLine, ...] = ()
     protected: bool = False  # never offered for removal
     end_of_support: bool = False  # the authors no longer publish fixes for this version
+    component: str = "main"  # main, restricted, universe or multiverse
+    installed_version: str = ""  # the full version, to compare with what a notice says
     section: str = ""  # the package's own category in the distribution (net, mail, graphics...)
 
 
@@ -132,6 +134,8 @@ def build_tools(
                 fixable=sum(1 for f in unique.values() if f.status != "no_fix"),
                 unfixable=sum(1 for f in unique.values() if f.status == "no_fix"),
                 fixed_in=fixed_in,
+                component=pkg.component,
+                installed_version=pkg.version,
                 section=pkg.section,
                 protected=is_protected(pkg, kernel_release),
                 end_of_support=end_of_support(pkg.name, pkg.version),
