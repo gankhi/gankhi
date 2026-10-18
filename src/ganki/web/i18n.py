@@ -185,8 +185,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "assistant_pause": "Stop",
         "assistant_hover": "Explain when I point at a section",
         "assistant_no_voice": (
-            "There is no local voice in this browser. You can still read the captions. "
-            "On Linux you can install one with: sudo apt install speech-dispatcher espeak-ng"
+            "There is no local voice yet. You can still read the captions. For a natural "
+            "voice, run scripts/install-voice.sh"
         ),
         "assistant_ready": "Scan finished. Do you want me to explain it?",
         "details_note": "Source: Ubuntu security data, compared locally.",
@@ -433,8 +433,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "assistant_pause": "Detener",
         "assistant_hover": "Explicar al pasar el mouse por una sección",
         "assistant_no_voice": (
-            "Este navegador no tiene una voz local. Igual podés leer los subtítulos. "
-            "En Linux podés instalar una con: sudo apt install speech-dispatcher espeak-ng"
+            "Todavía no hay una voz local. Igual podés leer los subtítulos. Para una voz "
+            "natural, ejecutá scripts/install-voice.sh"
         ),
         "assistant_ready": "Terminó el análisis. ¿Querés que te lo explique?",
         "details_note": "Fuente: datos de seguridad de Ubuntu, comparados en tu equipo.",

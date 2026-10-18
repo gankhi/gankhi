@@ -37,6 +37,23 @@
 
   function show(text) { caption.textContent = text; }
 
+  // Natural voice: Ganki makes the audio on this computer (/api/speak) and the page plays it.
+  var natural = dock.dataset.natural === "1";
+  var player = null;
+
+  function playUrl(url, mine, done) {
+    var audio = new Audio(url);
+    player = audio;
+    audio.onended = function () { if (mine === token) { done(); } };
+    audio.onerror = function () { if (mine === token) { done(); } };
+    var started = audio.play();
+    if (started && started.catch) { started.catch(function () { if (mine === token) { done(); } }); }
+  }
+
+  function stopAudio() {
+    if (player) { player.pause(); player = null; }
+  }
+
   function mark(section) {
     if (highlighted) { highlighted.classList.remove("speaking"); highlighted = null; }
     if (!section) { return; }
@@ -53,10 +70,14 @@
   }
 
   // Speak one text, sentence by sentence (long utterances get cut off by some browsers).
-  function speak(text, done) {
+  function speak(text, done, source) {
     var voice = pickVoice(dock.dataset.lang);
     show(text);
-    if (!synth || !voice) {
+    if (natural && enabled && source) {
+      playUrl(source, token, done);
+      return;
+    }
+    if (!synth || !voice || !enabled) {
       if (enabled) { show(dock.dataset.noVoice + "\n\n" + text); }
       setTimeout(done, Math.min(8000, 1500 + text.length * 40)); // keep the captions moving
       return;
@@ -77,6 +98,7 @@
 
   function stop() {
     token += 1;
+    stopAudio();
     if (synth) { synth.cancel(); }
     mark(null);
     btnStop.hidden = true;
@@ -95,12 +117,19 @@
     btnStop.hidden = false;
     btnPlay.hidden = true;
     load().then(function (data) {
+      return new Promise(function (resolve) { setTimeout(function () { resolve(data); }, 150); });
+    }).then(function (data) {
+      if (mine !== token) { return; }
       var list = data.segments;
       (function next(i) {
         if (mine !== token) { return; }
         if (i >= list.length) { stop(); show(dock.dataset.ready); return; }
         mark(list[i].section);
-        speak(list[i].text, function () { next(i + 1); });
+        speak(list[i].text, function () { next(i + 1); }, "/api/speak?seg=" + i);
+        // Ask for the next part now, so Ganki has it ready when this one ends.
+        if (natural && i + 1 < list.length) {
+          fetch("/api/speak?seg=" + (i + 1), { credentials: "same-origin" }).catch(function () {});
+        }
       })(0);
     });
   }
@@ -112,7 +141,7 @@
     try { sessionStorage.setItem("ganki_voice", "1"); } catch (e) { /* ignore */ }
     if (synth) { synth.cancel(); synth.resume(); }
     if (dock.dataset.state === "running") {
-      load().then(function (data) { speak(data.scanning, function () {}); });
+      load().then(function (data) { speak(data.scanning, function () {}, "/api/speak?scanning=1"); });
     } else if (dock.dataset.state === "done") {
       playAll();
     }
@@ -124,7 +153,7 @@
 
   // Explain a section when the mouse (or keyboard focus) is on it.
   function explain(el) {
-    if (!enabled || !hoverBox.checked || !btnStop.hidden) { return; }
+    if (!hoverBox.checked || !btnStop.hidden) { return; }
     clearTimeout(hoverTimer);
     hoverTimer = setTimeout(function () {
       var section = el.dataset.explain;
@@ -132,9 +161,18 @@
         var item = data.segments.filter(function (s) { return s.section === section && !s.framing; });
         if (!item.length) { return; }
         token += 1;
+        var mine = token;
+        stopAudio();
         if (synth) { synth.cancel(); }
         mark(section);
-        speak(item.map(function (s) { return s.text; }).join(" "), function () { mark(null); });
+        var text = item.map(function (s) { return s.text; }).join(" ");
+        show(text);
+        // Browsers drop a speak() made in the same instant as a cancel(), so wait a moment.
+        setTimeout(function () {
+          if (mine === token) {
+            speak(text, function () { mark(null); }, "/api/speak?section=" + encodeURIComponent(section));
+          }
+        }, 150);
       });
     }, 500);
   }
@@ -150,7 +188,7 @@
     var el = e.target.closest ? e.target.closest("[data-explain]") : null;
     if (el && !el.contains(e.relatedTarget)) {
       clearTimeout(hoverTimer);
-      if (btnStop.hidden && enabled) { token += 1; if (synth) { synth.cancel(); } mark(null); }
+      if (btnStop.hidden && enabled) { token += 1; stopAudio(); if (synth) { synth.cancel(); } mark(null); }
     }
   });
 
@@ -164,7 +202,15 @@
         .then(function (html) {
           var doc = new DOMParser().parseFromString(html, "text/html");
           var fresh = doc.querySelector("main");
-          document.querySelector("main").replaceWith(fresh);
+          var current = document.querySelector("main");
+          var freshDock = fresh.querySelector("#assistant");
+          if (freshDock) { freshDock.remove(); }
+          // Replace the page content but keep the assistant itself (its buttons and state).
+          Array.prototype.slice.call(current.children).forEach(function (node) {
+            if (node !== dock) { node.remove(); }
+          });
+          while (fresh.firstChild) { current.insertBefore(fresh.firstChild, dock); }
+          if (freshDock) { natural = freshDock.dataset.natural === "1"; }
           document.body.dataset.state = "done";
           dock.dataset.state = "done";
           cache = null;

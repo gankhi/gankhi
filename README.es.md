@@ -46,6 +46,10 @@ Después abrí **Ganki** desde el menú de aplicaciones, o ejecutá `ganki` en u
 
 Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el navegador se abre con ella y se guarda una copia en `~/.cache/ganki/dashboard-url`, legible solo por vos.
 
+## Voz natural (opcional)
+
+Ganki puede explicar tu sistema en voz alta. Los navegadores en Linux casi nunca tienen una voz local, así que `scripts/install-voice.sh` (opcional) agrega Piper y una voz en español argentino dentro de `~/.local/share/ganki/voice`. Descarga unos 110 MB una sola vez; después la voz corre en tu computadora y no se envía nada. Sin ella igual tenés los subtítulos. La página solo admite audio que venga de Ganki (`media-src 'self'`).
+
 ## Requisitos
 
 Linux basado en Debian/Ubuntu y Python 3.10 o superior. Desarrollado sobre una base Ubuntu 24.04.

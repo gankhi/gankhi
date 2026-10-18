@@ -46,6 +46,10 @@ Then open **Ganki** from your applications menu, or run `ganki` in a terminal. I
 
 Each start creates a new secret key that is kept out of the terminal: the browser opens with it, and a copy is saved in `~/.cache/ganki/dashboard-url`, readable only by you.
 
+## Natural voice (optional)
+
+Ganki can explain your system out loud. Browsers on Linux rarely have a local voice, so the optional `scripts/install-voice.sh` adds Piper and an Argentine Spanish voice inside `~/.local/share/ganki/voice`. It downloads about 110 MB once; after that the voice runs on your computer and nothing is sent anywhere. Without it you still get captions. The page allows audio only from Ganki itself (`media-src 'self'`).
+
 ## Requirements
 
 Debian/Ubuntu-based Linux and Python 3.10 or newer. Developed on an Ubuntu 24.04 base.
