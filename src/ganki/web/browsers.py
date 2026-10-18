@@ -197,6 +197,11 @@ def remember(choice: str) -> None:
         pass  # not remembering is harmless: it will simply ask again
 
 
+def forget() -> None:
+    """Remove the remembered choice, so the next start asks again."""
+    preference_path().unlink(missing_ok=True)
+
+
 def _run(command: list[str]) -> tuple[int, str]:
     try:
         done = subprocess.run(  # noqa: S603  (absolute path from which(), fixed arguments)
@@ -282,5 +287,7 @@ def choose(force_ask: bool = False) -> str:
             choice = DEFAULT  # not something we can start: use the system's browser
         if keep and choice != CANCELLED:
             remember(choice)
+        elif force_ask and choice != CANCELLED:
+            forget()  # asking again and choosing "always ask" undoes a remembered choice
         return choice
     return DEFAULT

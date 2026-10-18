@@ -934,3 +934,20 @@ def test_open_in_browser_starts_the_chosen_one(monkeypatch):
     monkeypatch.setattr(server, "_start", lambda command: started.append(command) or True)
     assert server.open_in_browser("http://127.0.0.1:1/", "/usr/bin/librewolf") is True
     assert started == [["/usr/bin/librewolf", "http://127.0.0.1:1/"]]
+
+
+def test_asking_again_and_choosing_always_ask_undoes_a_remembered_choice(monkeypatch, tmp_path):
+    found = {"zenity": "/usr/bin/zenity", "firefox": "/usr/bin/firefox", "chromium": "/c"}
+    browsers, asked = _browsers_found(monkeypatch, tmp_path, found, (0, "/usr/bin/firefox"))
+    browsers.remember("/usr/bin/firefox")
+    assert browsers.choose() == "/usr/bin/firefox"  # remembered: no window
+
+    def say_no_to_remembering(command):
+        asked.append(command)
+        if "--list" in command:
+            return 0, "/c"
+        return 1, ""  # "Always ask" pressed
+
+    monkeypatch.setattr(browsers, "_run", say_no_to_remembering)
+    assert browsers.choose(force_ask=True) == "/c"
+    assert not browsers.preference_path().exists()  # forgotten: the next start asks again

@@ -60,7 +60,7 @@ Each start creates a new secret key that is kept out of the terminal: the browse
 |---|---|
 | Open it in your default browser | Double-click the **Ganki** icon, or choose it in the applications menu. |
 | Open it a second time | Click the icon again: it reopens the copy that is already running. |
-| Choose the browser | With more than one browser installed, a small window asks which one to use (it lists the browsers it finds, or lets you pick a program from your files) and can remember the choice. To be asked again: right-click the icon and choose **Open in another browser**, or run `ganki --ask-browser`. |
+| Choose the browser | With more than one browser installed, a small window asks which one to use (it lists the browsers it finds, or lets you pick a program from your files) and can remember the choice. To be asked again, or to undo a remembered choice, use the second icon **Ganki (choose browser)** and answer "Always ask" (or run `ganki --ask-browser`). Do not use your file manager's "Open with" on the icon: that tries to open the launcher file itself, and a browser just downloads it. |
 | Always use one browser, without the window | In a terminal: `BROWSER=librewolf ganki` (the command of your browser). |
 | Open it by hand | In a terminal: `ganki --no-open`, then paste the whole address saved in `~/.cache/ganki/dashboard-url` into any browser. |
 

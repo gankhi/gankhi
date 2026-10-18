@@ -60,7 +60,7 @@ Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el na
 |---|---|
 | Abrirlo en tu navegador predeterminado | Doble clic en el ícono **Ganki**, o elegilo en el menú de aplicaciones. |
 | Abrirlo otra vez | Otro clic en el ícono: vuelve a abrir la copia que ya está corriendo. |
-| Elegir el navegador | Con más de un navegador instalado, una ventanita pregunta con cuál abrirlo (lista los que encuentra, o te deja elegir un programa de tus archivos) y puede recordar la elección. Para que vuelva a preguntar: clic derecho en el ícono y **Abrir en otro navegador**, o `ganki --ask-browser`. |
+| Elegir el navegador | Con más de un navegador instalado, una ventanita pregunta con cuál abrirlo (lista los que encuentra, o te deja elegir un programa de tus archivos) y puede recordar la elección. Para que vuelva a preguntar, o para deshacer una elección recordada, usá el segundo ícono **Ganki (elegir navegador)** y respondé "Preguntar siempre" (o `ganki --ask-browser`). No uses "Abrir con" del administrador de archivos sobre el ícono: eso intenta abrir el archivo del lanzador y el navegador solo lo descarga. |
 | Usar siempre un navegador, sin la ventanita | En una terminal: `BROWSER=librewolf ganki` (el comando de tu navegador). |
 | Abrirlo a mano | En una terminal: `ganki --no-open`, y pegá en cualquier navegador la dirección completa guardada en `~/.cache/ganki/dashboard-url`. |
 
