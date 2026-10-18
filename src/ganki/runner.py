@@ -115,22 +115,26 @@ def _checked_arguments(
 def privileged_apt(action: str, package: str = "") -> list[str]:
     """The only commands that may change the system, written out exactly.
 
-    ``action`` is "remove", "update" (one package) or "all". Nothing else is built
-    here, and ``run_privileged`` refuses any list that differs from these.
+    ``action`` is "remove", "update" (one package), "all" or "clean" (empty apt's download
+    cache). Nothing else is built here, and ``run_privileged`` refuses any list that differs
+    from these.
     """
     head = [PKEXEC, ENV, "DEBIAN_FRONTEND=noninteractive", APT_GET]
     if action == "remove":
         return [*head, "remove", "-y", package]
     if action == "update":
         return [*head, "install", "--only-upgrade", "-y", *_KEEP_CONFIG, package]
+    if action == "clean":
+        return [*head, "clean"]
     return [*head, "full-upgrade", "-y", *_KEEP_CONFIG]
 
 
 def _privileged_command(args: Sequence[str]) -> list[str] | None:
     """The allowlisted command equal to ``args``, rebuilt from Ganki's own pieces."""
     candidate = list(args)
-    if candidate == privileged_apt("all"):
-        return privileged_apt("all")
+    for action in ("all", "clean"):
+        if candidate == privileged_apt(action):
+            return privileged_apt(action)
     name = valid_package(candidate[-1]) if candidate else None
     if name is None:
         return None

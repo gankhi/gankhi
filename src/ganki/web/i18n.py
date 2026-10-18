@@ -110,6 +110,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "prev_title_update": "Preview before updating {name}",
         "prev_title_remove": "Preview before removing {name}",
         "prev_title_all": "Preview before updating everything",
+        "prev_title_clean": "Preview before emptying apt's download cache",
+        "prev_clean_summary": (
+            "apt keeps a copy of every package it has downloaded, in case it needs it again. "
+            "Emptying it deletes only those copies. No program is removed or changed, and your "
+            "files are not touched. If apt needs a package again later, it downloads it again."
+        ),
+        "prev_clean_name": "emptying the cache",
+        "prev_run_note_clean": "To do it from a terminal instead, copy this line:",
+        "btn_clean_cache": "Empty apt's download cache ({size})",
+        "blocked_nothing_to_clean": "The download cache is already empty.",
+        "confirm_clean": "Yes, empty the cache",
+        "password_note_clean": (
+            "The system's own window asks for your password, never Ganki. It is the password of "
+            "your user account, the same one you type with sudo or to log in. The account has to "
+            "be an administrator and have a password; if it does not, the system will refuse and "
+            "nothing changes: use the command shown below instead."
+        ),
         "prev_summary": "{up} updated, {new} new, {gone} removed.",
         "prev_download": "Still to download: {size} (what is already in the cache does not count)",
         "prev_uses": "Uses {size} more disk space",
@@ -580,6 +597,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "prev_title_update": "Vista previa antes de actualizar {name}",
         "prev_title_remove": "Vista previa antes de quitar {name}",
         "prev_title_all": "Vista previa antes de actualizar todo",
+        "prev_title_clean": "Vista previa antes de vaciar la caché de descargas de apt",
+        "prev_clean_summary": (
+            "apt guarda una copia de cada paquete que descargó, por si lo necesita de nuevo. "
+            "Vaciarla borra solo esas copias. No se quita ni se cambia ningún programa, y tus "
+            "archivos no se tocan. Si apt vuelve a necesitar un paquete, lo descarga otra vez."
+        ),
+        "prev_clean_name": "vaciar la caché",
+        "prev_run_note_clean": "Para hacerlo desde una terminal, copiá esta línea:",
+        "btn_clean_cache": "Vaciar la caché de descargas de apt ({size})",
+        "blocked_nothing_to_clean": "La caché de descargas ya está vacía.",
+        "confirm_clean": "Sí, vaciar la caché",
+        "password_note_clean": (
+            "La contraseña la pide la ventana del sistema, nunca Ganki. Es la de tu usuario, la "
+            "misma que escribís con sudo o para iniciar sesión. El usuario tiene que ser "
+            "administrador y tener una contraseña; si no, el sistema lo rechaza y no cambia "
+            "nada: usá el comando que aparece más abajo."
+        ),
         "prev_summary": "{up} se actualizarían, {new} nuevos, {gone} se quitarían.",
         "prev_download": "Falta descargar: {size} (lo que ya está en la caché no cuenta)",
         "prev_uses": "Usa {size} más de disco",

@@ -120,13 +120,13 @@ class ActionJob:
             self.message = ""
             args = runner.privileged_apt(action, package)
             self.command = " ".join(args)
-        threading.Thread(target=self._work, args=(args,), daemon=True).start()
+        threading.Thread(target=self._work, args=(args, action != "clean"), daemon=True).start()
         return True
 
-    def _work(self, args: list[str]) -> None:
+    def _work(self, args: list[str], save_list: bool = True) -> None:
         try:
-            path = write_snapshot(self._directory or snapshot_dir())
-            self.snapshot = str(path)
+            if save_list:  # cleaning only deletes downloaded files: there is nothing to record
+                self.snapshot = str(write_snapshot(self._directory or snapshot_dir()))
             code = self._run(args, self.lines.append)
         except Exception:  # details go to the log, the screen gets a generic message
             log.exception("action failed")
