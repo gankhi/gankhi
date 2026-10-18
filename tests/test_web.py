@@ -971,3 +971,28 @@ def test_asking_again_and_choosing_always_ask_undoes_a_remembered_choice(monkeyp
     monkeypatch.setattr(browsers, "_run", say_no_to_remembering)
     assert browsers.choose(force_ask=True) == "/c"
     assert not browsers.preference_path().exists()  # forgotten: the next start asks again
+
+
+def test_a_row_with_fixed_and_unfixed_notices_counts_each_kind():
+    from dataclasses import replace
+
+    from ganki.web.i18n import TEXTS as STRINGS
+
+    for lang in ("en", "es"):
+        text = STRINGS[lang]["hint_fixed_part"].format(n=39, m=3, version="1.2")
+        assert "39" in text and "3" in text and "1.2" in text
+
+    def scan():
+        result = make_result()
+        extra = Finding("CVE-9", "openssl", ("openssl",), "1.0", None, None, "low", "plain text")
+        findings = [*result.findings, extra]
+        packages = [Package("openssl", "1.0", "amd64", 900, "crypto toolkit", has_menu_entry=True)]
+        return replace(result, findings=findings, tools=build_tools(packages, findings, []))
+
+    client = login(build(scan).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    # openssl has one notice with a fix and one without: each label says how many
+    assert 'tag ok">Fix available: 1<' in html
+    assert 'tag bad">No fix yet: 1<' in html
