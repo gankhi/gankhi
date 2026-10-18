@@ -63,6 +63,7 @@ class Package:
     priority: str = ""
     essential: bool = False
     has_menu_entry: bool = False  # ships a launcher shown in the applications menu
+    component: str = "main"  # main, restricted, universe or multiverse (from "universe/devel")
 
     @property
     def is_program(self) -> bool:
@@ -112,6 +113,7 @@ def parse_dpkg_query(output: str) -> list[Package]:
                 source_name=source or name.split(":")[0],
                 source_version=source_version or version,
                 section=section.rsplit("/", 1)[-1],
+                component=section.split("/", 1)[0] if "/" in section else "main",
                 priority=priority,
                 essential=essential == "yes",
             )
