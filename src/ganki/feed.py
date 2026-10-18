@@ -22,6 +22,7 @@ from pathlib import Path
 
 OSV_URL = "https://security-metadata.canonical.com/osv/osv-all.tar.xz"
 MAX_DOWNLOAD_BYTES = 300 * 1024 * 1024  # refuse absurdly large downloads
+MAX_EXTERNAL_BYTES = 600 * 1024 * 1024  # the npm list is much bigger than Ubuntu's
 TIMEOUT_SECONDS = 60
 _CHUNK = 1024 * 256
 
@@ -53,14 +54,18 @@ def refresh(
     url: str = OSV_URL,
     cache_dir: Path | None = None,
     opener: Callable[..., object] = urllib.request.urlopen,
+    name: str = "osv-all",
+    suffix: str = ".tar.xz",
+    max_bytes: int | None = None,
 ) -> FeedStatus:
     """Make sure the cached feed is current; download it if the server has a newer one."""
     if not url.startswith("https://"):
         raise ValueError("the feed must be downloaded over HTTPS")
+    limit = max_bytes or MAX_DOWNLOAD_BYTES
     cache = cache_dir or default_cache_dir()
     cache.mkdir(parents=True, exist_ok=True)
-    target = cache / "osv-all.tar.xz"
-    meta_path = cache / "osv-all.meta.json"
+    target = cache / f"{name}{suffix}"
+    meta_path = cache / f"{name}.meta.json"
     meta = _read_meta(meta_path) if target.exists() else {}
 
     headers = {"User-Agent": "ganki"}
@@ -79,7 +84,7 @@ def refresh(
 
     with response as resp:  # type: ignore[attr-defined]
         declared = int(resp.headers.get("Content-Length") or 0)
-        if declared > MAX_DOWNLOAD_BYTES:
+        if declared > limit:
             raise ValueError("the feed is larger than the allowed maximum")
         fd, tmp_name = tempfile.mkstemp(dir=cache, prefix="osv-", suffix=".part")
         total = 0
@@ -87,7 +92,7 @@ def refresh(
             with os.fdopen(fd, "wb") as out:
                 while chunk := resp.read(_CHUNK):
                     total += len(chunk)
-                    if total > MAX_DOWNLOAD_BYTES:
+                    if total > limit:
                         raise ValueError("the feed exceeded the allowed maximum while downloading")
                     out.write(chunk)
             os.replace(tmp_name, target)  # atomic: never leaves a half-written feed

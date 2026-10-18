@@ -18,6 +18,8 @@ from ganki import cleanup
 from ganki import downloads as downloads_mod
 from ganki.collectors.apt import collect
 from ganki.collectors.updates import collect_updates
+from ganki.external_scan import scan_external
+from ganki.external_tools import ExternalTool
 from ganki.feed import refresh
 from ganki.osv import Finding, find_findings, is_snap_stub, load_advisories
 from ganki.progress import Progress
@@ -46,6 +48,8 @@ class ScanResult:
     download_groups: list[downloads_mod.DownloadGroup] = field(default_factory=list)
     downloads_folder: str = ""  # shown as "~/Descargas", never the full home path
     tools: list[Tool] = field(default_factory=list)
+    external: list[ExternalTool] = field(default_factory=list)  # pip and npm packages
+    external_failed: list[str] = field(default_factory=list)  # pip/npm could not be checked
 
 
 def run_scan(progress: Progress | None = None) -> ScanResult:
@@ -66,7 +70,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
     # The slow parts do not depend on each other, so they run side by side: the system
     # commands (dpkg, apt) wait on other processes while the feed is being read.
     folder = downloads_mod.downloads_dir()
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=5) as pool:
         system_job = pool.submit(
             step,
             "system",
@@ -90,6 +94,12 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
                 "download_bytes": sum(g.size_bytes for g in r),
             },
         )
+        external_job = pool.submit(
+            step,
+            "external",
+            lambda: scan_external(lambda value: progress.fraction("external", value)),
+            lambda r: {"external_packages": len(r[0])},
+        )
         status = step(
             "feed",
             refresh,
@@ -105,6 +115,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
         updates = updates_job.result()
         system = system_job.result()
         download_groups = downloads_job.result()
+        external, external_failed = external_job.result()
     progress.begin("analysis")
     findings = find_findings(packages, index)
     log.info("scan finished in %.1f s", time.monotonic() - started)
@@ -124,6 +135,8 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
         download_groups=download_groups,
         downloads_folder="~/" + folder.name,
         tools=build_tools(packages, findings, updates, system.kernel),
+        external=external,
+        external_failed=external_failed,
     )
     progress.finish("analysis", findings=len(findings))
     return result

@@ -29,10 +29,18 @@ Un panel local para Linux que muestra qué hay instalado en tu computadora, qué
 - [x] Estado de actualizaciones y vulnerabilidades
 - [x] Panel web (inglés y español)
 - [x] Descargas por tipo
+- [x] Paquetes de Python (pip) y npm, revisados con las listas públicas de OSV
 - [x] Empaquetado (instalador y lanzador de escritorio)
 - [ ] Vista de capturas y duplicados
 - [ ] Imágenes de Docker
 - [ ] Acciones de borrado y limpieza con protecciones
+
+## Qué descarga Ganki
+
+Dos tipos de archivos públicos, solo cuando cambiaron y nunca algo sobre tu computadora: la lista
+de vulnerabilidades de Ubuntu de Canonical y, solo si tenés paquetes instalados con `pip` o `npm`,
+la lista de OSV de ese ecosistema (`osv-vulnerabilities.storage.googleapis.com`). Los nombres y
+versiones de lo que tenés instalado se comparan en tu computadora y no se envían a ningún lado.
 
 ## Instalar y usar
 

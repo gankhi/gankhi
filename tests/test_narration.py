@@ -23,7 +23,7 @@ def test_no_placeholder_is_left_in_the_text(lang):
 @pytest.mark.parametrize("lang", ["en", "es"])
 def test_every_segment_points_at_a_section_of_the_page(lang):
     sections = {s.section for s in narration.build(make_result(), lang)}
-    assert sections <= {"system", "disk", "ram", "tools", "reclaim", "downloads"}
+    assert sections <= {"system", "disk", "ram", "tools", "reclaim", "downloads", "external"}
     assert {"system", "disk", "ram", "tools"} <= sections
 
 

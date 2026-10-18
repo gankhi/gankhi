@@ -41,7 +41,8 @@ STEP_WEIGHTS = {
     "updates": 6,
     "downloads": 4,
     "feed": 4,
-    "index": 64,
+    "index": 60,
+    "external": 4,
     "analysis": 10,
 }
 FILTERS = ("all", "outdated", "vulnerable")

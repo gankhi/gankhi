@@ -146,6 +146,8 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
     for text in _advice(_most_urgent(everything), say):
         segments.append(Segment("tools", text, "bad" if serious_any else "warn"))
 
+    segments.extend(_external_segments(result, say))
+
     if result.download_groups:
         total_bytes = sum(g.size_bytes for g in result.download_groups)
         files = sum(g.files for g in result.download_groups)
@@ -169,6 +171,38 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
 
 
 MOST_URGENT = 3
+
+
+def _external_segments(result: ScanResult, say) -> list[Segment]:  # type: ignore[no-untyped-def]
+    """Python and npm packages: how many, how many have notices, which are most urgent."""
+    segments: list[Segment] = []
+    bad = [t for t in result.external if t.vulnerable]
+    if result.external and not bad:
+        segments.append(Segment("external", say("say_external_ok", n=len(result.external)), "ok"))
+    elif bad:
+        serious = sum(1 for t in bad if t.top_priority in SERIOUS)
+        names = _names(bad, say("say_and_more"), "")
+        text = say(
+            "say_external_bad",
+            n=len(result.external),
+            bad=len(bad),
+            serious=serious,
+            names=names,
+        )
+        segments.append(Segment("external", text, "bad" if serious else "warn"))
+        malware = [t for t in bad if t.malicious]
+        if malware:
+            segments.append(
+                Segment(
+                    "external",
+                    say("say_external_malware", names=_names(malware, say("say_and_more"), "")),
+                    "bad",
+                )
+            )
+    if result.external_failed:
+        text = say("say_external_failed", tools=", ".join(result.external_failed))
+        segments.append(Segment("external", text, "warn"))
+    return segments
 
 
 def vulnerable_libraries(result: ScanResult) -> tuple[list, list]:  # type: ignore[type-arg]

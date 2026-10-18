@@ -12,7 +12,7 @@ import time
 from typing import Any
 
 PENDING, RUNNING, DONE = "pending", "running", "done"
-STEPS = ("system", "programs", "updates", "downloads", "feed", "index", "analysis")
+STEPS = ("system", "programs", "updates", "downloads", "feed", "index", "external", "analysis")
 
 
 class Progress:

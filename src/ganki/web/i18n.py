@@ -229,6 +229,31 @@ TEXTS: dict[str, dict[str, str]] = {
         "step_downloads": "Looking at your downloads folder",
         "step_feed": "Checking the vulnerability list",
         "step_index": "Reading the vulnerability list",
+        "step_external": "Checking Python and npm packages",
+        "ext_title": "Python and npm packages",
+        "ext_sub": "{n} installed with pip or npm; {bad} with security notices.",
+        "ext_none": "None of them has a known security notice.",
+        "ext_failed": (
+            "Could not check {tools}: no connection, or the list could not be read. "
+            "Try again later."
+        ),
+        "ext_col_package": "Package",
+        "ext_col_tool": "Installed with",
+        "ext_fix": "Update to {version} or newer with {tool}.",
+        "ext_fix_hint": "For example: {command}",
+        "ext_nofix": "No fix published yet. Use it with care.",
+        "ext_malware": "This is a malicious package. Remove it.",
+        "ext_no_priority": "unknown",
+        "report_external": "Python and npm packages with security notices",
+        "say_external_ok": (
+            "In Python and npm you have {n} packages and none has a known security notice."
+        ),
+        "say_external_bad": (
+            "In Python and npm you have {n} packages, {bad} with security notices, "
+            "{serious} of them critical or high priority. Most urgent: {names}."
+        ),
+        "say_external_malware": "Warning: {names} is a malicious package. Remove it.",
+        "say_external_failed": "I could not check {tools}. Try again later.",
         "step_analysis": "Matching vulnerabilities and preparing the report",
         "fact_system": "System: {os}",
         "fact_disk": "Disk: {percent}% used, {free} free",
@@ -592,6 +617,31 @@ TEXTS: dict[str, dict[str, str]] = {
         "step_downloads": "Mirando tu carpeta de descargas",
         "step_feed": "Consultando la lista de vulnerabilidades",
         "step_index": "Leyendo la lista de vulnerabilidades",
+        "step_external": "Revisando paquetes de Python y npm",
+        "ext_title": "Paquetes de Python y npm",
+        "ext_sub": "{n} instalados con pip o npm; {bad} con avisos de seguridad.",
+        "ext_none": "Ninguno tiene avisos de seguridad conocidos.",
+        "ext_failed": (
+            "No pude revisar {tools}: no hubo conexión o no se pudo leer la lista. "
+            "Probá de nuevo más tarde."
+        ),
+        "ext_col_package": "Paquete",
+        "ext_col_tool": "Instalado con",
+        "ext_fix": "Actualizá a {version} o más nuevo con {tool}.",
+        "ext_fix_hint": "Por ejemplo: {command}",
+        "ext_nofix": "Todavía no hay arreglo publicado. Usalo con cuidado.",
+        "ext_malware": "Es un paquete malicioso. Quitalo.",
+        "ext_no_priority": "sin dato",
+        "report_external": "Paquetes de Python y npm con avisos de seguridad",
+        "say_external_ok": (
+            "En Python y npm tenés {n} paquetes y ninguno tiene avisos de seguridad conocidos."
+        ),
+        "say_external_bad": (
+            "En Python y npm tenés {n} paquetes, {bad} con avisos de seguridad, "
+            "{serious} de ellos de prioridad crítica o alta. Lo más urgente: {names}."
+        ),
+        "say_external_malware": "Atención: {names} es un paquete malicioso. Quitalo.",
+        "say_external_failed": "No pude revisar {tools}. Probá de nuevo más tarde.",
         "step_analysis": "Cruzando vulnerabilidades y preparando el informe",
         "fact_system": "Sistema: {os}",
         "fact_disk": "Disco: {percent}% usado, {free} libres",
