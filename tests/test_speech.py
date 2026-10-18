@@ -81,7 +81,7 @@ def test_speak_endpoint_builds_the_text_itself(tmp_path):
     assert response.status_code == 200
     assert response.mimetype == "audio/wav"
     expected = narration.build(make_result(), "en")[2].text
-    assert rec.calls[0][-1] == " ".join(expected.split())
+    assert " ".join(expected.split()) in [call[-1] for call in rec.calls]
 
 
 def test_speak_by_section_skips_intro_and_outro(tmp_path):
@@ -130,3 +130,18 @@ def test_csp_only_adds_media_from_this_server(tmp_path):
     csp = client.get("/", base_url=BASE).headers["Content-Security-Policy"]
     assert "media-src 'self';" in csp
     assert "unsafe" not in csp and "default-src 'none'" in csp
+
+
+def test_the_first_parts_are_made_as_soon_as_the_scan_ends(tmp_path):
+    import time
+
+    from ganki.web.app import WARM_SEGMENTS
+
+    client, rec = make_client(tmp_path)
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    for _ in range(100):
+        if len(rec.calls) >= WARM_SEGMENTS:
+            break
+        time.sleep(0.05)
+    assert len(rec.calls) >= WARM_SEGMENTS

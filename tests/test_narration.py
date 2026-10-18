@@ -111,3 +111,44 @@ def test_the_summary_is_short_and_follows_the_requested_order():
     sections = [s.section for s in narration.build(make_result(), "es")]
     assert sections.index("disk") < sections.index("ram") < sections.index("tools")
     assert "programs" not in sections
+
+
+def _with_library(result, priority="critical", name="libfoo1"):
+    from dataclasses import replace
+
+    template = next(t for t in result.tools if t.is_program)
+    library = replace(
+        template,
+        name=name,
+        is_program=False,
+        state="vulnerable",
+        top_priority=priority,
+        fixed_in="2.0",
+        end_of_support=False,
+    )
+    return replace(result, tools=[*result.tools, library])
+
+
+@pytest.mark.parametrize("lang", ["en", "es"])
+def test_memory_reading_includes_the_total(lang):
+    result = make_result()
+    ram = next(s for s in narration.build(result, lang) if s.section == "ram")
+    assert narration.spoken_size(result.system.ram_total_kib, lang) in ram.text
+
+
+@pytest.mark.parametrize("lang", ["en", "es"])
+def test_critical_libraries_are_counted_and_named(lang):
+    result = _with_library(make_result(), "critical", "libcritical9")
+    text = texts(result, lang)
+    assert "libcritical9" in text
+    assert re.search(r"\b1\b", text)
+
+
+def test_libraries_alone_do_not_read_as_clean():
+    result = make_result()
+    for tool in result.tools:
+        object.__setattr__(tool, "state", "ok")
+    result = _with_library(result, "low", "libquiet1")
+    text = texts(result, "en")
+    assert "Everything is up to date" not in text
+    assert "none critical" in text

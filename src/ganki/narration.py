@@ -80,7 +80,17 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
             if system.ram_percent >= RAM_BUSY
             else "ok"
         )
-        segments.append(Segment("ram", say(f"say_ram_{level}", percent=system.ram_percent)))
+        segments.append(
+            Segment(
+                "ram",
+                say(
+                    f"say_ram_{level}",
+                    percent=system.ram_percent,
+                    used=spoken_size(system.ram_used_kib, lang),
+                    total=spoken_size(system.ram_total_kib, lang),
+                ),
+            )
+        )
 
     reclaim = result.reclaimable
     text = ""
@@ -94,14 +104,24 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
     programs = [t for t in result.tools if t.is_program]
     vulnerable = [t for t in programs if t.state == "vulnerable"]
     outdated = [t for t in programs if t.state == "outdated"]
+    libraries = [t for t in result.tools if not t.is_program and t.state == "vulnerable"]
+    everything = vulnerable + libraries
     if vulnerable:
         summary = say("say_tools_summary", vulnerable=len(vulnerable), outdated=len(outdated))
+    elif libraries:
+        summary = say("say_tools_programs_ok", outdated=len(outdated))
     elif outdated:
         summary = say("say_tools_outdated_only", outdated=len(outdated))
     else:
         summary = say("say_tools_clean")
     segments.append(Segment("tools", summary))
-    for text in _advice(_most_urgent(vulnerable), say):
+    if libraries:
+        serious = sum(1 for t in libraries if t.top_priority in SERIOUS)
+        key = "say_tools_libs_serious" if serious else "say_tools_libs_mild"
+        segments.append(Segment("tools", say(key, n=len(libraries), serious=serious)))
+    if everything:
+        segments.append(Segment("tools", say("say_tools_urgent")))
+    for text in _advice(_most_urgent(everything), say):
         segments.append(Segment("tools", text))
 
     if result.download_groups:
@@ -127,6 +147,7 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
 
 
 MOST_URGENT = 3
+SERIOUS = ("critical", "high")
 
 
 def _most_urgent(vulnerable: list) -> list:  # type: ignore[type-arg]

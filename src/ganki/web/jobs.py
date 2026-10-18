@@ -18,8 +18,14 @@ IDLE, RUNNING, DONE, ERROR, UNSUPPORTED = "idle", "running", "done", "error", "u
 class ScanJob:
     """At most one scan at a time; the latest result is kept in memory."""
 
-    def __init__(self, scan: Callable[[], ScanResult], progress: Progress | None = None) -> None:
+    def __init__(
+        self,
+        scan: Callable[[], ScanResult],
+        progress: Progress | None = None,
+        on_done: Callable[[ScanResult], None] | None = None,
+    ) -> None:
         self._scan = scan
+        self._on_done = on_done
         self.progress = progress or Progress()
         self._lock = threading.Lock()
         self.state = IDLE
@@ -46,3 +52,8 @@ class ScanJob:
         else:
             self.result = result
             self.state = DONE
+            if self._on_done is not None:
+                try:
+                    self._on_done(result)
+                except Exception:  # a failed warm-up must never fail the scan
+                    log.exception("after-scan hook failed")

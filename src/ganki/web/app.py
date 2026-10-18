@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hmac
 import subprocess
+import threading
 from collections.abc import Callable
 from datetime import datetime
 from typing import Any
@@ -33,6 +34,7 @@ from ganki.web.jobs import DONE, IDLE, RUNNING, ScanJob
 
 SESSION_COOKIE = "ganki_session"
 LANG_COOKIE = "ganki_lang"
+WARM_SEGMENTS = 4
 STEP_WEIGHTS = {
     "system": 4,
     "programs": 8,
@@ -72,8 +74,25 @@ def create_app(
     confirmed action for real (both replaced in tests).
     """
     app = Flask(__name__)
-    job = ScanJob(scan, progress)
     voice = speaker or speech.Speaker()
+
+    def warm_voice(result: ScanResult) -> None:
+        """Speak-ahead: make the first parts of the narration while the page is still loading.
+
+        Synthesis takes a few seconds, so doing it only when the browser asks made the voice
+        start late. The audio goes to the same cache the browser's request reads from.
+        """
+
+        def work() -> None:
+            for lang in i18n.LANGUAGES:
+                if not voice.available(lang):
+                    continue
+                for segment in narration.build(result, lang)[:WARM_SEGMENTS]:
+                    voice.speak(lang, segment.text)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    job = ScanJob(scan, progress, on_done=warm_voice)
     runner_job = executor or ActionJob(on_done=job.start)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
     app.jinja_env.filters["size"] = paging.human_size
