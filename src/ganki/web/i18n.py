@@ -857,7 +857,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_fixable": "Se arreglan actualizando",
         "report_nofix": "Sin arreglo publicado todavía",
         "report_minor": (
-            "Avisos más, de prioridad baja o despreciable y sin arreglo publicado: {n}. "
+            "Avisos más, de prioridad baja o insignificante y sin arreglo publicado: {n}. "
             "Por ahora no necesitan nada de tu parte."
         ),
         "report_kernel_name": "Kernel de Linux",
@@ -926,7 +926,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "high": "alta",
         "medium": "media",
         "low": "baja",
-        "negligible": "despreciable",
+        "negligible": "insignificante",
         "unknown": "desconocida",
         "ring_used": "ocupado",
         "ring_in_use": "en uso",

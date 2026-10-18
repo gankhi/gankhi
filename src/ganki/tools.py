@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ganki import debversion
+from ganki.advice import profile_for
 from ganki.collectors.apt import SYSTEM_PRIORITIES, Package
 from ganki.collectors.updates import Update
 from ganki.osv import PRIORITY_ORDER, Finding
@@ -14,6 +15,7 @@ from ganki.osv import PRIORITY_ORDER, Finding
 VULNERABLE, OUTDATED, OK = "vulnerable", "outdated", "ok"
 _UNKNOWN = len(PRIORITY_ORDER)
 MAX_CVE_LINES = 5  # most urgent CVEs shown per tool
+URGENT_PRIORITIES = ("critical", "high")  # notices that cannot wait
 
 # Newest Node.js major that no longer gets fixes from its authors
 # (https://nodejs.org/en/about/previous-releases: 18 ended in 2025, 20 in April 2026).
@@ -84,6 +86,8 @@ class Tool:
     section: str = ""  # the package's own category in the distribution (net, mail, graphics...)
     update_security: bool = False  # the newer version comes from Ubuntu's security channel
     update_origin: str = ""  # where the newer version comes from, as apt reports it
+    fixable_priority: str = ""  # most urgent priority among the notices an update fixes
+    urgent: bool = False  # worth updating before anything else
 
 
 def _rank(priority: str) -> int:
@@ -91,17 +95,31 @@ def _rank(priority: str) -> int:
 
 
 def _tier(tool: Tool) -> int:
-    """What the person can do about it, so the list starts with what can be fixed now.
+    """What the person can do about it, so the list starts with what matters most.
 
-    0: updating fixes all of its notices. 1: updating fixes some, others stay open. 2: only
-    outdated. 3: it has notices that no update fixes (no patch yet, or the project is no
-    longer supported). 4: up to date.
+    0: urgent (see ``_is_urgent``). 1: updating fixes all of its notices. 2: updating fixes
+    some, others stay open. 3: only outdated. 4: it has notices that no update fixes (no patch
+    yet, or the project is no longer supported). 5: up to date.
     """
+    if tool.urgent:
+        return 0
     if tool.state == VULNERABLE:
         if tool.fixed_in and tool.update_to:
-            return 1 if tool.unfixable else 0
-        return 3
-    return 2 if tool.state == OUTDATED else 4
+            return 2 if tool.unfixable else 1
+        return 4
+    return 3 if tool.state == OUTDATED else 5
+
+
+def _is_urgent(tool: Tool) -> bool:
+    """An update is on offer and it fixes serious notices, comes from Ubuntu's security
+    channel, or is for a browser (the most exposed kind of program)."""
+    if not tool.update_to:
+        return False
+    if tool.state == VULNERABLE:
+        return bool(tool.fixed_in) and tool.fixable_priority in URGENT_PRIORITIES
+    if tool.update_security:
+        return True
+    return profile_for(tool.name, "", tool.description, tool.section) == "browser"
 
 
 def _sample(unique: dict[str, Finding]) -> tuple[CveLine, ...]:
@@ -168,6 +186,11 @@ def build_tools(
                 fixable=sum(1 for f in unique.values() if f.status != "no_fix"),
                 unfixable=sum(1 for f in unique.values() if f.status == "no_fix"),
                 fixed_in=fixed_in,
+                fixable_priority=min(
+                    (f.priority for f in unique.values() if f.status != "no_fix"),
+                    key=_rank,
+                    default="",
+                ),
                 component=pkg.component,
                 installed_version=pkg.version,
                 section=pkg.section,
@@ -176,7 +199,13 @@ def build_tools(
                 cves=_sample(unique),
             )
         )
+    tools = [replace(t, urgent=_is_urgent(t)) for t in tools]
     return sorted(
         tools,
-        key=lambda t: (_tier(t), _rank(t.top_priority), -t.cve_count, t.name),
+        key=lambda t: (
+            _tier(t),
+            _rank(t.fixable_priority or t.top_priority),
+            -t.cve_count,
+            t.name,
+        ),
     )
