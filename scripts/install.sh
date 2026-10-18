@@ -46,7 +46,7 @@ python3 -c 'import venv, ensurepip' 2>/dev/null \
 # The Desktop folder, wherever the system language put it (Desktop, Escritorio, ...).
 desktop_dir=""
 if [ "$desktop_shortcut" = true ]; then
-    configured="$(sed -n 's/^XDG_DESKTOP_DIR="\(.*\)"$/\1/p' "$HOME/.config/user-dirs.dirs" 2>/dev/null | head -n 1)"
+    configured="$(sed -n 's/^XDG_DESKTOP_DIR="\(.*\)"$/\1/p' "$HOME/.config/user-dirs.dirs" 2>/dev/null | head -n 1)" || configured=""
     candidate="${configured//\$HOME/$HOME}"
     [ -n "$candidate" ] || candidate="$HOME/Desktop"
     case "$candidate" in "$HOME"/*) [ -d "$candidate" ] && desktop_dir="$candidate" ;; esac
@@ -56,7 +56,7 @@ say "Ganki will be installed for your user only:"
 say "  program files : $APP_DIR"
 say "  command       : $BIN_DIR/ganki"
 say "  menu entry    : $DESKTOP_DIR/ganki.desktop"
-[ -n "$desktop_dir" ] && say "  desktop icon  : $desktop_dir/Ganki.desktop"
+[ -n "$desktop_dir" ] && say "  desktop icons : $desktop_dir/Ganki.desktop and Ganki-elegir-navegador.desktop"
 if [ "$assume_yes" = false ]; then
     read -r -p "Continue? [y/N] (s/y = yes) " answer
     case "$answer" in y|Y|yes|YES|s|S|si|SI|Si|sí|Sí) ;; *) say "Cancelled. Nothing was changed."; exit 0 ;; esac
@@ -83,22 +83,26 @@ install -m 644 "$SRC/packaging/ganki.svg" "$APP_DIR/ganki.svg"
 # Quote the path as the desktop-entry format requires (spaces, and % written as %%).
 exec_path="${BIN_DIR//%/%%}/ganki"
 icon_path="$APP_DIR/ganki.svg"
-make_launcher() {
+make_launcher() {  # make_launcher <template name> <destination>
     sed -e "s|@EXEC@|\"$exec_path\"|" -e "s|@ICON@|$icon_path|" \
-        "$SRC/packaging/ganki.desktop.in" > "$1"
+        "$SRC/packaging/$1" > "$2"
 }
-make_launcher "$DESKTOP_DIR/ganki.desktop"
-chmod 644 "$DESKTOP_DIR/ganki.desktop"
+make_launcher ganki.desktop.in "$DESKTOP_DIR/ganki.desktop"
+make_launcher ganki-choose.desktop.in "$DESKTOP_DIR/ganki-choose-browser.desktop"
+chmod 644 "$DESKTOP_DIR/ganki.desktop" "$DESKTOP_DIR/ganki-choose-browser.desktop"
 if command -v update-desktop-database >/dev/null; then
     update-desktop-database "$DESKTOP_DIR" >/dev/null 2>&1 || true
 fi
 
 if [ -n "$desktop_dir" ]; then
-    make_launcher "$desktop_dir/Ganki.desktop"
-    chmod 755 "$desktop_dir/Ganki.desktop"  # desktops only run launchers marked executable
-    if command -v gio >/dev/null; then  # "trust" it so the desktop does not ask on first click
-        gio set "$desktop_dir/Ganki.desktop" metadata::trusted true >/dev/null 2>&1 || true
-    fi
+    make_launcher ganki.desktop.in "$desktop_dir/Ganki.desktop"
+    make_launcher ganki-choose.desktop.in "$desktop_dir/Ganki-elegir-navegador.desktop"
+    for icon in Ganki.desktop Ganki-elegir-navegador.desktop; do
+        chmod 755 "$desktop_dir/$icon"  # desktops only run launchers marked executable
+        if command -v gio >/dev/null; then  # "trust" it so the desktop does not ask on first click
+            gio set "$desktop_dir/$icon" metadata::trusted true >/dev/null 2>&1 || true
+        fi
+    done
 fi
 
 say ""

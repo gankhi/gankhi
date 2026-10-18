@@ -11,6 +11,8 @@ DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 APP_DIR="$DATA_HOME/ganki"
 BIN_LINK="$HOME/.local/bin/ganki"
 DESKTOP_FILE="$DATA_HOME/applications/ganki.desktop"
+CHOOSE_FILE="$DATA_HOME/applications/ganki-choose-browser.desktop"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/ganki"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/ganki"
 
 say() { printf '%s\n' "$*"; }
@@ -28,15 +30,16 @@ for arg in "$@"; do
 done
 
 [ -n "${HOME:-}" ] || die "HOME is not set."
-for path in "$APP_DIR" "$BIN_LINK" "$DESKTOP_FILE" "$CACHE_DIR"; do
+for path in "$APP_DIR" "$BIN_LINK" "$DESKTOP_FILE" "$CHOOSE_FILE" "$CONFIG_DIR" "$CACHE_DIR"; do
     case "$path" in "$HOME"/*) ;; *) die "refusing to remove anything outside your home folder: $path" ;; esac
 done
 
 say "This will remove:"
 say "  $APP_DIR"
 say "  $BIN_LINK"
-say "  $DESKTOP_FILE"
-say "  Ganki.desktop on your Desktop folder, if it is there"
+say "  $DESKTOP_FILE and $CHOOSE_FILE"
+say "  $CONFIG_DIR (your remembered browser)"
+say "  The Ganki icons on your Desktop folder, if they are there"
 [ "$purge" = true ] && say "  $CACHE_DIR (downloaded vulnerability data)"
 if [ "$assume_yes" = false ]; then
     read -r -p "Continue? [y/N] (s/y = yes) " answer
@@ -44,13 +47,16 @@ if [ "$assume_yes" = false ]; then
 fi
 
 rm -rf -- "$APP_DIR"
-rm -f -- "$BIN_LINK" "$DESKTOP_FILE"
+rm -f -- "$BIN_LINK" "$DESKTOP_FILE" "$CHOOSE_FILE"
+rm -rf -- "$CONFIG_DIR"
 # Remove the Desktop shortcut only if it is ours (it launches the ganki command).
-configured="$(sed -n 's/^XDG_DESKTOP_DIR="\(.*\)"$/\1/p' "$HOME/.config/user-dirs.dirs" 2>/dev/null | head -n 1)"
+configured="$(sed -n 's/^XDG_DESKTOP_DIR="\(.*\)"$/\1/p' "$HOME/.config/user-dirs.dirs" 2>/dev/null | head -n 1)" || configured=""
 for folder in "${configured//\$HOME/$HOME}" "$HOME/Desktop"; do
-    shortcut="$folder/Ganki.desktop"
-    case "$shortcut" in "$HOME"/*) ;; *) continue ;; esac
-    if [ -f "$shortcut" ] && grep -q '/ganki"$' "$shortcut"; then rm -f -- "$shortcut"; fi
+    for name in Ganki.desktop Ganki-elegir-navegador.desktop; do
+        shortcut="$folder/$name"
+        case "$shortcut" in "$HOME"/*) ;; *) continue ;; esac
+        if [ -f "$shortcut" ] && grep -q '^Exec=.*/ganki"' "$shortcut"; then rm -f -- "$shortcut"; fi
+    done
 done
 [ "$purge" = true ] && rm -rf -- "$CACHE_DIR"
 say "Ganki was removed."

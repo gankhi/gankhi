@@ -50,7 +50,7 @@ Desde una copia de este repositorio, sin `sudo` (todo queda dentro de tu carpeta
 scripts/install.sh
 ```
 
-Después abrí **Ganki** desde el menú de aplicaciones, o ejecutá `ganki` en una terminal. Se abre en tu navegador y solo acepta conexiones de tu propia computadora. Se cierra con `Ctrl+C` en su terminal. Si tenés más de un navegador instalado, una ventanita pregunta con cuál abrirlo y puede recordar la elección. Con clic derecho en el ícono y **Abrir en otro navegador** (o `ganki --ask-browser`) vuelve a preguntar. Para quitarlo: `scripts/uninstall.sh`.
+Después abrí **Ganki** desde el menú de aplicaciones, o ejecutá `ganki` en una terminal. Se abre en tu navegador y solo acepta conexiones de tu propia computadora. Se cierra con `Ctrl+C` en su terminal. Si tenés más de un navegador instalado, una ventanita pregunta con cuál abrirlo y puede recordar la elección. Con el segundo ícono **Ganki (elegir navegador)** vuelve a preguntar. Para quitarlo: `scripts/uninstall.sh`.
 
 Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el navegador se abre con ella y se guarda una copia en `~/.cache/ganki/dashboard-url`, legible solo por vos.
 
@@ -60,7 +60,7 @@ Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el na
 |---|---|
 | Abrirlo en tu navegador predeterminado | Doble clic en el ícono **Ganki**, o elegilo en el menú de aplicaciones. |
 | Abrirlo otra vez | Otro clic en el ícono: vuelve a abrir la copia que ya está corriendo. |
-| Elegir el navegador | Con más de un navegador instalado, una ventanita pregunta con cuál abrirlo (lista los que encuentra, o te deja elegir un programa de tus archivos) y puede recordar la elección. Para que vuelva a preguntar: clic derecho en el ícono y **Abrir en otro navegador**, o `ganki --ask-browser`. |
+| Elegir el navegador | Con más de un navegador instalado, una ventanita pregunta con cuál abrirlo (lista los que encuentra, o te deja elegir un programa de tus archivos) y puede recordar la elección. Para que vuelva a preguntar, o para deshacer una elección recordada, usá el segundo ícono **Ganki (elegir navegador)** y respondé "Preguntar siempre" (o `ganki --ask-browser`). No uses "Abrir con" del administrador de archivos sobre el ícono: eso intenta abrir el archivo del lanzador y el navegador solo lo descarga. |
 | Usar siempre un navegador, sin la ventanita | En una terminal: `BROWSER=librewolf ganki` (el comando de tu navegador). |
 | Abrirlo a mano | En una terminal: `ganki --no-open`, y pegá en cualquier navegador la dirección completa guardada en `~/.cache/ganki/dashboard-url`. |
 
