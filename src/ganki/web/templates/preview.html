@@ -29,6 +29,27 @@
 
     <p class="small mono">{{ t('prev_simulation') }}: apt-get {{ view.simulation }}</p>
 
+    {% if can_run %}
+    <section class="runbox">
+      <h3>{{ t('sure_title', name=view.package or t('everything')) }}</h3>
+      {% if view.action == 'remove' %}<p class="hint"><span>{{ t('info_remove') }}</span></p>{% endif %}
+      {% if view.warnings %}
+      <div class="hint bad" role="alert">
+        {% for key, value in view.warnings %}<p>⚠ {{ warning_text(key, value) }}</p>{% endfor %}
+      </div>
+      <label class="check"><input type="checkbox" id="understood"> {{ t('understood') }}</label>
+      {% endif %}
+      <p class="small">{{ t('password_note') }}</p>
+      <button type="button" id="run" class="{{ 'danger-solid' if view.action == 'remove' else '' }}"
+        data-action="{{ view.action }}" data-pkg="{{ view.package }}" data-ack="{{ 1 if needs_ack else 0 }}"
+        data-waiting="{{ t('run_waiting') }}" data-ok="{{ t('run_ok') }}" data-failed="{{ t('run_failed') }}"
+        data-refused="{{ t('run_refused') }}" data-saved="{{ t('run_saved') }}">{{ t('confirm_' ~ view.action, name=view.package) }}</button>
+      <a class="btn" href="{{ url_for('index') }}">{{ t('cancel') }}</a>
+      <pre class="terminal mono" id="terminal" hidden></pre>
+      <p class="small" id="run-result" role="status"></p>
+    </section>
+    {% endif %}
+
     <h3>{{ t('prev_run_title') }}</h3>
     <p class="small">{{ t('prev_run_note') }}</p>
     <pre class="commands mono" id="commands">{% for command in view.commands %}{{ command }}

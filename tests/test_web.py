@@ -68,11 +68,27 @@ def make_result(summary="plain text"):
     )
 
 
-def build(scan=make_result, simulator=None):
-    if simulator is None:
-        app = create_app(scan, SECRET, PORT)
-    else:
-        app = create_app(scan, SECRET, PORT, simulator)
+class FakeExecutor:
+    """Stands in for the real one: records what would have been run."""
+
+    def __init__(self, available=True, busy=False):
+        self.available = available
+        self.busy = busy
+        self.started = []
+
+    def start(self, action, package):
+        if self.busy:
+            return False
+        self.started.append((action, package))
+        return True
+
+    def status(self):
+        return {"state": "idle", "lines": [], "command": "", "returncode": None}
+
+
+def build(scan=make_result, simulator=None, executor=None):
+    simulator = simulator or (lambda action, name, uris=False: "")
+    app = create_app(scan, SECRET, PORT, simulator, executor or FakeExecutor(available=False))
     app.testing = True
     return app
 
@@ -517,3 +533,92 @@ def test_table_has_update_and_remove_buttons_and_protected_lock():
     assert "/preview?action=remove&amp;pkg=vim" in html
     assert "Protected" in html and "action=remove&amp;pkg=bash" not in html
     assert "action=all" in html  # "Update everything" in the header
+
+
+def run_client(executor, simulator=lambda action, name, uris=False: URIS if uris else SIMULATION):
+    client = login(build(with_guarded_packages, simulator, executor).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    return client
+
+
+def post_run(client, body, headers=None):
+    return client.post(
+        "/api/run",
+        json=body,
+        base_url=BASE,
+        headers={"X-Ganki": "1"} if headers is None else headers,
+    )
+
+
+def test_confirmed_removal_is_started_with_the_exact_package():
+    executor = FakeExecutor()
+    client = run_client(executor, lambda a, n, u=False: "Remv vim [9.1]\n")
+    response = post_run(client, {"action": "remove", "pkg": "vim", "confirm": True})
+    assert response.status_code == 202 and executor.started == [("remove", "vim")]
+
+
+def test_running_needs_the_custom_header_and_the_cookie():
+    executor = FakeExecutor()
+    client = run_client(executor)
+    body = {"action": "update", "pkg": "vim", "confirm": True, "understood": True}
+    assert post_run(client, body, headers={}).status_code == 403
+    assert build().test_client().post("/api/run", json=body, base_url=BASE).status_code == 403
+    assert executor.started == []
+
+
+def test_running_needs_explicit_confirmation_and_valid_input():
+    executor = FakeExecutor()
+    client = run_client(executor)
+    for body in (
+        {"action": "update", "pkg": "vim"},  # no confirm
+        {"action": "update", "pkg": "vim", "confirm": "yes"},
+        {"action": "purge", "pkg": "vim", "confirm": True},
+        {"action": "update", "pkg": ["vim"], "confirm": True},
+        None,
+    ):
+        assert post_run(client, body).status_code == 400
+    assert executor.started == []
+
+
+def test_protected_and_unknown_programs_are_never_run():
+    executor = FakeExecutor()
+    client = run_client(executor)
+    for name in ("bash", "nonexistent", "vim;reboot"):
+        response = post_run(client, {"action": "remove", "pkg": name, "confirm": True})
+        assert response.status_code == 409
+    assert executor.started == []
+
+
+def test_warnings_must_be_acknowledged():
+    executor = FakeExecutor()
+    simulation = lambda a, n, u=False: "Remv vim [9.1]\nRemv vim-runtime [9.1]\n"  # noqa: E731
+    client = run_client(executor, simulation)
+    body = {"action": "remove", "pkg": "vim", "confirm": True}
+    assert post_run(client, body).status_code == 409
+    assert executor.started == []
+    assert post_run(client, {**body, "understood": True}).status_code == 202
+
+
+def test_a_second_action_is_refused_while_one_runs():
+    client = run_client(FakeExecutor(busy=True), lambda a, n, u=False: "Remv vim [9.1]\n")
+    assert post_run(client, {"action": "remove", "pkg": "vim", "confirm": True}).status_code == 409
+
+
+def test_confirmation_screen_shows_warnings_and_the_run_button_only_when_it_can_run():
+    simulation = lambda a, n, u=False: "Remv vim [9.1]\nRemv vim-runtime [9.1]\n"  # noqa: E731
+    html = (
+        run_client(FakeExecutor(), simulation)
+        .get("/preview?action=remove&pkg=vim", base_url=BASE)
+        .get_data(as_text=True)
+    )
+    assert "Are you sure" in html and "1 more package(s) will also be removed" in html
+    assert 'id="run"' in html and 'id="understood"' in html and "style=" not in html
+    no_window = run_client(FakeExecutor(available=False), simulation)
+    html = no_window.get("/preview?action=remove&pkg=vim", base_url=BASE).get_data(as_text=True)
+    assert 'id="run"' not in html and "sudo apt-get remove vim" in html
+
+
+def test_run_status_is_available_to_the_page():
+    client = run_client(FakeExecutor())
+    assert client.get("/api/run/status", base_url=BASE).get_json()["state"] == "idle"

@@ -20,6 +20,7 @@ from flask import Flask, abort, jsonify, make_response, redirect, render_templat
 from werkzeug.wrappers import Response
 
 from ganki import actions, paging
+from ganki.executor import ActionJob
 from ganki.runner import CommandNotAllowedError
 from ganki.service import ScanResult
 from ganki.summary import RUNNING_KERNEL
@@ -49,13 +50,16 @@ def create_app(
     secret: str,
     port: int,
     simulator: actions.Simulator = actions.simulate,
+    executor: ActionJob | None = None,
 ) -> Flask:
     """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token.
 
-    ``simulator`` runs the apt simulations behind the previews (replaced in tests).
+    ``simulator`` runs the apt simulations behind the previews and ``executor`` runs a
+    confirmed action for real (both replaced in tests).
     """
     app = Flask(__name__)
     job = ScanJob(scan)
+    runner_job = executor or ActionJob(on_done=job.start)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
     app.jinja_env.filters["size"] = paging.human_size
     app.jinja_env.filters["bytes"] = lambda n: paging.human_size(int(n) // 1024)
@@ -158,6 +162,19 @@ def create_app(
             context.update(tool_view(result))
         return render_template("index.html", **context)
 
+    def build_preview(result: ScanResult, action: str, package: str) -> actions.Preview:
+        try:
+            return actions.preview(
+                action,
+                package,
+                {t.name for t in result.tools},
+                {t.name for t in result.tools if t.protected},
+                simulator,
+                {t.name: t.size_kib for t in result.tools},
+            )
+        except (CommandNotAllowedError, subprocess.SubprocessError, OSError):
+            return actions.Preview(action, package, blocked="blocked_failed")
+
     @app.route("/preview")
     def preview_page() -> str:
         """What an update or removal would do, from a simulation. Nothing is changed."""
@@ -169,23 +186,16 @@ def create_app(
         if result is None or job.state not in (DONE, RUNNING):
             return redirect("/")  # type: ignore[return-value]
         lang = current_language()
-        try:
-            view = actions.preview(
-                action,
-                package,
-                {t.name for t in result.tools},
-                {t.name for t in result.tools if t.protected},
-                simulator,
-                {t.name: t.size_kib for t in result.tools},
-            )
-        except (CommandNotAllowedError, subprocess.SubprocessError, OSError):
-            view = actions.Preview(action, package, blocked="blocked_failed")
+        view = build_preview(result, action, package)
         return render_template(
             "preview.html",
             lang=lang,
             t=lambda key, **values: i18n.translate(lang, key, **values),
             state=job.state,
             view=view,
+            can_run=runner_job.available and not view.blocked,
+            needs_ack=bool(view.warnings),
+            warning_text=lambda key, value: i18n.translate(lang, key, n=value, name=value),
         )
 
     @app.route("/api/status")
@@ -196,5 +206,34 @@ def create_app(
     def rescan() -> Response:
         started = job.start()
         return make_response(jsonify(started=started), 202 if started else 200)
+
+    @app.route("/api/run", methods=["POST"])
+    def run_action() -> Response:
+        """Run a confirmed action. Everything is checked again here, not trusted from the page."""
+        data = request.get_json(silent=True)
+        data = data if isinstance(data, dict) else {}
+        action = data.get("action")
+        package = data.get("pkg", "")
+        result = job.result
+        if (
+            action not in actions.ACTIONS
+            or not isinstance(package, str)
+            or data.get("confirm") is not True
+            or result is None
+            or job.state != DONE
+        ):
+            return make_response(jsonify(error="invalid"), 400)
+        view = build_preview(result, action, package)
+        if view.blocked:
+            return make_response(jsonify(error=view.blocked), 409)
+        if view.warnings and data.get("understood") is not True:
+            return make_response(jsonify(error="needs_ack"), 409)
+        if not runner_job.start(action, package):
+            return make_response(jsonify(error="busy"), 409)
+        return make_response(jsonify(started=True), 202)
+
+    @app.route("/api/run/status")
+    def run_status() -> Response:
+        return jsonify(runner_job.status())
 
     return app

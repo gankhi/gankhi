@@ -175,3 +175,12 @@ tr:has(td.actions) td { border-top: 1px solid var(--line); }
 .names li.more { display: none; }
 .toggle:checked ~ .names li.more { display: list-item; }
 .commands { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; margin: 8px 0; }
+
+/* real run */
+.runbox { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; }
+.runbox button { margin-right: 8px; }
+button.danger-solid { background: #ff5a4f; color: #1a0200; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.terminal { background: #000; border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 12px 0 4px;
+  max-height: 340px; overflow: auto; white-space: pre-wrap; font-size: .82rem; color: #d0d0d0; }
+.terminal[hidden] { display: none; }
