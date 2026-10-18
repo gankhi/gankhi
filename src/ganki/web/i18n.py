@@ -121,6 +121,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_clean_cache": "Empty apt's download cache ({size})",
         "blocked_nothing_to_clean": "The download cache is already empty.",
         "confirm_clean": "Yes, empty the cache",
+        "prev_title_autoremove": "Preview before removing what is no longer needed",
+        "prev_autoremove_name": "removing what is no longer needed",
+        "btn_autoremove": "Remove old kernels and unused packages",
+        "blocked_nothing_to_remove": "There is nothing left to remove.",
+        "confirm_autoremove": "Yes, remove them",
+        "info_autoremove": (
+            "These are packages nothing needs any more, including old kernels. apt never "
+            "removes the kernel in use or the newest one. Your documents and personal files "
+            "are not touched."
+        ),
         "password_note_clean": (
             "The system's own window asks for your password, never Ganki. It is the password of "
             "your user account, the same one you type with sudo or to log in. The account has to "
@@ -608,6 +618,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_clean_cache": "Vaciar la caché de descargas de apt ({size})",
         "blocked_nothing_to_clean": "La caché de descargas ya está vacía.",
         "confirm_clean": "Sí, vaciar la caché",
+        "prev_title_autoremove": "Vista previa antes de quitar lo que ya no se necesita",
+        "prev_autoremove_name": "quitar lo que ya no se necesita",
+        "btn_autoremove": "Quitar kernels viejos y paquetes sin uso",
+        "blocked_nothing_to_remove": "No queda nada para quitar.",
+        "confirm_autoremove": "Sí, quitarlos",
+        "info_autoremove": (
+            "Son paquetes que ya nada necesita, incluidos kernels viejos. apt nunca quita el "
+            "kernel que está en uso ni el más nuevo. Tus documentos y archivos personales no "
+            "se tocan."
+        ),
         "password_note_clean": (
             "La contraseña la pide la ventana del sistema, nunca Ganki. Es la de tu usuario, la "
             "misma que escribís con sudo o para iniciar sesión. El usuario tiene que ser "

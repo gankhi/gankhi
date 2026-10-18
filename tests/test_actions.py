@@ -2,7 +2,17 @@
 """Previews are parsed from apt simulations; nothing here touches the real system."""
 
 from ganki import actions
-from ganki.actions import CLEAN, REMOVE, UPDATE, UPDATE_ALL, Preview, download_total, parse, preview
+from ganki.actions import (
+    AUTOREMOVE,
+    CLEAN,
+    REMOVE,
+    UPDATE,
+    UPDATE_ALL,
+    Preview,
+    download_total,
+    parse,
+    preview,
+)
 
 SIM = """Inst vim [9.1] (9.2 noble-updates [amd64])
 Inst newlib (1.0 noble [amd64])
@@ -80,3 +90,19 @@ def test_emptying_the_cache_needs_no_simulation_and_shows_what_it_frees():
     assert preview(CLEAN, "", set(), set(), simulator, cache_kib=0).blocked == (
         "blocked_nothing_to_clean"
     )
+
+
+def test_removing_what_is_not_needed_lists_it_and_never_touches_protected_software():
+    def simulator(action, _name, uris=False):
+        assert not uris, "nothing is downloaded when removing"
+        return "Remv linux-image-6.8.0-100-generic [6.8.0-100]\nRemv old-lib [1.0]\n"
+
+    sizes = {"linux-image-6.8.0-100-generic": 300, "old-lib": 10}
+    result = preview(AUTOREMOVE, "ignored", set(), set(), simulator, sizes)
+    assert result.removals == ["linux-image-6.8.0-100-generic", "old-lib"]
+    assert result.disk_change_bytes == -310 * 1024 and not result.warnings
+    assert result.commands[-1] == "sudo apt-get autoremove"
+    blocked = preview(AUTOREMOVE, "", set(), {"old-lib"}, simulator, sizes)
+    assert blocked.blocked == "blocked_drags_protected"
+    nothing = preview(AUTOREMOVE, "", set(), set(), lambda *_a, **_k: "")
+    assert nothing.blocked == "blocked_nothing_to_remove"

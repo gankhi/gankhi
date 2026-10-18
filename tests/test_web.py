@@ -1058,3 +1058,15 @@ def test_emptying_the_download_cache_has_its_own_preview_and_runs_without_a_pack
     assert "action=clean" in client.get("/", base_url=BASE).get_data(as_text=True)
     response = post_run(client, {"action": "clean", "pkg": "", "confirm": True})
     assert response.status_code == 202 and executor.started == [("clean", "")]
+
+
+def test_removing_what_is_not_needed_has_its_preview_and_runs_without_a_package():
+    executor = FakeExecutor()
+    simulation = "Remv linux-image-6.8.0-100-generic [6.8.0-100]\nRemv old-lib [1.0]\n"
+    client = run_client(executor, lambda a, n, u=False: simulation)
+    html = client.get("/preview?action=autoremove", base_url=BASE).get_data(as_text=True)
+    assert "linux-image-6.8.0-100-generic" in html and "sudo apt-get autoremove" in html
+    assert "never removes the kernel in use" in html
+    assert "action=autoremove" in client.get("/", base_url=BASE).get_data(as_text=True)
+    response = post_run(client, {"action": "autoremove", "pkg": "", "confirm": True})
+    assert response.status_code == 202 and executor.started == [("autoremove", "")]

@@ -37,8 +37,8 @@
 
     {% if can_run %}
     <section class="runbox">
-      <h3>{{ t('sure_title', name=t('prev_clean_name') if view.action == 'clean' else (view.package or t('everything'))) }}</h3>
-      {% if view.action == 'remove' %}<p class="hint"><span>{{ t('info_remove') }}</span></p>{% endif %}
+      <h3>{{ t('sure_title', name=t('prev_' ~ view.action ~ '_name') if view.action in ('clean', 'autoremove') else (view.package or t('everything'))) }}</h3>
+      {% if view.action in ('remove', 'autoremove') %}<p class="hint"><span>{{ t('info_' ~ view.action) }}</span></p>{% endif %}
       {% if view.warnings %}
       <div class="hint bad" role="alert">
         {% for key, value in view.warnings %}<p>⚠ {{ warning_text(key, value) }}</p>{% endfor %}
@@ -46,7 +46,7 @@
       <label class="check"><input type="checkbox" id="understood"> {{ t('understood') }}</label>
       {% endif %}
       <p class="small">{{ t('password_note_clean' if view.action == 'clean' else 'password_note') }}</p>
-      <button type="button" id="run" class="{{ 'danger-solid' if view.action == 'remove' else '' }}"
+      <button type="button" id="run" class="{{ 'danger-solid' if view.action in ('remove', 'autoremove') else '' }}"
         data-action="{{ view.action }}" data-pkg="{{ view.package }}" data-ack="{{ 1 if needs_ack else 0 }}"
         data-waiting="{{ t('run_waiting') }}" data-ok="{{ t('run_ok') }}" data-failed="{{ t('run_failed') }}"
         data-refused="{{ t('run_refused') }}" data-saved="{{ t('run_saved') }}">{{ t('confirm_' ~ view.action, name=view.package) }}</button>
