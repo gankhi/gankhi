@@ -38,7 +38,17 @@ _RELEASE_ABI = re.compile(r"^(\d+\.\d+\.\d+-\d+)")
 
 def is_protected(pkg: Package, kernel_release: str = "") -> bool:
     """Packages Ganki will never offer to remove: the system depends on them."""
-    if pkg.essential or pkg.priority in SYSTEM_PRIORITIES:
+    return pkg.priority in SYSTEM_PRIORITIES or is_core(pkg, kernel_release)
+
+
+def is_core(pkg: Package, kernel_release: str = "") -> bool:
+    """Packages that must stay even when apt says nothing needs them any more.
+
+    The stricter test for ``autoremove``: apt already decided nothing depends on the package,
+    so a high distribution priority alone (a leftover 32-bit library, say) is not a reason to
+    refuse. Essential packages, the known system names and the running kernel still are.
+    """
+    if pkg.essential:
         return True
     if _PROTECTED_NAME.match(pkg.name.split(":")[0]):
         return True
@@ -80,6 +90,7 @@ class Tool:
     fixed_in: str | None = None  # version that fixes everything fixable
     cves: tuple[CveLine, ...] = ()
     protected: bool = False  # never offered for removal
+    core: bool = False  # never removed, not even when apt says nothing needs it
     end_of_support: bool = False  # the authors no longer publish fixes for this version
     component: str = "main"  # main, restricted, universe or multiverse
     installed_version: str = ""  # the full version, to compare with what a notice says
@@ -200,6 +211,7 @@ def build_tools(
                 installed_version=pkg.version,
                 section=pkg.section,
                 protected=is_protected(pkg, kernel_release),
+                core=is_core(pkg, kernel_release),
                 end_of_support=end_of_support(pkg.name, pkg.version),
                 cves=_sample(unique),
             )

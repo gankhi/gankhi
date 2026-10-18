@@ -6,7 +6,7 @@ from ganki.collectors.apt import Package
 from ganki.collectors.updates import Update
 from ganki.osv import Finding
 from ganki.paging import human_size, paginate
-from ganki.tools import OK, OUTDATED, VULNERABLE, build_tools
+from ganki.tools import OK, OUTDATED, VULNERABLE, build_tools, is_core, is_protected
 
 
 def pkg(name, manual=True):
@@ -185,3 +185,13 @@ def test_browsers_come_after_what_ubuntu_marks_as_urgent_and_before_the_rest():
     tools = build_tools([pkg("medium-fix"), pkg("critical-fix"), browser], findings, updates)
     assert [t.name for t in tools] == ["critical-fix", "brave-browser", "medium-fix"]
     assert not next(t for t in tools if t.name == "brave-browser").urgent
+
+
+def test_a_high_priority_alone_protects_from_removal_but_not_from_autoremove():
+    leftover = Package("libfoo1:i386", "1.0", "i386", 90, "a library", priority="required")
+    essential = Package("coreutils-ish", "1.0", "amd64", 90, "core", essential=True)
+    assert is_protected(leftover) and not is_core(leftover)
+    assert is_protected(essential) and is_core(essential)
+    assert is_core(Package("systemd-sysv", "1", "amd64", 1, "init")) and is_protected(
+        Package("systemd-sysv", "1", "amd64", 1, "init")
+    )

@@ -279,7 +279,11 @@ def create_app(
                 action,
                 package,
                 {t.name for t in result.tools},
-                {t.name for t in result.tools if t.protected},
+                {
+                    t.name
+                    for t in result.tools
+                    if (t.core if action == "autoremove" else t.protected)
+                },
                 simulator,
                 {t.name: t.size_kib for t in result.tools},
                 result.reclaimable.apt_cache_kib,
