@@ -15,7 +15,7 @@
   var stepsList = document.getElementById("steps");
   var factsList = document.getElementById("facts");
   var barFill = document.getElementById("bar-fill");
-  var shownFacts = 0;
+  var shownFacts = "";
 
   function paint(data) {
     var rows = stepsList.children;
@@ -35,10 +35,17 @@
       li.children[1].textContent = step.label;
       li.children[2].textContent = step.detail;
     });
-    for (; shownFacts < data.facts.length; shownFacts++) {
-      var fact = document.createElement("li");
-      fact.textContent = data.facts[shownFacts];
-      factsList.appendChild(fact);
+    // A new fact can belong in the middle of the list, so the list is drawn again whenever it
+    // changes (adding only the last lines would repeat some and lose others).
+    var shown = data.facts.join("\n");
+    if (shown !== shownFacts) {
+      shownFacts = shown;
+      factsList.textContent = "";
+      data.facts.forEach(function (line) {
+        var fact = document.createElement("li");
+        fact.textContent = line;
+        factsList.appendChild(fact);
+      });
     }
     barFill.setAttribute("width", String(data.percent));
     panel.querySelector(".bar").setAttribute("aria-valuenow", String(data.percent));
