@@ -835,11 +835,13 @@ def _browsers_found(monkeypatch, tmp_path, found, dialog=None, folders=()):
     return browsers, asked
 
 
-def _desktop_entry(folder, name, label, command, categories="Network;WebBrowser;"):
+def _desktop_entry(
+    folder, name, label, command, categories="Network;WebBrowser;", mime="x-scheme-handler/http;"
+):
     folder.mkdir(parents=True, exist_ok=True)
     (folder / name).write_text(
         f"[Desktop Entry]\nType=Application\nName={label}\nExec={command}\n"
-        f"Categories={categories}\n"
+        f"Categories={categories}\nMimeType={mime}\n"
     )
 
 
@@ -1011,3 +1013,14 @@ def test_two_names_for_the_same_program_are_listed_once(monkeypatch, tmp_path):
     found = {"google-chrome": str(short)}
     browsers, _ = _browsers_found(monkeypatch, tmp_path, found, folders=[apps])
     assert [b.label for b in browsers.installed_browsers()] == ["Google Chrome"]
+
+
+def test_system_entries_that_only_claim_to_be_browsers_are_left_out(monkeypatch, tmp_path):
+    apps = tmp_path / "apps"
+    _desktop_entry(apps, "wolf.desktop", "LibreWolf", "/opt/wolf/librewolf %u")
+    _desktop_entry(apps, "support.desktop", "Support", "/opt/wolf/support", mime="")
+    _desktop_entry(apps, "net.desktop", "Network Connections", "/opt/wolf/net", mime="")
+    found = {"/opt/wolf/librewolf": "/opt/wolf/librewolf", "/opt/wolf/support": "/x"}
+    found["/opt/wolf/net"] = "/y"
+    browsers, _ = _browsers_found(monkeypatch, tmp_path, found, folders=[apps])
+    assert [b.label for b in browsers.installed_browsers()] == ["LibreWolf"]

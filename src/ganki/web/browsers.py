@@ -135,6 +135,11 @@ def _from_desktop_entry(path: Path) -> Browser | None:
         return None
     if "WebBrowser" not in entry.get("Categories", "").split(";"):
         return None
+    # Some system entries (network settings, support pages) claim the category without being
+    # browsers. A real one also says it opens web addresses or pages.
+    opens = entry.get("MimeType", "").split(";")
+    if not {"x-scheme-handler/http", "x-scheme-handler/https", "text/html"} & set(opens):
+        return None
     name, command = entry.get("Name", "").strip(), entry.get("Exec", "")
     try:
         words = [w for w in shlex.split(command) if not w.startswith("@@")]
