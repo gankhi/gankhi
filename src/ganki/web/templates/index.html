@@ -129,7 +129,10 @@
       {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><b class="mono">{{ rec.orphan_kib|size }}</b></li>{% endif %}
     </ul>
     <span class="small">{{ t('review_clean') }}</span>
-    {% if rec.apt_cache_kib %}<a class="btn" href="{{ url_for('preview_page', action='clean') }}">{{ t('btn_clean_cache', size=rec.apt_cache_kib|size) }}</a>{% endif %}
+    <div class="actions">
+      {% if rec.apt_cache_kib %}<a class="btn" href="{{ url_for('preview_page', action='clean') }}">{{ t('btn_clean_cache', size=rec.apt_cache_kib|size) }}</a>{% endif %}
+      {% if rec.old_kernel_kib or rec.orphan_kib %}<a class="btn" href="{{ url_for('preview_page', action='autoremove') }}">{{ t('btn_autoremove') }}</a>{% endif %}
+    </div>
   </div>
 </section>
 

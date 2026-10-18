@@ -13,7 +13,8 @@ from dataclasses import dataclass, field, replace
 from ganki.runner import APT_GET, run, valid_package
 
 UPDATE, REMOVE, UPDATE_ALL, CLEAN = "update", "remove", "all", "clean"
-ACTIONS = (UPDATE, REMOVE, UPDATE_ALL, CLEAN)
+AUTOREMOVE = "autoremove"  # remove what nothing needs any more (old kernels, orphans)
+ACTIONS = (UPDATE, REMOVE, UPDATE_ALL, CLEAN, AUTOREMOVE)
 
 # A private temporary file: it is emptied by the system, so copies never pile up in the home.
 SNAPSHOT_COMMAND = 'dpkg --get-selections > "$(mktemp -t ganki-programas.XXXXXX)"'
@@ -63,7 +64,7 @@ def warnings_for(result: Preview) -> tuple[tuple[str, str], ...]:
     """Things the person should know before confirming. Any warning asks for a tick."""
     found: list[tuple[str, str]] = []
     extra = len(result.removals) - (1 if result.action == REMOVE else 0)
-    if extra > 0:
+    if extra > 0 and result.action != AUTOREMOVE:  # there, the removals are the whole point
         found.append(("warn_drags", str(extra)))
     if result.action == REMOVE and _HOLDS_DATA.match(result.package):
         found.append(("warn_data", result.package))
@@ -77,6 +78,8 @@ def warnings_for(result: Preview) -> tuple[tuple[str, str], ...]:
 def real_command(action: str, package: str) -> str:
     if action == CLEAN:
         return "sudo apt-get clean"
+    if action == AUTOREMOVE:
+        return "sudo apt-get autoremove"
     if action == REMOVE:
         return f"sudo apt-get remove {package}"
     if action == UPDATE:
@@ -89,6 +92,8 @@ def simulation_command(action: str, package: str) -> list[str]:
         return [APT_GET, "-s", "remove", package]
     if action == UPDATE:
         return [APT_GET, "-s", "install", "--only-upgrade", package]
+    if action == AUTOREMOVE:
+        return [APT_GET, "-s", "autoremove"]
     return [APT_GET, "-s", "full-upgrade"]
 
 
@@ -169,16 +174,22 @@ def preview(
         if cache_kib <= 0:
             return Preview(action, "", blocked="blocked_nothing_to_clean")
         return Preview(action, "", disk_change_bytes=-cache_kib * 1024)
-    if action != UPDATE_ALL and (not valid_package(package) or package not in installed):
+    if action == AUTOREMOVE:
+        package = ""
+    if action not in (UPDATE_ALL, AUTOREMOVE) and (
+        not valid_package(package) or package not in installed
+    ):
         return Preview(action, package, blocked="blocked_unknown")
     if action == REMOVE and package in protected:
         return Preview(action, package, blocked="blocked_protected")
     result = parse(action, package, simulator(action, package, False))
-    if action != REMOVE:
+    if action in (UPDATE, UPDATE_ALL):
         result = replace(result, download_bytes=download_total(simulator(action, package, True)))
     elif result.disk_change_bytes is None and result.removals:
         freed = sum(sizes_kib.get(name, 0) for name in result.removals) * 1024
         result = replace(result, disk_change_bytes=-freed)
+    if action == AUTOREMOVE and not result.removals:
+        return Preview(action, "", blocked="blocked_nothing_to_remove")
     if any(name in protected for name in result.removals):
         return Preview(action, package, blocked="blocked_drags_protected")
     return replace(result, warnings=warnings_for(result))

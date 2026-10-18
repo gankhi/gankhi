@@ -31,6 +31,7 @@ def test_privileged_commands_are_written_out_exactly():
     ]
     assert privileged_apt("all") == [*head, "full-upgrade", "-y", *keep]
     assert privileged_apt("clean") == [*head, "clean"]
+    assert privileged_apt("autoremove") == [*head, "autoremove", "-y"]
 
 
 @pytest.mark.parametrize(
@@ -46,6 +47,8 @@ def test_privileged_commands_are_written_out_exactly():
         privileged_apt("update", ""),
         [*privileged_apt("clean"), "--purge"],
         [*privileged_apt("clean")[:-1], "autoclean"],
+        [*privileged_apt("autoremove"), "--purge"],
+        [*privileged_apt("autoremove"), "vlc"],
         ["/usr/bin/sudo", "apt-get", "remove", "vlc"],
         [],
     ],
