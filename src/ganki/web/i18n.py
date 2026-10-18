@@ -53,9 +53,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "hint_no_fix": "No fix yet: use it with care and do not open files from unknown sources.",
         "hint_some_no_fix": "{n} more notices have no fix yet.",
         "hint_eol": (
-            "End of support: its authors no longer publish fixes. Move to a supported version."
+            "Its authors no longer publish fixes for this version. Ubuntu may still provide "
+            "them, but only with Ubuntu Pro. Move to a supported version when you can."
         ),
-        "chip_eol": "End of support",
+        "chip_eol": "Project out of support",
         "col_actions": "Actions",
         "btn_update": "Update",
         "btn_remove": "Remove",
@@ -157,6 +158,9 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "say_reclaim_brief": "By doing some cleaning you can recover about {total}.",
         "say_reclaim_updates": "You also have {n} updates ready to install.",
+        "say_clean_first": (
+            "With the disk like this, clean first and update after, so the updates have room."
+        ),
         "say_tools_summary": (
             "Programs with security problems: {vulnerable}. Out of date: {outdated}."
         ),
@@ -198,9 +202,10 @@ TEXTS: dict[str, dict[str, str]] = {
             "My advice, first: update {names}. The fix already exists, so it is the safest step."
         ),
         "say_advice_expired": (
-            "{names} is out of support. You can keep using it for work on this computer, but do "
-            "not run it as a server reachable from the internet, and do not run code you do not "
-            "trust. When you can, move to a version that still gets fixes."
+            "The authors of {names} no longer publish fixes for this version. Ubuntu may still "
+            "provide them, but only with Ubuntu Pro. You can keep using it for work on this "
+            "computer, but do not run it as a server reachable from the internet, and do not "
+            "run code you do not trust. When you can, move to a version that still gets fixes."
         ),
         "say_advice_vm": (
             "{names} has known problems and no fix yet. Many people keep using it and that is "
@@ -298,7 +303,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_act_fix": "Update: fixed in {version}",
         "report_act_nofix": "No fix published yet: use it with care, with files you trust",
         "report_act_eol": (
-            "Out of support: keep it off the internet and move to a supported version"
+            "Project out of support (Ubuntu fixes only with Ubuntu Pro): "
+            "keep it off the internet and move to a supported version"
         ),
         "report_none": "Nothing to report.",
         "report_more": "...and {n} more not listed here.",
@@ -429,9 +435,10 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "hint_some_no_fix": "{n} avisos más todavía no tienen arreglo.",
         "hint_eol": (
-            "Fin de soporte: sus autores ya no publican arreglos. Pasá a una versión vigente."
+            "Sus autores ya no publican arreglos para esta versión. Ubuntu todavía puede "
+            "darlos, pero solo con Ubuntu Pro. Pasá a una versión vigente cuando puedas."
         ),
-        "chip_eol": "Fin de soporte",
+        "chip_eol": "Proyecto sin soporte",
         "col_actions": "Acciones",
         "btn_update": "Actualizar",
         "btn_remove": "Quitar",
@@ -542,6 +549,10 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "say_reclaim_brief": "Haciendo algunas limpiezas podés recuperar unos {total}.",
         "say_reclaim_updates": "Además tenés {n} actualizaciones listas para instalar.",
+        "say_clean_first": (
+            "Con el disco así, conviene limpiar primero y actualizar después, "
+            "para que las actualizaciones tengan lugar."
+        ),
         "say_tools_summary": (
             "Programas con problemas de seguridad: {vulnerable}. Desactualizados: {outdated}."
         ),
@@ -585,10 +596,11 @@ TEXTS: dict[str, dict[str, str]] = {
             "Mi consejo, primero: actualizá {names}. El arreglo ya existe, es el paso más seguro."
         ),
         "say_advice_expired": (
-            "{names} está fuera de soporte. Podés seguir usándolo para trabajar en esta "
-            "computadora, pero no lo dejes como servidor accesible desde internet ni ejecutes "
-            "código que no conozcas. Cuando puedas, pasá a una versión que todavía reciba "
-            "arreglos."
+            "Los autores de {names} ya no publican arreglos para esta versión. Ubuntu todavía "
+            "puede darlos, pero solo con Ubuntu Pro. Podés seguir usándolo para trabajar en "
+            "esta computadora, pero no lo dejes como servidor accesible desde internet ni "
+            "ejecutes código que no conozcas. Cuando puedas, pasá a una versión que todavía "
+            "reciba arreglos."
         ),
         "say_advice_vm": (
             "{names} tiene problemas conocidos y todavía no hay arreglo. Mucha gente lo sigue "
@@ -688,7 +700,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_new_version": "Versión disponible",
         "report_act_fix": "Actualizar: arreglado en {version}",
         "report_act_nofix": "Sin arreglo publicado: usalo con cuidado y con archivos de confianza",
-        "report_act_eol": "Sin soporte: mantenelo lejos de internet y pasá a una versión vigente",
+        "report_act_eol": (
+            "Proyecto sin soporte (arreglos de Ubuntu solo con Ubuntu Pro): "
+            "mantenelo lejos de internet y pasá a una versión vigente"
+        ),
         "report_none": "Nada para informar.",
         "report_more": "...y {n} más que no se listan acá.",
         "report_reclaim": "Espacio que podés recuperar",

@@ -69,6 +69,7 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
 
     segments = [Segment("system", say("say_intro"), framing=True)]
     system = result.system
+    disk_full = system is not None and system.disk_percent >= DISK_BUSY
     if system is not None:
         free = spoken_size(system.disk_free // 1024, lang)
         level = (
@@ -112,6 +113,8 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
         text = say("say_reclaim_brief", total=spoken_size(reclaim.total_kib, lang))
     if result.pending_updates:
         text = (text + " " + say("say_reclaim_updates", n=result.pending_updates)).strip()
+    if text and disk_full and reclaim.total_kib and result.pending_updates:
+        text += " " + say("say_clean_first")
     if text:
         segments.append(Segment("reclaim", text))
 
