@@ -45,7 +45,7 @@ RESTRICTED_ARGUMENTS = {
         }
     ),
 }
-PACKAGE_NAME = re.compile(r"^[a-z0-9][a-z0-9+.\-]{0,99}(:[a-z0-9]{1,20})?$")
+PACKAGE_NAME = re.compile(r"[a-z0-9][a-z0-9+.\-]{0,99}(:[a-z0-9]{1,20})?")  # use fullmatch
 _SIMULATIONS_WITH_PACKAGE = (
     ("-s", "remove"),
     ("-s", "install", "--only-upgrade"),
@@ -62,21 +62,36 @@ class CommandNotAllowedError(ValueError):
     """Raised when something tries to run a command that is not allowlisted."""
 
 
-def _arguments_allowed(
+def valid_package(name: str) -> str | None:
+    """The package name if it is a plain Debian package name, else ``None``.
+
+    ``fullmatch`` (not ``match`` with ``$``) so a trailing newline cannot slip through.
+    The returned text is built from the match itself, not handed on from the caller.
+    """
+    found = PACKAGE_NAME.fullmatch(name)
+    return found.group(0) if found else None
+
+
+def _checked_arguments(
     command: str, arguments: tuple[str, ...], exact: frozenset[tuple[str, ...]]
-) -> bool:
-    if arguments in exact:
-        return True
+) -> tuple[str, ...] | None:
+    """The arguments to use, rebuilt from the allowlist; ``None`` if they are not allowed.
+
+    An exact match returns Ganki's own constant. A simulation with one package returns the
+    fixed prefix plus the validated package name. Whatever the caller passed is never
+    forwarded as it came.
+    """
+    for allowed in exact:
+        if arguments == allowed:
+            return allowed
     if command != APT_GET:
-        return False
+        return None
     for prefix in _SIMULATIONS_WITH_PACKAGE:
-        if (
-            len(arguments) == len(prefix) + 1
-            and arguments[: len(prefix)] == prefix
-            and PACKAGE_NAME.match(arguments[-1])
-        ):
-            return True
-    return False
+        if len(arguments) == len(prefix) + 1 and arguments[: len(prefix)] == prefix:
+            name = valid_package(arguments[-1])
+            if name is not None:
+                return (*prefix, name)
+    return None
 
 
 def privileged_apt(action: str, package: str = "") -> list[str]:
@@ -93,14 +108,18 @@ def privileged_apt(action: str, package: str = "") -> list[str]:
     return [*head, "full-upgrade", "-y", *_KEEP_CONFIG]
 
 
-def _privileged_allowed(args: Sequence[str]) -> bool:
+def _privileged_command(args: Sequence[str]) -> list[str] | None:
+    """The allowlisted command equal to ``args``, rebuilt from Ganki's own pieces."""
     candidate = list(args)
     if candidate == privileged_apt("all"):
-        return True
-    name = candidate[-1] if candidate else ""
-    return bool(PACKAGE_NAME.match(name)) and any(
-        candidate == privileged_apt(action, name) for action in ("remove", "update")
-    )
+        return privileged_apt("all")
+    name = valid_package(candidate[-1]) if candidate else None
+    if name is None:
+        return None
+    for action in ("remove", "update"):
+        if candidate == privileged_apt(action, name):
+            return privileged_apt(action, name)
+    return None
 
 
 def run_privileged(args: Sequence[str], on_line: Callable[[str], None], timeout: int = 7200) -> int:
@@ -109,12 +128,13 @@ def run_privileged(args: Sequence[str], on_line: Callable[[str], None], timeout:
     Returns the exit code. The password is asked by the system's own window; Ganki never
     sees it. stdin is closed so nothing can wait for typed input.
     """
-    if not _privileged_allowed(args):
+    command = _privileged_command(args)
+    if command is None:
         raise CommandNotAllowedError(f"not an allowed privileged command: {list(args)[:6]}")
     env = dict(_ENV)
     env.update({key: os.environ[key] for key in _SESSION_VARIABLES if key in os.environ})
-    process = subprocess.Popen(  # noqa: S603  (exact allowlisted list, absolute paths, no shell)
-        list(args),
+    process = subprocess.Popen(  # noqa: S603  (rebuilt allowlisted list, absolute paths, no shell)
+        command,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -133,13 +153,18 @@ def run_privileged(args: Sequence[str], on_line: Callable[[str], None], timeout:
 
 def run(args: Sequence[str], timeout: int = 60) -> str:
     """Run an allowlisted command (no shell) and return its stdout."""
-    if not args or args[0] not in ALLOWED_COMMANDS:
-        raise CommandNotAllowedError(f"command not allowed: {args[:1]}")
-    exact = RESTRICTED_ARGUMENTS.get(args[0])
-    if exact is not None and not _arguments_allowed(args[0], tuple(args[1:]), exact):
-        raise CommandNotAllowedError(f"arguments not allowed for {args[0]}: {list(args[1:])}")
-    result = subprocess.run(  # noqa: S603  (allowlisted absolute path, no shell)
-        list(args),
+    command = next((known for known in ALLOWED_COMMANDS if args and args[0] == known), None)
+    if command is None:
+        raise CommandNotAllowedError(f"command not allowed: {list(args)[:1]}")
+    rest: tuple[str, ...] = tuple(args[1:])
+    exact = RESTRICTED_ARGUMENTS.get(command)
+    if exact is not None:
+        checked = _checked_arguments(command, rest, exact)
+        if checked is None:
+            raise CommandNotAllowedError(f"arguments not allowed for {command}: {list(rest)}")
+        rest = checked
+    result = subprocess.run(  # noqa: S603  (allowlisted absolute path, checked arguments, no shell)
+        [command, *rest],
         capture_output=True,
         text=True,
         check=True,

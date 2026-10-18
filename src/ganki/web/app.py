@@ -90,7 +90,7 @@ def create_app(
             abort(400)
         offered = request.args.get("access", "")
         if offered and hmac.compare_digest(offered.encode(), secret.encode()):
-            response = redirect(request.path)  # drop the token from the address bar
+            response = redirect("/")  # a fixed address: drops the token, never follows the request
             response.set_cookie(
                 SESSION_COOKIE, secret, httponly=True, secure=True, samesite="Strict", path="/"
             )

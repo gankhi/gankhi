@@ -170,3 +170,47 @@ def test_only_the_newest_snapshots_are_kept(tmp_path):
     assert len(kept) == executor.KEEP_SNAPSHOTS
     assert kept[0] == "programas-20261006-120000.txt"  # the 5 oldest are gone
     assert (tmp_path / "notas-mias.txt").exists()
+
+
+def test_a_package_name_cannot_carry_a_newline_or_an_option():
+    from ganki.runner import valid_package
+
+    assert valid_package("vim") == "vim"
+    assert valid_package("libc6:amd64") == "libc6:amd64"
+    for bad in ("vim\n", "vim\n--purge", "-vim", "--purge", "vim foo", "", "A", "vim;ls"):
+        assert valid_package(bad) is None
+
+
+def test_privileged_removal_refuses_a_name_with_a_trailing_newline():
+    for args in (privileged_apt("remove", "vim\n"), privileged_apt("update", "vim\n")):
+        with pytest.raises(CommandNotAllowedError):
+            run_privileged(args, lambda _line: None)
+
+
+def test_simulations_refuse_a_package_with_a_trailing_newline():
+    from ganki.runner import run
+
+    with pytest.raises(CommandNotAllowedError):
+        run(["/usr/bin/apt-get", "-s", "remove", "vim\n"])
+
+
+def test_the_command_that_runs_is_rebuilt_not_the_callers_list(monkeypatch):
+    seen = {}
+
+    class Fake:
+        stdout = iter([])
+
+        def wait(self, timeout=None):
+            return 0
+
+        def poll(self):
+            return 0
+
+    def popen(argv, **_kwargs):
+        seen["argv"] = argv
+        return Fake()
+
+    monkeypatch.setattr("ganki.runner.subprocess.Popen", popen)
+    given = privileged_apt("remove", "vim")
+    run_privileged(given, lambda _line: None)
+    assert seen["argv"] == given and seen["argv"] is not given

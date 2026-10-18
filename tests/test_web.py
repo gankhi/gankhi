@@ -625,3 +625,11 @@ def test_confirmation_screen_shows_warnings_and_the_run_button_only_when_it_can_
 def test_run_status_is_available_to_the_page():
     client = run_client(FakeExecutor())
     assert client.get("/api/run/status", base_url=BASE).get_json()["state"] == "idle"
+
+
+def test_logging_in_always_redirects_to_the_home_page():
+    client = build().test_client()
+    for path in ("/", "/preview", "//example.com", "/\\example.com"):
+        response = client.get(f"{path}?access={SECRET}", base_url=BASE)
+        if response.status_code == 302:
+            assert response.headers["Location"] == "/"
