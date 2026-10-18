@@ -42,7 +42,9 @@ class Preview:
     installs: list[str] = field(default_factory=list)  # packages that are new
     removals: list[str] = field(default_factory=list)
     download_bytes: int = 0
-    disk_change_bytes: int = 0  # positive: uses more space, negative: frees space
+    # positive: uses more space, negative: frees space, None: apt does not say (simulations
+    # of updates do not print it)
+    disk_change_bytes: int | None = None
     blocked: str = ""  # message key when Ganki refuses to preview this
     simulation: str = ""  # the simulation command, shown as text
     warnings: tuple[tuple[str, str], ...] = ()  # (message key, value shown in it)
@@ -128,7 +130,7 @@ def parse(action: str, package: str, output: str) -> Preview:
     download = _DOWNLOAD.search(output)
     used = _DISK_USED.search(output)
     freed = _DISK_FREED.search(output)
-    change = 0
+    change: int | None = None
     if used:
         change = _bytes(*used.groups())
     elif freed:
@@ -164,7 +166,7 @@ def preview(
     result = parse(action, package, simulator(action, package, False))
     if action != REMOVE:
         result = replace(result, download_bytes=download_total(simulator(action, package, True)))
-    elif not result.disk_change_bytes and result.removals:
+    elif result.disk_change_bytes is None and result.removals:
         freed = sum(sizes_kib.get(name, 0) for name in result.removals) * 1024
         result = replace(result, disk_change_bytes=-freed)
     if any(name in protected for name in result.removals):

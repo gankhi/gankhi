@@ -9,9 +9,10 @@
   {% else %}
     <p>{{ t('prev_summary', up=view.upgrades|length, new=view.installs|length, gone=view.removals|length) }}</p>
     <p class="muted">
-      {% if view.download_bytes %}{{ t('prev_download', size=view.download_bytes|bytes) }} · {% endif %}
-      {% if view.disk_change_bytes < 0 %}{{ t('prev_frees', size=(-view.disk_change_bytes)|bytes) }}
-      {% else %}{{ t('prev_uses', size=view.disk_change_bytes|bytes) }}{% endif %}
+      {% if view.download_bytes %}{{ t('prev_download', size=view.download_bytes|bytes) }}{% endif %}
+      {% if view.download_bytes and view.disk_change_bytes is not none %} · {% endif %}
+      {% if view.disk_change_bytes is not none %}{% if view.disk_change_bytes < 0 %}{{ t('prev_frees', size=(-view.disk_change_bytes)|bytes) }}
+      {% else %}{{ t('prev_uses', size=view.disk_change_bytes|bytes) }}{% endif %}{% endif %}
     </p>
 
     {% for key, names in (('prev_list_up', view.upgrades), ('prev_list_new', view.installs), ('prev_list_gone', view.removals)) %}

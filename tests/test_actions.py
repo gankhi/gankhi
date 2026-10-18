@@ -60,3 +60,11 @@ def test_updating_everything_is_refused_when_it_would_remove_protected_software(
     assert blocked.commands == []
     # the same update is fine when what it removes is not protected
     assert not preview(UPDATE_ALL, "", {"vim"}, set(), simulator).blocked
+
+
+def test_the_disk_change_is_unknown_when_apt_does_not_say():
+    assert (
+        parse(UPDATE_ALL, "", "Inst vim [9.1] (9.2 noble-updates [amd64])\n").disk_change_bytes
+        is None
+    )
+    assert parse(UPDATE, "vim", SIM).disk_change_bytes == 12_500_000

@@ -512,7 +512,7 @@ def test_preview_shows_what_an_update_would_do_and_the_commands_to_copy():
         preview_client().get("/preview?action=update&pkg=vim", base_url=BASE).get_data(as_text=True)
     )
     assert "2 updated, 1 new, 1 removed" in html
-    assert "Download: 1.2 MiB" in html
+    assert "Still to download: 1.2 MiB" in html
     assert "sudo apt-get install --only-upgrade vim" in html
     assert "dpkg --get-selections" in html  # the undo list comes first
     assert "style=" not in html
