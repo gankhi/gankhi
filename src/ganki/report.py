@@ -143,6 +143,27 @@ def _external_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
         pdf.paragraph(say("ext_failed", tools=", ".join(result.external_failed)), tone="warn")
 
 
+def _sandboxed_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
+    """Snap and flatpak apps: listed, and said plainly that they are not checked."""
+    if not result.sandboxed:
+        return
+    pdf.heading(i18n.translate(lang, "report_sandboxed"))
+    pdf.paragraph(i18n.translate(lang, "sbx_note", n=len(result.sandboxed)))
+    rows = [[a.name, a.version, a.tool, a.source] for a in result.sandboxed[:MAX_ROWS]]
+    pdf.table(
+        [
+            i18n.translate(lang, "ext_col_package"),
+            i18n.translate(lang, "report_version"),
+            i18n.translate(lang, "ext_col_tool"),
+            i18n.translate(lang, "sbx_col_source"),
+        ],
+        rows,
+        [0.32, 0.2, 0.14, 0.34],
+    )
+    if len(result.sandboxed) > MAX_ROWS:
+        pdf.paragraph(i18n.translate(lang, "report_more", n=len(result.sandboxed) - MAX_ROWS))
+
+
 def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     def say(key: str, **values: object) -> str:
         return i18n.translate(lang, key, **values)
@@ -224,6 +245,7 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
         pdf.paragraph(say("report_libs_outdated", n=waiting))
 
     _external_section(pdf, result, lang)
+    _sandboxed_section(pdf, result, lang)
 
     reclaim = result.reclaimable
     if reclaim.total_kib:

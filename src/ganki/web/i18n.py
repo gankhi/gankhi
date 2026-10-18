@@ -249,6 +249,19 @@ TEXTS: dict[str, dict[str, str]] = {
         "ext_nofix": "No fix published yet. Use it with care.",
         "ext_malware": "This is a malicious package. Remove it.",
         "ext_no_priority": "unknown",
+        "sbx_title": "Snap and Flatpak apps",
+        "sbx_sub": "{n} installed. They carry their own libraries, so Ganki does not check them.",
+        "sbx_col_source": "Source",
+        "report_sandboxed": "Snap and Flatpak apps",
+        "sbx_note": (
+            "{n} apps installed with snap or flatpak. Each one carries its own libraries, "
+            "so the Ubuntu list does not describe them and Ganki does not check them. "
+            "Keep them updated from their own store."
+        ),
+        "say_sandboxed": (
+            "You also have {snaps} snap and {flatpaks} flatpak apps. They carry their own "
+            "libraries, so I only list them; I do not check them for vulnerabilities."
+        ),
         "report_external": "Python and npm packages with security notices",
         "say_external_ok": (
             "In Python and npm you have {n} packages and none has a known security notice."
@@ -651,6 +664,19 @@ TEXTS: dict[str, dict[str, str]] = {
         "ext_nofix": "Todavía no hay arreglo publicado. Usalo con cuidado.",
         "ext_malware": "Es un paquete malicioso. Quitalo.",
         "ext_no_priority": "sin dato",
+        "sbx_title": "Apps de Snap y Flatpak",
+        "sbx_sub": "{n} instaladas. Traen sus propias librerías, así que Ganki no las revisa.",
+        "sbx_col_source": "Origen",
+        "report_sandboxed": "Apps de Snap y Flatpak",
+        "sbx_note": (
+            "{n} apps instaladas con snap o flatpak. Cada una trae sus propias librerías, "
+            "así que la lista de Ubuntu no las describe y Ganki no las revisa. "
+            "Mantenelas al día desde su propia tienda."
+        ),
+        "say_sandboxed": (
+            "También tenés {snaps} apps snap y {flatpaks} flatpak. Traen sus propias "
+            "librerías, así que solo las listo; no las reviso por vulnerabilidades."
+        ),
         "report_external": "Paquetes de Python y npm con avisos de seguridad",
         "say_external_ok": (
             "En Python y npm tenés {n} paquetes y ninguno tiene avisos de seguridad conocidos."

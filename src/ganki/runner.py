@@ -30,10 +30,14 @@ ENV = "/usr/bin/env"
 PYTHON = "/usr/bin/python3"  # only to ask pip what is installed (see RESTRICTED_ARGUMENTS)
 NPM = "/usr/bin/npm"
 NPM_LOCAL = "/usr/local/bin/npm"
+SNAP = "/usr/bin/snap"
+FLATPAK = "/usr/bin/flatpak"
 
 # Read-only commands only. Anything that changes the system must be added
 # deliberately, in its own reviewed change, never here by accident.
-ALLOWED_COMMANDS = frozenset({DPKG_QUERY, APT_MARK, APT, APT_GET, PYTHON, NPM, NPM_LOCAL})
+ALLOWED_COMMANDS = frozenset(
+    {DPKG_QUERY, APT_MARK, APT, APT_GET, PYTHON, NPM, NPM_LOCAL, SNAP, FLATPAK}
+)
 
 # Some executables can change the system, so they are allowed with exact arguments
 # only. ``apt-get`` may only *simulate* (-s) a few operations; Ganki never runs them
@@ -53,9 +57,12 @@ RESTRICTED_ARGUMENTS = {
     ),
     NPM: frozenset({("ls", "-g", "--json", "--depth=0")}),
     NPM_LOCAL: frozenset({("ls", "-g", "--json", "--depth=0")}),
+    # Only what is installed; neither is asked about updates (that would use the network).
+    SNAP: frozenset({("list",)}),
+    FLATPAK: frozenset({("list", "--app", "--columns=application,name,version,origin,size")}),
 }
 # These two look in the person's own folders (~/.local, ~/.npm-global), so they need HOME.
-_NEEDS_HOME = frozenset({PYTHON, NPM, NPM_LOCAL})
+_NEEDS_HOME = frozenset({PYTHON, NPM, NPM_LOCAL, FLATPAK})  # flatpak reads ~/.local/share/flatpak
 PACKAGE_NAME = re.compile(r"[a-z0-9][a-z0-9+.\-]{0,99}(:[a-z0-9]{1,20})?")  # use fullmatch
 _SIMULATIONS_WITH_PACKAGE = (
     ("-s", "remove"),

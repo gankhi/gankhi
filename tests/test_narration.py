@@ -207,3 +207,22 @@ def test_end_of_support_wording_does_not_overstate(lang):
 
     for key in ("say_advice_expired", "hint_eol", "report_act_eol"):
         assert "Ubuntu Pro" in i18n.translate(lang, key, names="x")
+
+
+def test_snap_and_flatpak_apps_are_counted_and_said_not_to_be_checked():
+    import dataclasses
+
+    from ganki.collectors.sandboxed import SandboxedApp
+
+    result = dataclasses.replace(
+        make_result(),
+        sandboxed=[
+            SandboxedApp("firefox", "131", "snap", "mozilla"),
+            SandboxedApp("GIMP", "2.10", "flatpak", "flathub"),
+            SandboxedApp("Inkscape", "1.3", "flatpak", "flathub"),
+        ],
+    )
+    text = " ".join(s.text for s in narration.build(result, "es"))
+    assert "1 apps snap y 2 flatpak" in text and "no las reviso" in text
+    data = __import__("ganki.report", fromlist=["x"]).build_report(result, "es", "now")
+    assert data.startswith(b"%PDF")

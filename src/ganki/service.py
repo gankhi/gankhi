@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from ganki import cleanup
 from ganki import downloads as downloads_mod
 from ganki.collectors.apt import collect
+from ganki.collectors.sandboxed import SandboxedApp, collect_sandboxed
 from ganki.collectors.updates import collect_updates
 from ganki.external_scan import scan_external
 from ganki.external_tools import ExternalTool
@@ -50,6 +51,7 @@ class ScanResult:
     tools: list[Tool] = field(default_factory=list)
     external: list[ExternalTool] = field(default_factory=list)  # pip and npm packages
     external_failed: list[str] = field(default_factory=list)  # pip/npm could not be checked
+    sandboxed: list[SandboxedApp] = field(default_factory=list)  # snap and flatpak apps
 
 
 def run_scan(progress: Progress | None = None) -> ScanResult:
@@ -100,6 +102,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
             lambda: scan_external(lambda value: progress.fraction("external", value)),
             lambda r: {"external_packages": len(r[0])},
         )
+        sandboxed_job = pool.submit(collect_sandboxed)
         status = step(
             "feed",
             refresh,
@@ -116,6 +119,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
         system = system_job.result()
         download_groups = downloads_job.result()
         external, external_failed = external_job.result()
+        sandboxed = sandboxed_job.result()
     progress.begin("analysis")
     findings = find_findings(packages, index)
     log.info("scan finished in %.1f s", time.monotonic() - started)
@@ -137,6 +141,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
         tools=build_tools(packages, findings, updates, system.kernel),
         external=external,
         external_failed=external_failed,
+        sandboxed=sandboxed,
     )
     progress.finish("analysis", findings=len(findings))
     return result
