@@ -60,7 +60,8 @@ Each start creates a new secret key that is kept out of the terminal: the browse
 |---|---|
 | Open it in your default browser | Double-click the **Ganki** icon, or choose it in the applications menu. |
 | Open it a second time | Click the icon again: it reopens the copy that is already running. |
-| Open it in a browser that is not your default | In a terminal: `BROWSER=librewolf ganki` (use the command of your browser: `firefox`, `chromium`, `google-chrome`, `brave-browser`...). |
+| Choose the browser | With more than one browser installed, a small window asks which one to use (it lists the browsers it finds, or lets you pick a program from your files) and can remember the choice. To be asked again: right-click the icon and choose **Open in another browser**, or run `ganki --ask-browser`. |
+| Always use one browser, without the window | In a terminal: `BROWSER=librewolf ganki` (the command of your browser). |
 | Open it by hand | In a terminal: `ganki --no-open`, then paste the whole address saved in `~/.cache/ganki/dashboard-url` into any browser. |
 
 Typing `127.0.0.1:PORT` alone does not work, and that is on purpose: the address carries a secret key that changes on every start, so other programs on your computer cannot read your data. If a page says the key is missing, open Ganki from the icon or with one of the ways above.
