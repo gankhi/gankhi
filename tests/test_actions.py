@@ -104,5 +104,6 @@ def test_removing_what_is_not_needed_lists_it_and_never_touches_protected_softwa
     assert result.commands[-1] == "sudo apt-get autoremove"
     blocked = preview(AUTOREMOVE, "", set(), {"old-lib"}, simulator, sizes)
     assert blocked.blocked == "blocked_drags_protected"
+    assert blocked.blocked_names == ("old-lib",)  # the person can see what is behind the refusal
     nothing = preview(AUTOREMOVE, "", set(), set(), lambda *_a, **_k: "")
     assert nothing.blocked == "blocked_nothing_to_remove"

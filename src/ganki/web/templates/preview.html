@@ -6,6 +6,10 @@
 
   {% if view.blocked %}
     <p class="hint bad" role="alert">{{ t(view.blocked) }}</p>
+    {% if view.blocked_names %}
+    <h3>{{ t('blocked_names_title') }}</h3>
+    <ul class="names mono">{% for name in view.blocked_names %}<li>{{ name }}</li>{% endfor %}</ul>
+    {% endif %}
   {% else %}
     {% if view.action == 'clean' %}
     <p>{{ t('prev_clean_summary') }}</p>

@@ -1070,3 +1070,11 @@ def test_removing_what_is_not_needed_has_its_preview_and_runs_without_a_package(
     assert "action=autoremove" in client.get("/", base_url=BASE).get_data(as_text=True)
     response = post_run(client, {"action": "autoremove", "pkg": "", "confirm": True})
     assert response.status_code == 202 and executor.started == [("autoremove", "")]
+
+
+def test_a_refusal_names_the_protected_packages_behind_it():
+    simulation = "Remv linux-image-6.8.0-100-generic [6.8.0-100]\nRemv bash [5.2]\n"
+    client = run_client(FakeExecutor(), lambda a, n, u=False: simulation)
+    html = client.get("/preview?action=autoremove", base_url=BASE).get_data(as_text=True)
+    assert "Protected packages it would remove" in html and "bash" in html
+    assert "linux-image-6.8.0-100-generic" not in html
