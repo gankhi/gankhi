@@ -701,7 +701,9 @@ def test_a_second_click_opens_the_running_copy_instead_of_failing(tmp_path, monk
     server.save_access_url(url, tmp_path)
     monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path)
     opened = []
-    monkeypatch.setattr(server, "open_in_browser", lambda address: opened.append(address) or True)
+    monkeypatch.setattr(
+        server, "open_in_browser", lambda address, *_: opened.append(address) or True
+    )
     assert server.looks_like_ganki(url)
     assert not server.looks_like_ganki(f"http://127.0.0.1:{PORT}/?access=wrong")
     assert server.main(["--port", str(PORT)]) == 0
@@ -774,3 +776,90 @@ def test_opening_without_the_key_explains_how_to_get_in():
     # with the key it still works, and a POST without the session is still a plain refusal
     assert login(app.test_client()).get("/", base_url=BASE).status_code == 200
     assert client.post("/api/anything", base_url=BASE).status_code == 403
+
+
+def _browsers_found(monkeypatch, tmp_path, found, dialog=None):
+    """Pretend these commands exist; `dialog` is what the choice window answers."""
+    from ganki.web import browsers
+
+    monkeypatch.delenv("BROWSER", raising=False)
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
+    monkeypatch.setattr(browsers.shutil, "which", lambda name: found.get(name))
+    asked = []
+
+    def fake_run(command):
+        asked.append(command)
+        if "--list" in command or "--menu" in command:
+            return dialog or (1, "")
+        return 0, ""  # "Remember" pressed
+
+    monkeypatch.setattr(browsers, "_run", fake_run)
+    return browsers, asked
+
+
+def test_only_installed_browsers_are_offered(monkeypatch, tmp_path):
+    browsers, _ = _browsers_found(
+        monkeypatch, tmp_path, {"librewolf": "/usr/bin/librewolf", "chromium": "/usr/bin/chromium"}
+    )
+    assert browsers.installed_browsers() == [
+        ("LibreWolf", "/usr/bin/librewolf"),
+        ("Chromium", "/usr/bin/chromium"),
+    ]
+
+
+def test_the_chosen_browser_is_used_and_can_be_remembered(monkeypatch, tmp_path):
+    found = {
+        "zenity": "/usr/bin/zenity",
+        "firefox": "/usr/bin/firefox",
+        "librewolf": "/usr/bin/librewolf",
+    }
+    browsers, asked = _browsers_found(monkeypatch, tmp_path, found, (0, "/usr/bin/librewolf"))
+
+    assert browsers.choose() == "/usr/bin/librewolf"
+    assert browsers.preference_path().read_text().strip() == "/usr/bin/librewolf"
+
+    asked.clear()
+    assert browsers.choose() == "/usr/bin/librewolf"  # remembered: no window
+    assert asked == []
+
+    browsers.choose(force_ask=True)  # --ask-browser asks again
+    assert asked
+
+
+def test_cancelling_the_window_opens_nothing_and_remembers_nothing(monkeypatch, tmp_path):
+    found = {"zenity": "/usr/bin/zenity", "firefox": "/f", "librewolf": "/l"}
+    browsers, _ = _browsers_found(monkeypatch, tmp_path, found, (1, ""))
+    assert browsers.choose() == browsers.CANCELLED
+    assert not browsers.preference_path().exists()
+
+
+def test_a_single_browser_or_no_dialog_tool_falls_back_to_the_default(monkeypatch, tmp_path):
+    browsers, asked = _browsers_found(
+        monkeypatch, tmp_path, {"zenity": "/usr/bin/zenity", "firefox": "/f"}
+    )
+    assert browsers.choose() == browsers.DEFAULT and asked == []
+    browsers, asked = _browsers_found(monkeypatch, tmp_path, {"firefox": "/f", "librewolf": "/l"})
+    assert browsers.choose() == browsers.DEFAULT and asked == []
+
+
+def test_the_browser_variable_is_respected_without_asking(monkeypatch, tmp_path):
+    browsers, asked = _browsers_found(
+        monkeypatch, tmp_path, {"zenity": "/z", "firefox": "/f", "librewolf": "/l"}
+    )
+    monkeypatch.setenv("BROWSER", "librewolf")
+    assert browsers.choose() == browsers.DEFAULT and asked == []
+
+
+def test_an_unknown_answer_cannot_launch_an_arbitrary_program(monkeypatch, tmp_path):
+    found = {"zenity": "/usr/bin/zenity", "firefox": "/f", "librewolf": "/l"}
+    browsers, _ = _browsers_found(monkeypatch, tmp_path, found, (0, "/opt/not-a-browser"))
+    assert browsers.choose() == browsers.DEFAULT
+
+
+def test_open_in_browser_starts_the_chosen_one(monkeypatch):
+    from ganki.web import server
+
+    started = []
+    monkeypatch.setattr(server, "_start", lambda command: started.append(command) or True)
+    assert server.open_in_browser("http://127.0.0.1:1/", "/usr/bin/librewolf") is True
+    assert started == [["/usr/bin/librewolf", "http://127.0.0.1:1/"]]

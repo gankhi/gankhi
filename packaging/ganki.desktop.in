@@ -2,9 +2,17 @@
 Type=Application
 Name=Ganki
 GenericName=System dashboard
+Comment[es]=Ver qué hay instalado, qué está desactualizado y qué podés limpiar
 Comment=See what is installed, what is outdated and what you can clean up
 Exec=@EXEC@ --pause-on-error
 Icon=@ICON@
 Terminal=true
 Categories=System;Monitor;
 Keywords=updates;disk;cleanup;vulnerabilities;packages;
+Actions=ChooseBrowser;
+
+[Desktop Action ChooseBrowser]
+Name=Open in another browser
+Name[es]=Abrir en otro navegador
+Exec=@EXEC@ --ask-browser --pause-on-error
+Terminal=true

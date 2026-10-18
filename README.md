@@ -50,7 +50,7 @@ From a copy of this repository, without `sudo` (everything goes inside your home
 scripts/install.sh
 ```
 
-Then open **Ganki** from your applications menu, or run `ganki` in a terminal. It opens in your browser and only accepts connections from your own computer. Close it with `Ctrl+C` in its terminal. To remove it: `scripts/uninstall.sh`.
+Then open **Ganki** from your applications menu, or run `ganki` in a terminal. It opens in your browser and only accepts connections from your own computer. Close it with `Ctrl+C` in its terminal. If you have more than one browser installed, a small window asks which one to use and can remember the choice. Right-click the icon and choose **Open in another browser** (or run `ganki --ask-browser`) to be asked again. To remove it: `scripts/uninstall.sh`.
 
 Each start creates a new secret key that is kept out of the terminal: the browser opens with it, and a copy is saved in `~/.cache/ganki/dashboard-url`, readable only by you.
 

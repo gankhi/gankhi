@@ -30,6 +30,7 @@ from pathlib import Path
 from ganki.feed import default_cache_dir
 from ganki.progress import Progress
 from ganki.service import run_scan
+from ganki.web import browsers
 from ganki.web.app import create_app
 
 HOST = "127.0.0.1"
@@ -105,13 +106,16 @@ def _start(command: list[str]) -> bool:
     return True
 
 
-def open_in_browser(url: str) -> bool:
+def open_in_browser(url: str, browser: str = browsers.DEFAULT) -> bool:
     """Open the address in the person's own browser, whichever it is.
 
+    0. The browser the person picked in the choice window, if any.
     1. The standard opener (honours the BROWSER variable and the desktop's default).
     2. The desktop's own ``xdg-open``.
     3. Any well-known browser that is installed, even if none is the default.
     """
+    if browser not in (browsers.DEFAULT, browsers.CANCELLED) and _start([browser, url]):
+        return True
     if webbrowser.open(url):
         return True
     opener = shutil.which("xdg-open")
@@ -144,9 +148,12 @@ def wait_until_listening(port: int, seconds: float = 15.0) -> bool:
     return False
 
 
-def open_when_ready(url: str, port: int, saved: Path) -> None:
+def open_when_ready(url: str, port: int, saved: Path, ask: bool = False) -> None:
     """Open the browser as soon as the server is listening (runs beside the server)."""
-    if wait_until_listening(port) and open_in_browser(url):
+    browser = browsers.choose(force_ask=ask)  # the person may take a while to choose
+    if browser == browsers.CANCELLED:
+        print(f"Not opened. To open it later, use the address in this file:\n  {saved}")
+    elif wait_until_listening(port) and open_in_browser(url, browser):
         print("Ganki opened in your browser.")
     else:
         print(f"To open it, copy the address from this file (only you can read it):\n  {saved}")
@@ -164,7 +171,7 @@ def looks_like_ganki(url: str) -> bool:
         return False
 
 
-def open_running_copy(port: int) -> bool:
+def open_running_copy(port: int, ask: bool = False) -> bool:
     """A second click on the icon: open the copy that is already running instead of failing."""
     saved = default_cache_dir() / ACCESS_FILE
     try:
@@ -174,7 +181,10 @@ def open_running_copy(port: int) -> bool:
     if not url.startswith(f"http://{HOST}:{port}/") or not looks_like_ganki(url):
         return False
     print("Ganki is already running. Opening it in your browser.")
-    if not open_in_browser(url):
+    browser = browsers.choose(force_ask=ask)
+    if browser == browsers.CANCELLED:
+        return True
+    if not open_in_browser(url, browser):
         print(f"Open this file's address in your browser (only you can read it):\n  {saved}")
     return True
 
@@ -184,6 +194,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument(
         "--no-open", action="store_true", help="do not open the dashboard in the browser"
+    )
+    parser.add_argument(
+        "--ask-browser",
+        action="store_true",
+        help="ask which installed browser to open Ganki in, even if a choice was remembered",
     )
     parser.add_argument(
         "--pause-on-error",
@@ -199,7 +214,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def _serve(args: argparse.Namespace) -> int:
     if not port_is_free(args.port):
-        if not args.no_open and open_running_copy(args.port):
+        if not args.no_open and open_running_copy(args.port, args.ask_browser):
             return 0
         print(f"Port {args.port} is already in use. Is Ganki already running?")
         print("Close the other one, or choose another port with --port.")
@@ -216,7 +231,9 @@ def _serve(args: argparse.Namespace) -> int:
         print(f"To open it, copy the address from this file (only you can read it):\n  {saved}")
     else:
         # The server must be listening before the browser asks, or the first request fails.
-        threading.Thread(target=open_when_ready, args=(url, args.port, saved), daemon=True).start()
+        threading.Thread(
+            target=open_when_ready, args=(url, args.port, saved, args.ask_browser), daemon=True
+        ).start()
     print("Press Ctrl+C to stop.")
     logging.getLogger("werkzeug").addFilter(HideAccessKey())
     try:
