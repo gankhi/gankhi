@@ -154,3 +154,10 @@ def test_priorities_are_coloured_and_the_words_stay():
         if t.top_priority in ("critical", "high")
     }
     assert words and any(word in data for word in words)  # colour is never the only signal
+
+
+def test_long_names_break_after_a_dash_not_in_the_middle_of_a_word():
+    from ganki.pdfwriter import text_width, wrap
+
+    lines = wrap("openjdk-17-jre-headless:amd64", 11, text_width("openjdk-17-jre-hea", 11))
+    assert lines[0].endswith("-") and all(line for line in lines)

@@ -169,3 +169,19 @@ def test_old_kernels_never_take_the_place_of_what_is_urgent():
     assert "linux-headers-6.8.0-90" not in advice
     assert "libreal1" in advice
     assert "old kernels" in text
+
+
+def test_thousands_are_written_with_separators():
+    assert narration.thousands(108995, "es") == "108.995"
+    assert narration.thousands(108995, "en") == "108,995"
+
+
+def test_the_pieces_of_one_kernel_are_one_entry_and_a_restart_is_advised():
+    result = make_result()
+    for name in ("linux-image-6.8.0-137-generic", "linux-modules-6.8.0-137-generic"):
+        result = _with_library(result, "critical", name)
+    text = texts(result, "en")
+    advice = text.split("My advice")[1]
+    assert "the system kernel" in advice
+    assert "linux-image" not in advice and "linux-modules" not in advice
+    assert "restart the computer" in advice

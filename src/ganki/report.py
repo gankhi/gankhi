@@ -111,7 +111,7 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
         pdf.table(
             [*headers, say("report_action")],
             [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(vulnerable)],
-            [0.23, 0.15, 0.18, 0.44],
+            [0.30, 0.22, 0.16, 0.32],
             _tones(_rows(vulnerable), 4, 2),
         )
         if len(vulnerable) > len(_rows(vulnerable)):
@@ -142,7 +142,7 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
                 say("report_action"),
             ],
             [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(libraries)],
-            [0.23, 0.15, 0.18, 0.44],
+            [0.30, 0.22, 0.16, 0.32],
             _tones(_rows(libraries), 4, 2),
         )
         if len(libraries) > len(_rows(libraries)):

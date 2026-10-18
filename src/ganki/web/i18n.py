@@ -190,6 +190,10 @@ TEXTS: dict[str, dict[str, str]] = {
             "The biggest group is {kind}."
         ),
         "say_and_more": "and others",
+        "say_kernel_name": "the system kernel",
+        "say_advice_restart": (
+            "After updating the kernel, restart the computer so it starts using it."
+        ),
         "say_advice_update": (
             "My advice, first: update {names}. The fix already exists, so it is the safest step."
         ),
@@ -539,6 +543,10 @@ TEXTS: dict[str, dict[str, str]] = {
             "El grupo más grande es {kind}."
         ),
         "say_and_more": "y otros",
+        "say_kernel_name": "el kernel del sistema",
+        "say_advice_restart": (
+            "Después de actualizar el kernel, reiniciá la computadora para que lo use."
+        ),
         "say_advice_update": (
             "Mi consejo, primero: actualizá {names}. El arreglo ya existe, es el paso más seguro."
         ),
