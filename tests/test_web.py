@@ -636,6 +636,8 @@ def test_confirmation_screen_shows_warnings_and_the_run_button_only_when_it_can_
     )
     assert "Are you sure" in html and "1 more package(s) will also be removed" in html
     assert 'id="run"' in html and 'id="understood"' in html and "style=" not in html
+    # which password it is, and what to do if the account cannot give one
+    assert "the same one you type with sudo" in html and "use the command shown below" in html
     no_window = run_client(FakeExecutor(available=False), simulation)
     html = no_window.get("/preview?action=remove&pkg=vim", base_url=BASE).get_data(as_text=True)
     assert 'id="run"' not in html and "sudo apt-get remove vim" in html
