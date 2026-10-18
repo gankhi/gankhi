@@ -54,6 +54,18 @@ Después abrí **Ganki** desde el menú de aplicaciones, o ejecutá `ganki` en u
 
 Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el navegador se abre con ella y se guarda una copia en `~/.cache/ganki/dashboard-url`, legible solo por vos.
 
+### Formas de abrir Ganki
+
+| Querés | Hacé esto |
+|---|---|
+| Abrirlo en tu navegador predeterminado | Doble clic en el ícono **Ganki**, o elegilo en el menú de aplicaciones. |
+| Abrirlo otra vez | Otro clic en el ícono: vuelve a abrir la copia que ya está corriendo. |
+| Elegir el navegador | Con más de un navegador instalado, una ventanita pregunta con cuál abrirlo (lista los que encuentra, o te deja elegir un programa de tus archivos) y puede recordar la elección. Para que vuelva a preguntar: clic derecho en el ícono y **Abrir en otro navegador**, o `ganki --ask-browser`. |
+| Usar siempre un navegador, sin la ventanita | En una terminal: `BROWSER=librewolf ganki` (el comando de tu navegador). |
+| Abrirlo a mano | En una terminal: `ganki --no-open`, y pegá en cualquier navegador la dirección completa guardada en `~/.cache/ganki/dashboard-url`. |
+
+Escribir solo `127.0.0.1:PUERTO` no funciona, y es a propósito: la dirección lleva una clave secreta que cambia en cada inicio, para que otros programas de tu computadora no puedan leer tus datos. Si una página dice que falta la clave, abrí Ganki desde el ícono o con alguna de las formas de arriba.
+
 ## Voz natural (opcional)
 
 Ganki puede explicar tu sistema en voz alta. Los navegadores en Linux casi nunca tienen una voz local, así que `scripts/install-voice.sh` (opcional) agrega Piper y una voz en español argentino y una en inglés dentro de `~/.local/share/ganki/voice`. Descarga unos 170 MB una sola vez; después la voz corre en tu computadora y no se envía nada. Sin ella igual tenés los subtítulos. La página solo admite audio que venga de Ganki (`media-src 'self'`).
