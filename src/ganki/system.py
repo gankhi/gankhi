@@ -32,7 +32,8 @@ class SystemInfo:
 
     @property
     def disk_percent(self) -> int:
-        return round(100 * self.disk_used / self.disk_total) if self.disk_total else 0
+        # Rounded up, like `df`, so the number matches what the terminal shows.
+        return -(-100 * self.disk_used // self.disk_total) if self.disk_total else 0
 
     @property
     def ram_percent(self) -> int:
@@ -87,7 +88,9 @@ def read_system(
         architecture=uname.machine,
         user=user,
         uptime_seconds=parse_uptime(_read(proc / "uptime")),
-        disk_total=disk.total,
+        # Usable size (used + available to normal users), the way `df` counts it: the space
+        # Linux keeps in reserve for the system is neither used nor free for programs.
+        disk_total=disk.used + disk.free,
         disk_used=disk.used,
         ram_total_kib=total_kib,
         ram_used_kib=used_kib,

@@ -41,3 +41,20 @@ def test_percentages_and_free_space():
     assert (info.disk_percent, info.disk_free, info.ram_percent) == (25, 750, 25)
     empty = SystemInfo("os", "k", "x", "u", 0, 0, 0, 0, 0, False)
     assert (empty.disk_percent, empty.ram_percent) == (0, 0)
+
+
+def test_disk_percent_matches_df_when_the_system_keeps_a_reserve(monkeypatch):
+    """df reports used / (used + available): the reserved blocks are not counted at all."""
+    from collections import namedtuple
+
+    usage = namedtuple("usage", "total used free")
+    # 1000 blocks: 720 used, 230 available to users, 50 reserved for root
+    monkeypatch.setattr("ganki.system.shutil.disk_usage", lambda _path: usage(1000, 720, 230))
+    info = read_system()
+    assert info.disk_percent == 76  # 720 / 950 = 75.8 -> 76, not 72
+    assert info.disk_free == 230
+
+
+def test_disk_percent_is_rounded_up_like_df():
+    info = SystemInfo("x", "k", "a", "u", 0, 1000, 771, 100, 10, False)
+    assert info.disk_percent == 78  # 77.1 rounds up
