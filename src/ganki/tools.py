@@ -12,7 +12,6 @@ from ganki.collectors.updates import Update
 from ganki.osv import PRIORITY_ORDER, Finding
 
 VULNERABLE, OUTDATED, OK = "vulnerable", "outdated", "ok"
-_STATE_RANK = {VULNERABLE: 0, OUTDATED: 1, OK: 2}
 _UNKNOWN = len(PRIORITY_ORDER)
 MAX_CVE_LINES = 5  # most urgent CVEs shown per tool
 
@@ -89,6 +88,17 @@ def _rank(priority: str) -> int:
     return PRIORITY_ORDER.get(priority, _UNKNOWN)
 
 
+def _tier(tool: Tool) -> int:
+    """What the person can do about it, so the list starts with what can be fixed now.
+
+    0: it has a notice and updating fixes it. 1: only outdated. 2: it has notices that no
+    update fixes (no patch yet, or the project is no longer supported). 3: up to date.
+    """
+    if tool.state == VULNERABLE:
+        return 0 if tool.fixed_in and tool.update_to else 2
+    return 1 if tool.state == OUTDATED else 3
+
+
 def _sample(unique: dict[str, Finding]) -> tuple[CveLine, ...]:
     """The most urgent notices of each kind, so the ones without a fix are never left out."""
     shown = {"fixed": 0, "open": 0}
@@ -160,5 +170,5 @@ def build_tools(
         )
     return sorted(
         tools,
-        key=lambda t: (_STATE_RANK[t.state], _rank(t.top_priority), -t.cve_count, t.name),
+        key=lambda t: (_tier(t), _rank(t.top_priority), -t.cve_count, t.name),
     )
