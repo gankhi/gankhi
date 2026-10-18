@@ -86,7 +86,11 @@ TEXTS: dict[str, dict[str, str]] = {
             "Ganki shows the command; it does not change your projects."
         ),
         "hint_no_fix": "There is no patch published for this yet.",
-        "hint_some_no_fix": "{n} more notices have no fix yet.",
+        "hint_some_no_fix": "{n} notices have no patch yet, even after updating.",
+        "hint_fixed_part": (
+            "Updating to {version} fixes {n} notices. The other {m} stay open because no patch "
+            "exists for them yet."
+        ),
         "hint_eol": (
             "Its authors no longer publish fixes for this version. Ubuntu may still provide "
             "them, but only with Ubuntu Pro. Move to a supported version when you can."
@@ -523,7 +527,11 @@ TEXTS: dict[str, dict[str, str]] = {
             "pruebas de tu proyecto. Ganki te muestra el comando; no modifica tus proyectos."
         ),
         "hint_no_fix": "Todavía no hay un parche publicado.",
-        "hint_some_no_fix": "{n} avisos más todavía no tienen arreglo.",
+        "hint_some_no_fix": "{n} avisos todavía no tienen parche, ni siquiera al actualizar.",
+        "hint_fixed_part": (
+            "Al actualizar a {version} se corrigen {n} avisos. Los otros {m} siguen abiertos "
+            "porque todavía no existe un parche para ellos."
+        ),
         "hint_eol": (
             "Sus autores ya no publican arreglos para esta versión. Ubuntu todavía puede "
             "darlos, pero solo con Ubuntu Pro. Pasá a una versión vigente cuando puedas."
