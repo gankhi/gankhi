@@ -150,6 +150,7 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
         segments.append(Segment("tools", text, "bad" if serious_any else "warn"))
 
     segments.extend(_external_segments(result, say))
+    segments.extend(_sandboxed_segments(result, say))
 
     if result.download_groups:
         total_bytes = sum(g.size_bytes for g in result.download_groups)
@@ -206,6 +207,15 @@ def _external_segments(result: ScanResult, say) -> list[Segment]:  # type: ignor
         text = say("say_external_failed", tools=", ".join(result.external_failed))
         segments.append(Segment("external", text, "warn"))
     return segments
+
+
+def _sandboxed_segments(result: ScanResult, say) -> list[Segment]:  # type: ignore[no-untyped-def]
+    """Snap and flatpak apps: only counted, because they carry their own libraries."""
+    if not result.sandboxed:
+        return []
+    snaps = sum(1 for a in result.sandboxed if a.tool == "snap")
+    flatpaks = len(result.sandboxed) - snaps
+    return [Segment("external", say("say_sandboxed", snaps=snaps, flatpaks=flatpaks))]
 
 
 def vulnerable_libraries(result: ScanResult) -> tuple[list, list]:  # type: ignore[type-arg]

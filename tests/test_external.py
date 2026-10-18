@@ -317,3 +317,37 @@ def test_reading_in_another_process_gives_the_same_answer(tmp_path):
     assert osv_external.find_external_isolated(archive, "PyPI", packages) == (
         osv_external.find_external(archive, "PyPI", packages)
     )
+
+
+def test_snap_list_skips_runtimes_and_keeps_apps():
+    from ganki.collectors.sandboxed import parse_snap
+
+    output = (
+        "Name     Version  Rev   Tracking       Publisher  Notes\n"
+        "core22   20240111 1380  latest/stable  canonical✓ base\n"
+        "firefox  131.0    5187  latest/stable  mozilla✓   -\n"
+        "snapd    2.63     21759 latest/stable  canonical✓ snapd\n"
+    )
+    apps = parse_snap(output)
+    assert [(a.name, a.version, a.source) for a in apps] == [("firefox", "131.0", "mozilla")]
+
+
+def test_flatpak_list_reads_tab_separated_columns():
+    from ganki.collectors.sandboxed import parse_flatpak
+
+    output = "org.gimp.GIMP\tGIMP\t2.10.38\tflathub\t245.1 MB\n\nbroken line\n"
+    apps = parse_flatpak(output)
+    assert [(a.name, a.version, a.tool, a.source) for a in apps] == [
+        ("GIMP", "2.10.38", "flatpak", "flathub")
+    ]
+
+
+def test_sandboxed_commands_are_allowlisted_with_exact_arguments():
+    import pytest
+
+    from ganki import runner
+
+    with pytest.raises(Exception):  # noqa: B017, PT011
+        runner.run([runner.SNAP, "remove", "firefox"])
+    with pytest.raises(Exception):  # noqa: B017, PT011
+        runner.run([runner.FLATPAK, "uninstall", "org.gimp.GIMP"])
