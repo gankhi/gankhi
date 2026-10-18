@@ -704,7 +704,11 @@ def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
 
     def scan():
         return replace(
-            make_result(), sandboxed=[SandboxedApp("firefox", "131.0", "snap", "mozilla**")]
+            make_result(),
+            sandboxed=[
+                SandboxedApp("firefox", "131.0", "snap", "mozilla**", 3 * 1024),
+                SandboxedApp("ghost", "1", "snap", "someone", None),
+            ],
         )
 
     client = login(build(scan).test_client())
@@ -713,6 +717,7 @@ def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "How Ganki checks it" in html
     assert "cannot tell you whether it has known flaws" in html
+    assert "3.0 MiB" in html and '<td class="num mono">—</td>' in html  # size, or a dash
 
 
 def test_the_hover_option_is_gone_from_the_assistant():

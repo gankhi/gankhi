@@ -217,11 +217,11 @@
 <section class="card" data-explain="external" tabindex="0">
   <div class="toolshead"><div><h2>{{ t('sbx_title') }}</h2><p class="muted">{{ t('sbx_sub', n=result.sandboxed|length) }}</p></div></div>
   <div class="scroll"><table>
-    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('sbx_col_source') }}</th></tr></thead>
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('sbx_col_source') }}</th><th class="num">{{ t('col_size') }}</th></tr></thead>
     <tbody>
     {% for app in result.sandboxed[:200] %}
       <tr><td class="wrap"><strong>{{ app.name }}</strong>
-        <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div></td><td>{{ app.version }}</td><td>{{ app.tool }}</td><td>{{ app.source }}</td></tr>
+        <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div></td><td>{{ app.version }}</td><td>{{ app.tool }}</td><td>{{ app.source }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>

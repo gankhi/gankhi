@@ -351,3 +351,20 @@ def test_sandboxed_commands_are_allowlisted_with_exact_arguments():
         runner.run([runner.SNAP, "remove", "firefox"])
     with pytest.raises(Exception):  # noqa: B017, PT011
         runner.run([runner.FLATPAK, "uninstall", "org.gimp.GIMP"])
+
+
+def test_snap_and_flatpak_sizes_are_read_in_the_same_unit(tmp_path):
+    from ganki.collectors.sandboxed import parse_flatpak, parse_snap
+
+    (tmp_path / "firefox_5187.snap").write_bytes(b"x" * 3 * 1024 * 1024)
+    snap = parse_snap(
+        "Name     Version  Rev   Tracking       Publisher  Notes\n"
+        "firefox  131.0    5187  latest/stable  mozilla✓   -\n"
+        "ghost    1.0      7     latest/stable  someone    -\n",
+        tmp_path,
+    )
+    assert [(a.name, a.size_kib) for a in snap] == [("firefox", 3072), ("ghost", None)]
+    flat = parse_flatpak(
+        "org.gimp.GIMP\tGIMP\t2.10\tflathub\t245.1\u00a0MB\nx.Y\tY\t1\tflathub\t?\n"
+    )
+    assert flat[0].size_kib == 245_100_000 // 1024 and flat[1].size_kib is None

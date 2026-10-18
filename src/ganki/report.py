@@ -149,16 +149,26 @@ def _sandboxed_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
         return
     pdf.heading(i18n.translate(lang, "report_sandboxed"))
     pdf.paragraph(i18n.translate(lang, "sbx_note", n=len(result.sandboxed)))
-    rows = [[a.name, a.version, a.tool, a.source] for a in result.sandboxed[:MAX_ROWS]]
+    rows = [
+        [
+            a.name,
+            a.version,
+            a.tool,
+            a.source,
+            "—" if a.size_kib is None else paging.human_size(a.size_kib),
+        ]
+        for a in result.sandboxed[:MAX_ROWS]
+    ]
     pdf.table(
         [
             i18n.translate(lang, "ext_col_package"),
             i18n.translate(lang, "report_version"),
             i18n.translate(lang, "ext_col_tool"),
             i18n.translate(lang, "sbx_col_source"),
+            i18n.translate(lang, "col_size"),
         ],
         rows,
-        [0.32, 0.2, 0.14, 0.34],
+        [0.28, 0.18, 0.12, 0.24, 0.18],
     )
     if len(result.sandboxed) > MAX_ROWS:
         pdf.paragraph(i18n.translate(lang, "report_more", n=len(result.sandboxed) - MAX_ROWS))
