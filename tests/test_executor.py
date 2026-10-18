@@ -214,3 +214,18 @@ def test_the_command_that_runs_is_rebuilt_not_the_callers_list(monkeypatch):
     given = privileged_apt("remove", "vim")
     run_privileged(given, lambda _line: None)
     assert seen["argv"] == given and seen["argv"] is not given
+
+
+def test_the_copy_for_undoing_lives_where_the_system_empties_it(tmp_path, monkeypatch):
+    runtime = tmp_path / "run-user"
+    runtime.mkdir()
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime))
+    assert executor.snapshot_dir() == runtime / "ganki" / "snapshots"
+    # without a runtime folder: a private temporary one, never the home folder
+    monkeypatch.delenv("XDG_RUNTIME_DIR")
+    monkeypatch.setattr(executor, "_fallback_dir", None)
+    monkeypatch.setattr("tempfile.tempdir", str(tmp_path))
+    folder = executor.snapshot_dir()
+    assert str(folder).startswith(str(tmp_path)) and ".local" not in str(folder)
+    assert oct(folder.parent.stat().st_mode & 0o777) == "0o700"
+    assert executor.snapshot_dir() == folder  # the same folder for the whole run
