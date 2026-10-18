@@ -138,7 +138,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "warn_big": "This is a big download and needs free disk space. Check the numbers above.",
         "understood": "I read the warnings and want to continue.",
         "password_note": (
-            "Your password is asked by the system's own window, never by Ganki. "
+            "The system's own window asks for your password, never Ganki. It is the password of "
+            "your user account, the same one you type with sudo or to log in. The account has "
+            "to be an administrator and have a password; if it does not, the system will refuse "
+            "and nothing changes: use the command shown below instead. "
             "Your list of programs is saved first, so the change can be undone."
         ),
         "confirm_remove": "Yes, remove {name}",
@@ -604,7 +607,10 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "understood": "Leí las advertencias y quiero continuar.",
         "password_note": (
-            "La contraseña la pide la ventana del sistema, nunca Ganki. "
+            "La contraseña la pide la ventana del sistema, nunca Ganki. Es la de tu usuario, la "
+            "misma que escribís con sudo o para iniciar sesión. El usuario tiene que ser "
+            "administrador y tener una contraseña; si no, el sistema lo rechaza y no cambia "
+            "nada: usá el comando que aparece más abajo. "
             "Antes se guarda tu lista de programas, así se puede deshacer."
         ),
         "confirm_remove": "Sí, quitar {name}",
