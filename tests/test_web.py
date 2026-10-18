@@ -466,7 +466,7 @@ def test_rows_explain_in_plain_words_what_to_do():
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "Fixed in 2.0 with the distribution" in html  # openssl has a fix
-    assert "No fix yet" in html and "Use it with care" in html  # virtualbox has none
+    assert "No fix yet" in html and "no patch published for this yet" in html  # virtualbox has none
 
 
 URIS = (
@@ -684,7 +684,8 @@ def test_the_fix_labels_open_an_explanation_with_what_to_keep_in_mind():
     # each label is the summary of a details element: a keyboard-friendly button, no script
     assert '<details class="note"><summary><span class="tag ok">' in html
     assert '<details class="note"><summary><span class="tag bad">' in html
-    assert "What to keep in mind" in html
+    assert "A virtual machine isolates another system" in html  # virtualbox, not a generic text
+    assert "encrypts the connections of many programs" in html  # openssl
 
 
 def test_every_explanation_exists_in_both_languages():

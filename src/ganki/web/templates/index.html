@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% set TOP_ROWS = 5 %}
 {% macro badge(priority) %}<span class="badge p-{{ priority or 'unknown' }}">{{ t(priority or 'unknown') }}</span>{% endmacro %}
-{% macro note(kind, tag, hint, more) %}<details class="note"><summary><span class="tag {{ kind }}">{{ tag }}</span></summary><p>{{ hint }}</p><p>{{ more }}</p></details>{% endmacro %}
+{% macro note(kind, tag, hint, more) %}<details class="note"><summary><span class="tag {{ kind }}">{{ tag }}</span></summary><p>{{ hint }}</p>{% for paragraph in more %}<p>{{ paragraph }}</p>{% endfor %}</details>{% endmacro %}
 {% macro ring(segments, center, caption, label) %}
 {# Each segment is (percent, tone); they are laid end to end around the circle. #}
 <svg class="ring" viewBox="0 0 140 140" role="img" aria-label="{{ label }}: {{ center }} {{ caption }}">
@@ -160,10 +160,10 @@
         <td class="wrap"><strong>{{ tool.name }}</strong><br><span class="small">{{ tool.description }}</span>
           {% if tool.fixed_in or tool.unfixable or tool.end_of_support %}
           <div class="notes">
-            {% if tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('hint_fixed', version=tool.fixed_in), t('more_fixed')) }}{% endif %}
-            {% if tool.unfixable and tool.fixed_in %}{{ note('bad', t('tag_no_fix'), t('hint_some_no_fix', n=tool.unfixable), t('more_no_fix')) }}
-            {% elif tool.unfixable %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), t('more_no_fix')) }}{% endif %}
-            {% if tool.end_of_support %}{{ note('old', t('tag_eol'), t('hint_eol'), t('more_eol')) }}{% endif %}
+            {% if tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('hint_fixed', version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}{% endif %}
+            {% if tool.unfixable and tool.fixed_in %}{{ note('bad', t('tag_no_fix'), t('hint_some_no_fix', n=tool.unfixable), advise(tool, 'no_fix', 'more_no_fix')) }}
+            {% elif tool.unfixable %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}{% endif %}
+            {% if tool.end_of_support %}{{ note('old', t('tag_eol'), t('hint_eol'), advise(tool, 'eol', 'more_eol')) }}{% endif %}
           </div>
           {% endif %}
           {% if tool.cves %}
@@ -238,9 +238,9 @@
       <tr>
         <td class="wrap"><strong>{{ tool.name }}</strong>
           <div class="notes">
-            {% if tool.malicious %}{{ note('bad', t('tag_malware'), t('ext_malware'), t('more_malware')) }}
-            {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('ext_fix', version=tool.fixed_in, tool=tool.tool), t('more_ext_fix')) }}
-            {% else %}{{ note('bad', t('tag_no_fix'), t('ext_nofix'), t('more_no_fix')) }}{% endif %}
+            {% if tool.malicious %}{{ note('bad', t('tag_malware'), t('ext_malware'), advise(tool, 'malware', 'more_malware')) }}
+            {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('ext_fix', version=tool.fixed_in, tool=tool.tool), advise(tool, 'ext_fix', 'more_ext_fix')) }}
+            {% else %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'ext_no_fix', 'more_no_fix')) }}{% endif %}
           </div>
           {% if tool.cves %}
           <details><summary>{{ t('cve_summary', n=tool.cve_count) }}</summary>
