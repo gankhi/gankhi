@@ -27,6 +27,8 @@ import urllib.request
 import webbrowser
 from pathlib import Path
 
+from flask import cli as flask_cli
+
 from ganki.feed import default_cache_dir
 from ganki.progress import Progress
 from ganki.service import run_scan
@@ -223,7 +225,12 @@ def _serve(args: argparse.Namespace) -> int:
             target=open_when_ready, args=(url, args.port, saved, args.ask_browser), daemon=True
         ).start()
     print("Press Ctrl+C to stop.")
-    logging.getLogger("werkzeug").addFilter(HideAccessKey())
+    werkzeug_log = logging.getLogger("werkzeug")
+    werkzeug_log.addFilter(HideAccessKey())
+    # Flask's start-up banner and its "development server" warning are for programmers; they
+    # only worry the person who double-clicked the icon. Real errors are still shown.
+    werkzeug_log.setLevel(logging.ERROR)
+    flask_cli.show_server_banner = lambda *_args, **_kwargs: None
     try:
         app.run(host=HOST, port=args.port, debug=False, use_reloader=False, threaded=True)
     except OSError as error:

@@ -115,7 +115,12 @@ def _identity(argv: tuple[str, ...]) -> str:
         for word in reversed(argv):
             if "." in word and not word.startswith(("-", "@", "/")):
                 return word.lower()
-    return Path(argv[0]).name.lower()
+    # google-chrome and google-chrome-stable are the same program behind two names
+    try:
+        real = Path(shutil.which(argv[0]) or argv[0]).resolve()
+    except (OSError, RuntimeError):
+        real = Path(argv[0])
+    return str(real).lower()
 
 
 def _from_desktop_entry(path: Path) -> Browser | None:
@@ -129,6 +134,11 @@ def _from_desktop_entry(path: Path) -> Browser | None:
     if entry.get("Type") != "Application" or entry.get("Hidden", "").lower() == "true":
         return None
     if "WebBrowser" not in entry.get("Categories", "").split(";"):
+        return None
+    # Some system entries (network settings, support pages) claim the category without being
+    # browsers. A real one also says it opens web addresses or pages.
+    opens = entry.get("MimeType", "").split(";")
+    if not {"x-scheme-handler/http", "x-scheme-handler/https", "text/html"} & set(opens):
         return None
     name, command = entry.get("Name", "").strip(), entry.get("Exec", "")
     try:

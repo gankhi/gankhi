@@ -835,11 +835,13 @@ def _browsers_found(monkeypatch, tmp_path, found, dialog=None, folders=()):
     return browsers, asked
 
 
-def _desktop_entry(folder, name, label, command, categories="Network;WebBrowser;"):
+def _desktop_entry(
+    folder, name, label, command, categories="Network;WebBrowser;", mime="x-scheme-handler/http;"
+):
     folder.mkdir(parents=True, exist_ok=True)
     (folder / name).write_text(
         f"[Desktop Entry]\nType=Application\nName={label}\nExec={command}\n"
-        f"Categories={categories}\n"
+        f"Categories={categories}\nMimeType={mime}\n"
     )
 
 
@@ -996,3 +998,29 @@ def test_a_row_with_fixed_and_unfixed_notices_counts_each_kind():
     # openssl has one notice with a fix and one without: each label says how many
     assert 'tag ok">Fix available: 1<' in html
     assert 'tag bad">No fix yet: 1<' in html
+
+
+def test_two_names_for_the_same_program_are_listed_once(monkeypatch, tmp_path):
+    program = tmp_path / "opt" / "chrome"
+    program.parent.mkdir()
+    program.write_text("#!/bin/sh\n")
+    program.chmod(0o755)
+    short, stable = tmp_path / "google-chrome", tmp_path / "google-chrome-stable"
+    short.symlink_to(program)
+    stable.symlink_to(program)
+    apps = tmp_path / "apps"
+    _desktop_entry(apps, "chrome.desktop", "Google Chrome", f"{stable} %U")
+    found = {"google-chrome": str(short)}
+    browsers, _ = _browsers_found(monkeypatch, tmp_path, found, folders=[apps])
+    assert [b.label for b in browsers.installed_browsers()] == ["Google Chrome"]
+
+
+def test_system_entries_that_only_claim_to_be_browsers_are_left_out(monkeypatch, tmp_path):
+    apps = tmp_path / "apps"
+    _desktop_entry(apps, "wolf.desktop", "LibreWolf", "/opt/wolf/librewolf %u")
+    _desktop_entry(apps, "support.desktop", "Support", "/opt/wolf/support", mime="")
+    _desktop_entry(apps, "net.desktop", "Network Connections", "/opt/wolf/net", mime="")
+    found = {"/opt/wolf/librewolf": "/opt/wolf/librewolf", "/opt/wolf/support": "/x"}
+    found["/opt/wolf/net"] = "/y"
+    browsers, _ = _browsers_found(monkeypatch, tmp_path, found, folders=[apps])
+    assert [b.label for b in browsers.installed_browsers()] == ["LibreWolf"]
