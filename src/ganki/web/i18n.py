@@ -374,7 +374,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_fixable": "Fixed by updating",
         "report_nofix": "No fix published yet",
         "report_minor": (
-            "More notices, low or negligible priority and no fix published yet: {n}. "
+            "More notices, low priority and no fix published yet: {n}. "
             "They need nothing from you for now."
         ),
         "report_kernel_name": "Linux kernel",
@@ -441,7 +441,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "high": "high",
         "medium": "medium",
         "low": "low",
-        "negligible": "negligible",
+        "negligible": "low",
         "unknown": "unknown",
         "ring_used": "used",
         "ring_in_use": "in use",
@@ -857,7 +857,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_fixable": "Se arreglan actualizando",
         "report_nofix": "Sin arreglo publicado todavía",
         "report_minor": (
-            "Avisos más, de prioridad baja o insignificante y sin arreglo publicado: {n}. "
+            "Avisos más, de prioridad baja y sin arreglo publicado: {n}. "
             "Por ahora no necesitan nada de tu parte."
         ),
         "report_kernel_name": "Kernel de Linux",
@@ -926,7 +926,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "high": "alta",
         "medium": "media",
         "low": "baja",
-        "negligible": "insignificante",
+        "negligible": "baja",
         "unknown": "desconocida",
         "ring_used": "ocupado",
         "ring_in_use": "en uso",
