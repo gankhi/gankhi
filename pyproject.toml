@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ganki"
-version = "0.0.1"
+version = "0.1.0"
 description = "Local Linux dashboard to inventory installed software and free disk space safely."
 readme = "README.md"
 requires-python = ">=3.10"
