@@ -359,3 +359,13 @@ def test_the_saved_index_gives_the_same_findings(tmp_path):
     fresh = find_findings(packages, load_advisories(archive, ECOSYSTEM))
     saved = find_findings(packages, load_advisories(archive, ECOSYSTEM))
     assert fresh == saved and fresh
+
+
+def test_a_long_summary_is_cut_at_a_whole_word_and_marked():
+    from ganki.osv import SUMMARY_CHARS, _shorten
+
+    text = "word " * 100
+    short = _shorten(text.strip())
+    assert short.endswith("…") and len(short) <= SUMMARY_CHARS + 1
+    assert short[:-1].endswith("word")  # not in the middle of a word
+    assert _shorten("short one") == "short one"

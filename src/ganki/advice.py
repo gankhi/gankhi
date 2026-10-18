@@ -390,6 +390,9 @@ TAILS = {
             "evaluado."
         ),
         "update_available": "Hay una versión nueva disponible ({version}): actualizá con el botón.",
+        "update_not_for_these": (
+            "Hay una versión nueva disponible ({version}), pero según los avisos no corrige estos."
+        ),
         "update_missing": "Tu sistema todavía no ofrece una versión más nueva: no hay nada que "
         "actualizar por ahora.",
     },
@@ -438,6 +441,10 @@ TAILS = {
             "its security, so some notices can stay open without anyone having evaluated them."
         ),
         "update_available": "A newer version is available ({version}): update with the button.",
+        "update_not_for_these": (
+            "A newer version is available ({version}), but according to the notices it does "
+            "not fix these."
+        ),
         "update_missing": "Your system does not offer a newer version yet: there is nothing "
         "to update for now.",
     },
@@ -594,7 +601,7 @@ _LIMITS = re.compile(r"(?:prior to|before|earlier than)\s+(\d+(?:\.\d+)+)", re.I
 _UPSTREAM = re.compile(r"^(?:\d+:)?(\d+(?:\.\d+)*)")
 
 
-def older_than_installed(tool: Any) -> tuple[int, str, str]:
+def older_than_installed(tool: Any, cves: Any = None) -> tuple[int, str, str]:
     """Notices that say "prior to X" about this very program while the installed one is newer.
 
     Returns (how many, the highest X, the installed upstream version). Only notices that name
@@ -606,7 +613,7 @@ def older_than_installed(tool: Any) -> tuple[int, str, str]:
         return 0, "", ""
     installed = match.group(1)
     count, highest = 0, ""
-    for cve in getattr(tool, "cves", ()) or ():
+    for cve in (getattr(tool, "cves", ()) or ()) if cves is None else cves:
         text = cve.summary
         limits = _LIMITS.findall(text)
         if not limits or word not in text.lower().replace(" ", ""):
@@ -622,6 +629,12 @@ def older_than_installed(tool: Any) -> tuple[int, str, str]:
     return count, highest, installed
 
 
+def _top_priority(cves: list[Any]) -> str:
+    """The most urgent priority among these notices ("" when there are none)."""
+    order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "negligible": 4}
+    return min((c.priority for c in cves), key=lambda p: order.get(p, 5), default="")
+
+
 def paragraphs(
     tool: Any, kind: str, lang: str, priority_name: Callable[[str], str], generic: str
 ) -> list[str]:
@@ -635,24 +648,37 @@ def paragraphs(
     result: list[str] = []
 
     cves = list(getattr(tool, "cves", ()) or ())
+    total = getattr(tool, "cve_count", len(cves))
+    if kind == "fixed":  # this label is about the notices an update fixes, not the others
+        cves = [c for c in cves if c.status != "no_fix"]
+        total = getattr(tool, "fixable", total) or total
+    elif kind == "no_fix":
+        cves = [c for c in cves if c.status == "no_fix"]
+        total = getattr(tool, "unfixable", total) or total
     kinds = notice_kinds([c.summary for c in cves], lang)
     if kinds and kind not in ("malware",):
-        priority = priority_name(getattr(tool, "top_priority", "") or "")
+        priority = priority_name(_top_priority(cves) or getattr(tool, "top_priority", "") or "")
         line = texts["data"].format(kinds=", ".join(kinds[:3]), priority=priority)
-        total = getattr(tool, "cve_count", len(cves))
         if total > len(cves):
             line += " " + texts["data_more"].format(shown=len(cves), total=total)
         result.append(line)
 
     if not kind.startswith("ext_") and kind != "malware":
         newer = getattr(tool, "update_to", None)
-        if newer:
+        if kind == "no_fix":
+            if getattr(tool, "fixed_in", None):
+                pass  # the "fix available" label already tells what updating does
+            elif newer:
+                result.append(texts["update_not_for_these"].format(version=newer))
+            else:
+                result.append(texts["update_missing"])
+        elif newer:
             result.append(texts["update_available"].format(version=newer))
-        elif kind in ("no_fix", "eol"):
+        elif kind == "eol":
             result.append(texts["update_missing"])
 
     if kind in ("no_fix", "eol"):
-        count, limit, installed = older_than_installed(tool)
+        count, limit, installed = older_than_installed(tool, cves if kind == "no_fix" else None)
         if count:
             result.append(texts["older"].format(n=count, limit=limit, version=installed))
         component = getattr(tool, "component", "main")

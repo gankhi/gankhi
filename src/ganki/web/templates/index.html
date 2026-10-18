@@ -168,7 +168,7 @@
           </div>
           {% endif %}
           {% if tool.cves %}
-          <details><summary>{{ t('cve_summary', n=tool.cve_count) }}{% if tool.fixed_in %} · {{ t('fixed_in', version=tool.fixed_in) }}{% elif tool.unfixable %} · {{ t('no_fix_yet') }}{% endif %}</summary>
+          <details><summary>{{ t('cve_summary', n=tool.cve_count) }}{% if tool.fixed_in and tool.unfixable %} · {{ t('cve_split', fixed=tool.fixable, version=tool.fixed_in, open=tool.unfixable) }}{% elif tool.fixed_in %} · {{ t('fixed_in', version=tool.fixed_in) }}{% elif tool.unfixable %} · {{ t('no_fix_yet') }}{% endif %}</summary>
             <ul class="cves">
             {% for c in tool.cves %}
               <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
