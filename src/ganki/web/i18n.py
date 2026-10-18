@@ -110,7 +110,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "run_refused": "Ganki refused to run this. Reload the preview and try again.",
         "run_saved": "List of programs saved in",
         "say_scanning": ("We are analysing your system. This can take a few minutes, please wait."),
-        "say_intro": "I have just finished analysing your system. Let me explain what I found.",
+        "say_intro": "I have just analysed your system.",
         "say_system": (
             "You are running {os}, with the user {user}. The computer has been on for {uptime}."
         ),
@@ -129,7 +129,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "say_ram_ok": "Memory is at {percent} percent. The computer is running comfortably.",
         "say_ram_busy": "Memory is at {percent} percent. That is a normal load.",
         "say_ram_high": (
-            "Memory is at {percent} percent, which is high. Closing some programs would help."
+            "Memory is at {percent} percent, which is very tight. You should review what you "
+            "have open."
         ),
         "say_programs": (
             "I found {total} programs. {ok} are up to date, {outdated} have an update waiting "
@@ -149,6 +150,17 @@ TEXTS: dict[str, dict[str, str]] = {
             "Besides programs, {n} libraries and system packages also have notices. "
             "Most come from the kernel and are solved by updating and removing old kernels."
         ),
+        "say_reclaim_brief": "By doing some cleaning you can recover about {total}.",
+        "say_reclaim_updates": "You also have {n} updates ready to install.",
+        "say_tools_summary": (
+            "Programs with security problems: {vulnerable}. Out of date: {outdated}. "
+            "These are the most urgent."
+        ),
+        "say_tools_outdated_only": (
+            "I found no security problems. Programs out of date: {outdated}. With Update "
+            "everything you bring them up to date."
+        ),
+        "say_tools_clean": "Everything is up to date and I found no known security problems.",
         "say_reclaim": "You can recover about {total}: {parts}. Review it before cleaning.",
         "say_reclaim_kernels": "{size} in old kernels",
         "say_reclaim_cache": "{size} in downloaded packages",
@@ -375,7 +387,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "say_scanning": (
             "Estamos analizando tu sistema. Puede tardar unos minutos, esperá un momento."
         ),
-        "say_intro": "Acabo de analizar tu sistema. Te voy a explicar lo que encontré.",
+        "say_intro": "Acabo de analizar tu sistema.",
         "say_system": (
             "Estás usando {os}, con el usuario {user}. La computadora lleva encendida {uptime}."
         ),
@@ -395,8 +407,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "say_ram_ok": "La memoria está al {percent} por ciento. La computadora anda con comodidad.",
         "say_ram_busy": "La memoria está al {percent} por ciento. Es una carga normal.",
         "say_ram_high": (
-            "La memoria está al {percent} por ciento, que es alto. "
-            "Cerrar algunos programas ayudaría."
+            "La memoria está al {percent} por ciento, muy ajustada. "
+            "Deberías revisar qué tenés abierto."
         ),
         "say_programs": (
             "Encontré {total} programas. {ok} están al día, {outdated} tienen una actualización "
@@ -419,6 +431,17 @@ TEXTS: dict[str, dict[str, str]] = {
             "Además de los programas, hay {n} bibliotecas y paquetes del sistema con avisos. "
             "La mayoría vienen del kernel y se resuelven actualizando y quitando kernels viejos."
         ),
+        "say_reclaim_brief": "Haciendo algunas limpiezas podés recuperar unos {total}.",
+        "say_reclaim_updates": "Además tenés {n} actualizaciones listas para instalar.",
+        "say_tools_summary": (
+            "Programas con problemas de seguridad: {vulnerable}. Desactualizados: {outdated}. "
+            "Estos son los más urgentes."
+        ),
+        "say_tools_outdated_only": (
+            "No encontré problemas de seguridad. Programas desactualizados: {outdated}. "
+            "Con Actualizar todo los ponés al día."
+        ),
+        "say_tools_clean": "Todo está al día y no encontré problemas de seguridad conocidos.",
         "say_reclaim": "Podés recuperar unos {total}: {parts}. Revisalo antes de limpiar.",
         "say_reclaim_kernels": "{size} en kernels viejos",
         "say_reclaim_cache": "{size} en paquetes descargados",

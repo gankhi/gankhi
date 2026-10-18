@@ -23,8 +23,8 @@ def test_no_placeholder_is_left_in_the_text(lang):
 @pytest.mark.parametrize("lang", ["en", "es"])
 def test_every_segment_points_at_a_section_of_the_page(lang):
     sections = {s.section for s in narration.build(make_result(), lang)}
-    assert sections <= {"system", "disk", "ram", "programs", "tools", "reclaim", "downloads"}
-    assert {"system", "disk", "ram", "programs", "tools"} <= sections
+    assert sections <= {"system", "disk", "ram", "tools", "reclaim", "downloads"}
+    assert {"system", "disk", "ram", "tools"} <= sections
 
 
 def test_spoken_sizes_are_written_for_a_voice():
@@ -52,7 +52,7 @@ def test_no_advice_when_nothing_is_vulnerable():
         object.__setattr__(tool, "state", "ok")
     text = texts(result, "en")
     assert "My advice" not in text
-    assert "None of your programs" in text
+    assert "Everything is up to date" in text
 
 
 def test_endpoint_is_empty_until_the_scan_is_done():
@@ -82,3 +82,32 @@ def test_page_marks_sections_and_has_the_dock_without_loosening_the_csp():
     assert "assistant.js" in html
     csp = response.headers["Content-Security-Policy"]
     assert "unsafe" not in csp and "script-src 'self'" in csp
+
+
+def test_only_the_most_urgent_programs_are_named():
+    result = make_result()
+    names = [t.name for t in result.tools if t.is_program and t.state == "vulnerable"]
+    urgent = narration._most_urgent([t for t in result.tools if t.state == "vulnerable"])
+    assert len(urgent) <= narration.MOST_URGENT
+    text = texts(result, "en")
+    for tool in result.tools:
+        if tool.state == "vulnerable" and tool not in urgent:
+            assert tool.name not in text
+    assert names  # the sample machine has vulnerable programs
+
+
+def test_highest_priority_comes_first():
+    from types import SimpleNamespace as T
+
+    items = [
+        T(name="b", top_priority="medium", fixed_in="1", cve_count=1),
+        T(name="a", top_priority="high", fixed_in=None, cve_count=1),
+        T(name="c", top_priority="high", fixed_in="2", cve_count=1),
+    ]
+    assert [t.name for t in narration._most_urgent(items)] == ["c", "a", "b"]
+
+
+def test_the_summary_is_short_and_follows_the_requested_order():
+    sections = [s.section for s in narration.build(make_result(), "es")]
+    assert sections.index("disk") < sections.index("ram") < sections.index("tools")
+    assert "programs" not in sections

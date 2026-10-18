@@ -639,4 +639,4 @@ def test_logging_in_always_redirects_to_the_home_page():
 def test_page_width_grows_with_the_screen_instead_of_a_fixed_column():
     css = (Path(__file__).parent.parent / "src/ganki/web/static/style.css").read_text()
     main_rule = next(line for line in css.splitlines() if line.startswith("main {"))
-    assert "clamp(" in main_rule and "vw" in main_rule
+    assert "min(2200px" in main_rule and "100%" in main_rule
