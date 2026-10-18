@@ -19,7 +19,7 @@ from datetime import datetime
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
-from ganki import actions, narration, paging
+from ganki import actions, narration, paging, speech
 from ganki.executor import ActionJob
 from ganki.runner import CommandNotAllowedError
 from ganki.service import ScanResult
@@ -34,7 +34,7 @@ FILTERS = ("all", "outdated", "vulnerable")
 MAX_QUERY_CHARS = 100
 CSP = (
     "default-src 'none'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self'; "
-    "img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+    "img-src 'self'; media-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 )
 
 
@@ -51,6 +51,7 @@ def create_app(
     port: int,
     simulator: actions.Simulator = actions.simulate,
     executor: ActionJob | None = None,
+    speaker: speech.Speaker | None = None,
 ) -> Flask:
     """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token.
 
@@ -59,6 +60,7 @@ def create_app(
     """
     app = Flask(__name__)
     job = ScanJob(scan)
+    voice = speaker or speech.Speaker()
     runner_job = executor or ActionJob(on_done=job.start)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
     app.jinja_env.filters["size"] = paging.human_size
@@ -157,6 +159,7 @@ def create_app(
             "state": job.state,
             "result": result,
             "now": datetime.now(),
+            "natural_voice": voice.available(lang),
         }
         if result is not None and job.state in (DONE, RUNNING):
             context.update(tool_view(result))
@@ -212,6 +215,32 @@ def create_app(
                 {"section": i.section, "text": i.text, "framing": i.framing} for i in segments
             ],
         )
+
+    @app.route("/api/speak")
+    def speak() -> Response:
+        """Audio of one part of the narration. The text is built here, never taken from the page."""
+        lang = current_language()
+        result = job.result
+        if request.args.get("scanning") == "1":
+            text = narration.scanning_message(lang)
+        elif result is None or job.state != DONE:
+            abort(404)
+        else:
+            segments = narration.build(result, lang)
+            section = request.args.get("section", "")
+            index = request.args.get("seg", "")
+            if index.isdigit() and int(index) < len(segments):
+                text = segments[int(index)].text
+            elif section:
+                text = " ".join(s.text for s in segments if s.section == section and not s.framing)
+            else:
+                abort(400)
+        if not text:
+            abort(404)
+        audio = voice.speak(lang, text)
+        if audio is None:
+            abort(503)
+        return Response(audio, mimetype="audio/wav")
 
     @app.route("/api/status")
     def status() -> Response:
