@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from ganki import families
 from ganki.service import ScanResult
 from ganki.web import i18n
 
@@ -184,9 +185,6 @@ def vulnerable_libraries(result: ScanResult) -> tuple[list, list]:  # type: igno
 SERIOUS = ("critical", "high")
 
 
-_KERNEL_FAMILY = re.compile(r"^linux-(image|modules|modules-extra|headers|tools)-\d")
-
-
 def _most_urgent(vulnerable: list) -> list:  # type: ignore[type-arg]
     """The few programs worth naming: highest Ubuntu priority first, then the ones with a fix.
 
@@ -200,7 +198,9 @@ def _most_urgent(vulnerable: list) -> list:  # type: ignore[type-arg]
     chosen: list = []  # type: ignore[type-arg]
     kernel_seen = False
     for tool in ranked:
-        if _KERNEL_FAMILY.match(tool.name):
+        if not tool.fixed_in and tool.top_priority in ("low", "negligible"):
+            continue  # nothing to do about it and little risk: not worth a spoken warning
+        if families.is_kernel(tool.name):
             if kernel_seen:
                 continue
             kernel_seen = True
@@ -213,7 +213,7 @@ MAX_NAMES = 3
 
 
 def _names(tools: list, lang_and: str, kernel: str) -> str:  # type: ignore[type-arg]
-    names = [kernel if _KERNEL_FAMILY.match(t.name) else t.name for t in tools[:MAX_NAMES]]
+    names = [kernel if families.is_kernel(t.name) else t.name for t in tools[:MAX_NAMES]]
     extra = len(tools) - len(names)
     text = ", ".join(names)
     return f"{text} {lang_and}" if extra > 0 else text
@@ -232,7 +232,7 @@ def _advice(vulnerable: list, say) -> list[str]:  # type: ignore[no-untyped-def]
 
     if fixable:
         texts.append(say("say_advice_update", names=_names(fixable, more, kernel)))
-        if any(_KERNEL_FAMILY.match(t.name) for t in fixable):
+        if any(families.is_kernel(t.name) for t in fixable):
             texts.append(say("say_advice_restart"))
     if expired:
         texts.append(say("say_advice_expired", names=_names(expired, more, kernel)))

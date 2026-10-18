@@ -6,13 +6,14 @@ the same sentences the assistant speaks, then adds the details in tables.
 
 from __future__ import annotations
 
-from ganki import narration, paging
+from ganki import families, narration, paging
 from ganki.pdfwriter import Pdf
 from ganki.service import ScanResult
 from ganki.tools import Tool
 from ganki.web import i18n
 
 MAX_ROWS = 40
+MINOR = ("low", "negligible")
 FONT_SIZE = 12.0
 
 
@@ -20,10 +21,10 @@ def _priority(tool: Tool, lang: str) -> str:
     return i18n.translate(lang, tool.top_priority) if tool.top_priority else "-"
 
 
-def _rows(tools: list[Tool]) -> list[Tool]:
+def _rows(groups: list[families.Group]) -> list[families.Group]:
     """All critical or high notices, then the rest up to MAX_ROWS (most urgent come first)."""
-    serious = [t for t in tools if t.top_priority in narration.SERIOUS]
-    rest = [t for t in tools if t.top_priority not in narration.SERIOUS]
+    serious = [g for g in groups if g.top_priority in narration.SERIOUS]
+    rest = [g for g in groups if g.top_priority not in narration.SERIOUS]
     return serious + rest[: max(0, MAX_ROWS - len(serious))]
 
 
@@ -36,12 +37,12 @@ PRIORITY_TONE = {
 }
 
 
-def _tones(tools: list[Tool], columns: int, at: int) -> list[list[str]]:
+def _tones(groups: list[families.Group], columns: int, at: int) -> list[list[str]]:
     """Colour for the priority cell (column ``at``) of each row; the other cells stay plain."""
     out = []
-    for tool in tools:
+    for item in groups:
         row = [""] * columns
-        row[at] = PRIORITY_TONE.get(tool.top_priority, "")
+        row[at] = PRIORITY_TONE.get(item.top_priority, "")
         out.append(row)
     return out
 
@@ -53,6 +54,54 @@ def _action(tool: Tool, lang: str) -> str:
     if tool.fixed_in:
         return say("report_act_fix", version=tool.fixed_in)
     return say("report_act_nofix")
+
+
+def _security_tables(pdf: Pdf, tools: list[Tool], first_header: str, lang: str) -> None:
+    """Two tables: what updating fixes, and what has no fix yet (low risk ones only counted)."""
+
+    def say(key: str, **values: object) -> str:
+        return i18n.translate(lang, key, **values)
+
+    fixable = [t for t in tools if t.fixed_in and not t.end_of_support]
+    waiting = [t for t in tools if not (t.fixed_in and not t.end_of_support)]
+    minor = [t for t in waiting if t.top_priority in MINOR and not t.end_of_support]
+    waiting = [t for t in waiting if t not in minor]
+    headers = [first_header, say("report_version"), say("report_priority"), say("report_action")]
+    kernel = say("report_kernel_name")
+
+    for title, part in ((say("report_fixable"), fixable), (say("report_nofix"), waiting)):
+        if not part:
+            continue
+        groups = families.group(part)
+        shown = _rows(groups)
+        pdf.heading(title, size=13, keep_with=70)
+        pdf.table(
+            headers,
+            [
+                [
+                    _label(g, kernel, say("report_components")),
+                    g.version or say("report_versions"),
+                    _priority(g.top, lang),
+                    _action(g.top, lang),
+                ]
+                for g in shown
+            ],
+            [0.30, 0.22, 0.16, 0.32],
+            _tones(shown, 4, 2),
+        )
+        if len(shown) < len(groups):
+            hidden = sum(g.count for g in groups) - sum(g.count for g in shown)
+            pdf.paragraph(say("report_more", n=hidden))
+    if minor:
+        pdf.paragraph(say("report_minor", n=len(minor)))
+
+
+def _label(item: families.Group, kernel: str, components: str) -> str:
+    name = item.label(kernel)
+    if item.count == 1:
+        return name
+    listed = item.members()
+    return f"{name} ({components.format(n=item.count)})" + (f": {listed}" if listed else "")
 
 
 def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
@@ -104,18 +153,10 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     programs = [t for t in result.tools if t.is_program]
     vulnerable = [t for t in programs if t.state == "vulnerable"]
     outdated = [t for t in programs if t.state == "outdated"]
-    headers = [say("report_program"), say("report_version"), say("report_priority")]
 
     pdf.heading(say("report_security"))
     if vulnerable:
-        pdf.table(
-            [*headers, say("report_action")],
-            [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(vulnerable)],
-            [0.30, 0.22, 0.16, 0.32],
-            _tones(_rows(vulnerable), 4, 2),
-        )
-        if len(vulnerable) > len(_rows(vulnerable)):
-            pdf.paragraph(say("report_more", n=len(vulnerable) - len(_rows(vulnerable))))
+        _security_tables(pdf, vulnerable, say("report_program"), lang)
     else:
         pdf.paragraph(say("report_none"))
 
@@ -134,19 +175,7 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
     libraries, old_kernels = narration.vulnerable_libraries(result)
     pdf.heading(say("report_libs"))
     if libraries:
-        pdf.table(
-            [
-                say("report_package"),
-                say("report_version"),
-                say("report_priority"),
-                say("report_action"),
-            ],
-            [[t.name, t.version, _priority(t, lang), _action(t, lang)] for t in _rows(libraries)],
-            [0.30, 0.22, 0.16, 0.32],
-            _tones(_rows(libraries), 4, 2),
-        )
-        if len(libraries) > len(_rows(libraries)):
-            pdf.paragraph(say("report_more", n=len(libraries) - len(_rows(libraries))))
+        _security_tables(pdf, libraries, say("report_package"), lang)
     else:
         pdf.paragraph(say("report_none"))
     if old_kernels:
