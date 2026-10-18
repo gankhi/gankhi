@@ -42,6 +42,11 @@ MONTHS = {
 }
 
 
+def level_tone(value: int, busy: int, tight: int) -> str:
+    """bad / warn / ok, with the same limits the spoken summary uses."""
+    return "bad" if value >= tight else "warn" if value >= busy else "ok"
+
+
 def duration_text(seconds: float) -> str:
     """``14.3`` -> ``14.3 s``; from one minute on, ``149.5`` -> ``2m 29s``."""
     if seconds < 60:
@@ -333,25 +338,60 @@ def create_app(
                 }
             )
         lines = []
+        cards = []
         if "os_name" in facts:
-            pct = (
+            disk_pct = (
                 round(100 * facts["disk_used"] / facts["disk_total"]) if facts["disk_total"] else 0
             )
-            ram = (
+            ram_pct = (
                 round(100 * facts["ram_used_kib"] / facts["ram_total_kib"])
                 if facts["ram_total_kib"]
                 else 0
             )
             free = paging.human_size((facts["disk_total"] - facts["disk_used"]) // 1024)
-            lines += [
-                say("fact_system", os=str(facts["os_name"])[:60]),
-                say("fact_disk", percent=pct, free=free),
-                say("fact_ram", percent=ram),
+            cards += [
+                {
+                    "key": "system",
+                    "title": say("card_system"),
+                    "value": str(facts["os_name"])[:40],
+                    "sub": "",
+                    "tone": "",
+                    "meter": None,
+                },
+                {
+                    "key": "disk",
+                    "title": say("disk"),
+                    "value": f"{disk_pct}%",
+                    "sub": say("card_free", free=free),
+                    "tone": level_tone(disk_pct, narration.DISK_BUSY, narration.DISK_TIGHT),
+                    "meter": disk_pct,
+                },
+                {
+                    "key": "ram",
+                    "title": say("ram"),
+                    "value": f"{ram_pct}%",
+                    "sub": say(
+                        "card_ram_sub",
+                        used=paging.human_size(facts["ram_used_kib"]),
+                        total=paging.human_size(facts["ram_total_kib"]),
+                    ),
+                    "tone": level_tone(ram_pct, narration.RAM_BUSY, narration.RAM_HIGH),
+                    "meter": ram_pct,
+                },
             ]
+        if "updates" in facts:
+            cards.append(
+                {
+                    "key": "updates",
+                    "title": say("card_updates"),
+                    "value": str(facts["updates"]),
+                    "sub": say("card_updates_sub"),
+                    "tone": "warn" if facts["updates"] else "ok",
+                    "meter": None,
+                }
+            )
         if "packages" in facts:
             lines.append(say("fact_packages", n=facts["packages"]))
-        if "updates" in facts:
-            lines.append(say("fact_updates", n=facts["updates"]))
         if "download_files" in facts:
             size = paging.human_size(int(facts["download_bytes"]) // 1024)
             lines.append(say("fact_downloads", files=facts["download_files"], size=size))
@@ -362,7 +402,11 @@ def create_app(
         if "findings" in facts:
             lines.append(say("fact_findings", n=facts["findings"]))
         return jsonify(
-            state=job.state, steps=steps, facts=lines, percent=min(100, round(done_weight))
+            state=job.state,
+            steps=steps,
+            cards=cards,
+            facts=lines,
+            percent=min(100, round(done_weight)),
         )
 
     @app.route("/report.pdf")

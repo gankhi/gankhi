@@ -14,6 +14,8 @@
   var panel = document.getElementById("progress");
   var stepsList = document.getElementById("steps");
   var factsList = document.getElementById("facts");
+  var cardsBox = document.getElementById("cards");
+  var shownCards = "";
   var barFill = document.getElementById("bar-fill");
   var shownFacts = "";
 
@@ -45,6 +47,36 @@
         var fact = document.createElement("li");
         fact.textContent = line;
         factsList.appendChild(fact);
+      });
+    }
+    var cardsKey = JSON.stringify(data.cards || []);
+    if (cardsBox && cardsKey !== shownCards) {
+      shownCards = cardsKey;
+      cardsBox.textContent = "";
+      (data.cards || []).forEach(function (card) {
+        var box = document.createElement("div");
+        box.className = "kpi";
+        box.setAttribute("data-tone", card.tone || "");
+        var title = document.createElement("span");
+        title.className = "kpi-title";
+        title.textContent = card.title;
+        var value = document.createElement("strong");
+        value.textContent = card.value;
+        box.appendChild(title);
+        box.appendChild(value);
+        if (card.meter !== null && card.meter !== undefined) {
+          var meter = document.createElement("meter");
+          meter.min = 0; meter.max = 100; meter.value = card.meter;
+          meter.setAttribute("aria-label", card.title);
+          box.appendChild(meter);
+        }
+        if (card.sub) {
+          var sub = document.createElement("span");
+          sub.className = "kpi-sub";
+          sub.textContent = card.sub;
+          box.appendChild(sub);
+        }
+        cardsBox.appendChild(box);
       });
     }
     barFill.setAttribute("width", String(data.percent));

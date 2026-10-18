@@ -80,7 +80,10 @@ def test_progress_endpoint_describes_steps_and_first_facts():
     states = {s["key"]: s["state"] for s in data["steps"]}
     assert states["system"] == "done" and states["index"] == "running"
     assert any("1234 packages" in line for line in data["facts"])
-    assert any("60% used" in line for line in data["facts"])
+    cards = {c["key"]: c for c in data["cards"]}
+    assert cards["disk"]["value"] == "60%" and cards["disk"]["tone"] == "ok"
+    assert cards["disk"]["meter"] == 60 and "free" in cards["disk"]["sub"]
+    assert {"system", "disk", "ram"} <= set(cards)
     index = next(s for s in data["steps"] if s["key"] == "index")
     assert index["detail"] == "50 %"
     assert 0 < data["percent"] < 100
@@ -103,3 +106,12 @@ def test_progress_needs_the_session():
     app, release = slow_app()
     assert app.test_client().get("/api/progress", base_url=BASE).status_code == 403
     release.set()
+
+
+def test_cards_are_coloured_with_the_same_limits_as_the_spoken_summary():
+    from ganki import narration
+    from ganki.web.app import level_tone
+
+    assert level_tone(narration.DISK_TIGHT, narration.DISK_BUSY, narration.DISK_TIGHT) == "bad"
+    assert level_tone(narration.DISK_BUSY, narration.DISK_BUSY, narration.DISK_TIGHT) == "warn"
+    assert level_tone(10, narration.DISK_BUSY, narration.DISK_TIGHT) == "ok"
