@@ -121,8 +121,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "prev_run_title": "Or do it yourself",
         "prev_run_note": (
             "To do it from a terminal instead, copy these two lines: "
-            "the first saves a temporary copy of your list of programs so you can undo (the "
-            "system deletes it when the computer restarts), the second does it."
+            "the first saves a temporary copy of your list of programs, as a record of what was "
+            "installed (the system deletes it when the computer restarts), the second does it."
         ),
         "prev_reboot": "If a new kernel is installed, restart the computer afterwards.",
         "blocked_unknown": "That program is not in the list, so there is nothing to preview.",
@@ -144,8 +144,9 @@ TEXTS: dict[str, dict[str, str]] = {
             "your user account, the same one you type with sudo or to log in. The account has "
             "to be an administrator and have a password; if it does not, the system will refuse "
             "and nothing changes: use the command shown below instead. "
-            "A temporary copy of your list of programs is saved first, so the change can be undone "
-            "right away; the system deletes it when you log out or turn the computer off."
+            "A temporary copy of your list of programs is saved first, as a record of what was "
+            "installed. Ganki has no undo button: to go back you would reinstall by hand. "
+            "The system deletes the copy when you log out or turn the computer off."
         ),
         "confirm_remove": "Yes, remove {name}",
         "confirm_update": "Yes, update {name}",
@@ -590,8 +591,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "prev_run_title": "O hacelo vos",
         "prev_run_note": (
             "Para hacerlo desde una terminal, copiá estas dos líneas: "
-            "la primera guarda una copia temporal de tu lista de programas para poder deshacer "
-            "(el sistema la borra al reiniciar la computadora), la segunda lo hace."
+            "la primera guarda una copia temporal de tu lista de programas, como registro de lo "
+            "que había instalado (el sistema la borra al reiniciar la computadora), "
+            "la segunda lo hace."
         ),
         "prev_reboot": "Si se instala un kernel nuevo, reiniciá la computadora después.",
         "blocked_unknown": "Ese programa no está en la lista, no hay nada que previsualizar.",
@@ -616,8 +618,9 @@ TEXTS: dict[str, dict[str, str]] = {
             "misma que escribís con sudo o para iniciar sesión. El usuario tiene que ser "
             "administrador y tener una contraseña; si no, el sistema lo rechaza y no cambia "
             "nada: usá el comando que aparece más abajo. "
-            "Antes se guarda una copia temporal de tu lista de programas, para poder deshacer "
-            "en el momento; el sistema la borra al cerrar sesión o apagar la computadora."
+            "Antes se guarda una copia temporal de tu lista de programas, como registro de lo que "
+            "había instalado. Ganki no tiene botón de deshacer: para volver atrás habría que "
+            "reinstalar a mano. El sistema borra la copia al cerrar sesión o apagar la computadora."
         ),
         "confirm_remove": "Sí, quitar {name}",
         "confirm_update": "Sí, actualizar {name}",
