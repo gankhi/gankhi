@@ -15,7 +15,8 @@ from ganki.runner import APT_GET, run, valid_package
 UPDATE, REMOVE, UPDATE_ALL = "update", "remove", "all"
 ACTIONS = (UPDATE, REMOVE, UPDATE_ALL)
 
-SNAPSHOT_COMMAND = "dpkg --get-selections > ~/ganki-programas-$(date +%F).txt"
+# A private temporary file: it is emptied by the system, so copies never pile up in the home.
+SNAPSHOT_COMMAND = 'dpkg --get-selections > "$(mktemp -t ganki-programas.XXXXXX)"'
 
 _INSTALL_LINE = re.compile(r"^Inst\s+(\S+)(?:\s+\[([^\]]+)\])?\s+\((\S+)")
 _REMOVE_LINE = re.compile(r"^Remv\s+(\S+)")

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import os
+import tempfile
 import threading
 from collections import deque
 from collections.abc import Callable
@@ -32,10 +33,23 @@ _STATUS_FORMAT = "${binary:Package}\t${db:Status-Abbrev}\n"
 Runner = Callable[[list[str], Callable[[str], None]], int]
 
 
+_fallback_dir: Path | None = None
+
+
 def snapshot_dir() -> Path:
-    base = os.environ.get("XDG_DATA_HOME")
-    root = Path(base) if base and os.path.isabs(base) else Path.home() / ".local" / "share"
-    return root / "ganki" / "snapshots"
+    """Where the copy for undoing is kept: a place the system empties by itself.
+
+    ``$XDG_RUNTIME_DIR`` (``/run/user/<id>``) is memory-backed and private to the person; it is
+    emptied when the session ends or the computer is turned off. If it does not exist, a private
+    temporary folder is used (emptied at the next start). Nothing is kept in the home folder.
+    """
+    global _fallback_dir  # noqa: PLW0603
+    runtime = os.environ.get("XDG_RUNTIME_DIR")
+    if runtime and os.path.isabs(runtime) and os.path.isdir(runtime):
+        return Path(runtime) / "ganki" / "snapshots"
+    if _fallback_dir is None or not _fallback_dir.is_dir():
+        _fallback_dir = Path(tempfile.mkdtemp(prefix="ganki-"))  # private: mode 0700, ours
+    return _fallback_dir / "snapshots"
 
 
 def write_snapshot(directory: Path, now: datetime | None = None) -> Path:
