@@ -48,14 +48,15 @@
     if (player) { player.pause(); player = null; }
   }
 
-  function mark(section) {
+  // "follow" scrolls to the section: only the guided reading asks for it, never the mouse.
+  function mark(section, follow) {
     if (highlighted) { highlighted.classList.remove("speaking"); highlighted = null; }
     if (!section) { return; }
     var el = document.querySelector('[data-explain="' + section + '"]');
     if (el) {
       el.classList.add("speaking");
       highlighted = el;
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      if (follow) { el.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
     }
   }
 
@@ -131,7 +132,7 @@
           show(dock.dataset.ready);
           return;
         }
-        mark(list[i].section);
+        mark(list[i].section, true);
         speak(list[i].text, function () { next(i + 1); }, "/api/speak?seg=" + i);
         // Ask for the next part now, so Ganki has it ready when this one ends.
         if (natural && i + 1 < list.length) {

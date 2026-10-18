@@ -226,3 +226,13 @@ def test_snap_and_flatpak_apps_are_counted_and_said_not_to_be_checked():
     assert "1 apps snap y 2 flatpak" in text and "no las reviso" in text
     data = __import__("ganki.report", fromlist=["x"]).build_report(result, "es", "now")
     assert data.startswith(b"%PDF")
+
+
+def test_moving_the_mouse_never_scrolls_the_page():
+    from pathlib import Path
+
+    script = (Path(__file__).parent.parent / "src/ganki/web/static/assistant.js").read_text()
+    # only the guided reading follows the section; the hover handler calls mark() without it
+    assert script.count("scrollIntoView") == 1
+    assert "if (follow) { el.scrollIntoView" in script
+    assert "mark(section);" in script and "mark(list[i].section, true);" in script
