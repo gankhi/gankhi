@@ -20,8 +20,12 @@ from __future__ import annotations
 import json
 import logging
 import math
+import multiprocessing
+import re
 import zipfile
 from collections.abc import Callable, Iterable
+from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -202,6 +206,21 @@ def _record_name_key(ecosystem: str, name: str) -> str:
     return normalize_python_name(name) if ecosystem == PYPI else name
 
 
+_NAME_FIELD = re.compile(rb'"name"\s*:\s*"([^"]{1,214})"')
+
+
+def _mentions(raw: bytes, ecosystem: str, wanted: dict[str, ExternalPackage]) -> bool:
+    """Cheap look before the real parsing: does the record name any installed package?
+
+    Most records are about packages you do not have; skipping their JSON parsing is what
+    keeps reading the whole list to a few seconds.
+    """
+    return any(
+        _record_name_key(ecosystem, match.group(1).decode("utf-8", "replace")) in wanted
+        for match in _NAME_FIELD.finditer(raw)
+    )
+
+
 def find_external(
     archive: Path,
     ecosystem: str,
@@ -224,8 +243,11 @@ def find_external(
                 continue
             if member.file_size > MAX_RECORD_BYTES:
                 continue
+            raw = bundle.read(member)
+            if not _mentions(raw, ecosystem, wanted):
+                continue
             try:
-                record = json.loads(bundle.read(member))
+                record = json.loads(raw)
             except ValueError:
                 continue
             if not isinstance(record, dict) or record.get("withdrawn"):
@@ -234,6 +256,29 @@ def find_external(
     if progress is not None:
         progress(1.0)
     return sorted(found.values(), key=lambda f: (f.name, f.key))
+
+
+def find_external_isolated(
+    archive: Path,
+    ecosystem: str,
+    packages: list[ExternalPackage],
+    progress: Callable[[float], None] | None = None,
+) -> list[ExternalFinding]:
+    """``find_external`` in a process of its own.
+
+    Reading a big list is pure Python work; in a thread it would hold the lock that all the
+    threads of the scan share and slow the other steps (programs, downloads) to a crawl.
+    """
+    try:
+        with ProcessPoolExecutor(
+            max_workers=1, mp_context=multiprocessing.get_context("spawn")
+        ) as pool:
+            found = pool.submit(find_external, archive, ecosystem, packages).result()
+    except (BrokenProcessPool, OSError, RuntimeError):
+        return find_external(archive, ecosystem, packages, progress)
+    if progress is not None:
+        progress(1.0)
+    return found
 
 
 def _collect(

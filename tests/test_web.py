@@ -640,3 +640,14 @@ def test_page_width_grows_with_the_screen_instead_of_a_fixed_column():
     css = (Path(__file__).parent.parent / "src/ganki/web/static/style.css").read_text()
     main_rule = next(line for line in css.splitlines() if line.startswith("main {"))
     assert "min(2200px" in main_rule and "100%" in main_rule
+
+
+def test_times_over_a_minute_are_written_in_minutes_and_dates_in_local_form():
+    from ganki.web.app import duration_text, feed_date_text
+
+    assert duration_text(14.3) == "14.3 s"
+    assert duration_text(149.5) == "2m 30s"
+    assert duration_text(60.0) == "1m 00s"
+    text = feed_date_text("Sat, 17 Oct 2026 07:57:02 GMT", "es")
+    assert "oct 2026" in text and "GMT" not in text
+    assert feed_date_text("garbage", "es") == "garbage"

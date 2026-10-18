@@ -235,7 +235,7 @@
   };
 
   if (dock.dataset.state === "running" && synth) {
-    show(btnOn.textContent);
+    show(dock.dataset.prompt || btnOn.textContent);
   } else if (dock.dataset.state === "done") {
     show(dock.dataset.ready);
   }

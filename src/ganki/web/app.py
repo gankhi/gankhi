@@ -16,6 +16,7 @@ import subprocess
 import threading
 from collections.abc import Callable
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
@@ -35,6 +36,30 @@ from ganki.web.jobs import DONE, IDLE, RUNNING, ScanJob
 SESSION_COOKIE = "ganki_session"
 LANG_COOKIE = "ganki_lang"
 WARM_SEGMENTS = 4
+MONTHS = {
+    "es": "ene feb mar abr may jun jul ago sep oct nov dic".split(),
+    "en": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(),
+}
+
+
+def duration_text(seconds: float) -> str:
+    """``14.3`` -> ``14.3 s``; from one minute on, ``149.5`` -> ``2m 29s``."""
+    if seconds < 60:
+        return f"{seconds} s"
+    whole = round(seconds)
+    return f"{whole // 60}m {whole % 60:02d}s"
+
+
+def feed_date_text(text: str, lang: str) -> str:
+    """The server's ``Sat, 17 Oct 2026 07:57:02 GMT`` as ``17 oct 2026, 04:57`` (local time)."""
+    try:
+        moment = parsedate_to_datetime(text).astimezone()
+    except (TypeError, ValueError):
+        return text[:40]
+    months = MONTHS.get(lang, MONTHS["en"])
+    return f"{moment.day} {months[moment.month - 1]} {moment.year}, {moment:%H:%M}"
+
+
 STEP_WEIGHTS = {
     "system": 4,
     "programs": 8,
@@ -298,7 +323,7 @@ def create_app(
             elif item["state"] == STEP_RUNNING and item["fraction"]:
                 detail = f"{int(item['fraction'] * 100)} %"
             else:
-                detail = f"{item['seconds']} s" if item["seconds"] is not None else ""
+                detail = duration_text(item["seconds"]) if item["seconds"] is not None else ""
             steps.append(
                 {
                     "key": item["key"],
@@ -331,7 +356,9 @@ def create_app(
             size = paging.human_size(int(facts["download_bytes"]) // 1024)
             lines.append(say("fact_downloads", files=facts["download_files"], size=size))
         if facts.get("feed_date"):
-            lines.append(say("fact_feed", date=str(facts["feed_date"])[:40]))
+            lines.append(say("fact_feed", date=feed_date_text(str(facts["feed_date"]), lang)))
+        if "external_packages" in facts and facts["external_packages"]:
+            lines.append(say("fact_external", n=facts["external_packages"]))
         if "findings" in facts:
             lines.append(say("fact_findings", n=facts["findings"]))
         return jsonify(
