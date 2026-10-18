@@ -23,8 +23,11 @@ Safety notes:
 from __future__ import annotations
 
 import json
+import logging
+import os
 import re
 import tarfile
+import tempfile
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -170,9 +173,98 @@ def parse_record(record: dict[str, Any], ecosystem: str) -> list[Advisory]:
     return [replace(adv, pro_fixed_version=pro_fixed.get(name)) for name, adv in plain.items()]
 
 
+INDEX_FORMAT = 1
+log = logging.getLogger(__name__)
+
+
+def _index_path(archive: Path, ecosystem: str) -> Path:
+    safe = re.sub(r"[^A-Za-z0-9.]+", "-", ecosystem).strip("-")
+    return archive.with_name(f"osv-index-{safe}.json")
+
+
+def _archive_stamp(archive: Path) -> list[int]:
+    stat = archive.stat()
+    return [INDEX_FORMAT, stat.st_size, stat.st_mtime_ns]
+
+
+def _advisory_to_list(a: Advisory) -> list[Any]:
+    return [
+        a.cve_id,
+        a.summary,
+        a.priority,
+        a.source_package,
+        a.fixed_version,
+        sorted(a.affected_versions),
+        a.pro_fixed_version,
+    ]
+
+
+def _advisory_from_list(row: list[Any]) -> Advisory:
+    cve_id, summary, priority, source, fixed, versions, pro = row
+    if not all(isinstance(x, str) for x in (cve_id, summary, priority, source)):
+        raise ValueError("bad advisory")
+    if not (fixed is None or isinstance(fixed, str)) or not (pro is None or isinstance(pro, str)):
+        raise ValueError("bad advisory")
+    if not isinstance(versions, list) or not all(isinstance(v, str) for v in versions):
+        raise ValueError("bad advisory")
+    return Advisory(cve_id, summary, priority, source, fixed, frozenset(versions), pro)
+
+
+def _read_index(path: Path, stamp: list[int]) -> dict[str, list[Advisory]] | None:
+    """The saved index, or ``None`` if it is missing, stale or damaged (then it is rebuilt)."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if data.get("stamp") != stamp:
+            return None
+        return {
+            str(name): [_advisory_from_list(row) for row in rows]
+            for name, rows in data["advisories"].items()
+        }
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
+
+
+def _write_index(path: Path, stamp: list[int], index: dict[str, list[Advisory]]) -> None:
+    payload = {
+        "stamp": stamp,
+        "advisories": {n: [_advisory_to_list(a) for a in rows] for n, rows in index.items()},
+    }
+    try:
+        fd, tmp = tempfile.mkstemp(dir=path.parent, prefix="osv-index-", suffix=".part")  # 600
+    except OSError:
+        return  # a read-only cache folder only costs speed
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, separators=(",", ":"))
+        os.replace(tmp, path)  # atomic: a half-written index is never read
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
 def load_advisories(archive: Path, ecosystem: str) -> dict[str, list[Advisory]]:
-    """Read the feed archive and index advisories by source package name."""
+    """Advisories indexed by source package name.
+
+    Reading the whole archive is slow, so the result is saved next to it and reused until
+    the archive changes (a new feed is downloaded).
+    """
+    index_file = _index_path(archive, ecosystem)
+    stamp = _archive_stamp(archive)
+    saved = _read_index(index_file, stamp)
+    if saved is not None:
+        return saved
+    index = _parse_archive(archive, ecosystem)
+    try:
+        _write_index(index_file, stamp, index)
+    except OSError:
+        log.warning("Could not save the advisory index; the next scan will be slower.")
+    return index
+
+
+def _parse_archive(archive: Path, ecosystem: str) -> dict[str, list[Advisory]]:
+    """Read the feed archive (slow: decompresses and parses every record)."""
     index: dict[str, list[Advisory]] = defaultdict(list)
+    needle = ecosystem.encode()
     with tarfile.open(archive, mode="r:xz") as tar:
         for count, member in enumerate(tar):
             if count >= MAX_MEMBERS:
@@ -185,8 +277,11 @@ def load_advisories(archive: Path, ecosystem: str) -> dict[str, list[Advisory]]:
             handle = tar.extractfile(member)  # in-memory read, nothing written to disk
             if handle is None:
                 continue
+            raw = handle.read()
+            if needle not in raw:
+                continue  # the record does not mention this release: skip the JSON parse
             try:
-                record = json.loads(handle.read())
+                record = json.loads(raw)
             except (ValueError, UnicodeDecodeError):
                 continue  # one broken record must not stop the scan
             if not isinstance(record, dict):

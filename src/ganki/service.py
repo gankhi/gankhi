@@ -7,7 +7,10 @@ vulnerability feed download in ``feed.refresh``.
 
 from __future__ import annotations
 
+import logging
 import os
+import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -21,6 +24,8 @@ from ganki.release import detect_ecosystem
 from ganki.summary import PackageRisk, summarize
 from ganki.system import SystemInfo, read_system
 from ganki.tools import Tool, build_tools
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -48,13 +53,23 @@ def run_scan() -> ScanResult:
     Raises ``UnsupportedReleaseError`` on systems the feed does not cover.
     """
     ecosystem = detect_ecosystem()
-    status = refresh()
-    index = load_advisories(status.path, ecosystem)
-    packages = collect()
+    started = time.monotonic()
+    # The slow parts do not depend on each other, so they run side by side: the system
+    # commands (dpkg, apt) wait on other processes while the feed is being read.
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        packages_job = pool.submit(collect)
+        updates_job = pool.submit(collect_updates)
+        system_job = pool.submit(read_system)
+        folder = downloads_mod.downloads_dir()
+        downloads_job = pool.submit(downloads_mod.scan_downloads, folder)
+        status = refresh()
+        index = load_advisories(status.path, ecosystem)
+        packages = packages_job.result()
+        updates = updates_job.result()
+        system = system_job.result()
+        download_groups = downloads_job.result()
     findings = find_findings(packages, index)
-    updates = collect_updates()
-    system = read_system()
-    folder = downloads_mod.downloads_dir()
+    log.info("scan finished in %.1f s", time.monotonic() - started)
     return ScanResult(
         ecosystem=ecosystem,
         feed_downloaded=status.downloaded,
@@ -68,7 +83,7 @@ def run_scan() -> ScanResult:
         scanned_at=datetime.now(timezone.utc),
         system=system,
         reclaimable=cleanup.estimate(packages, system.kernel),
-        download_groups=downloads_mod.scan_downloads(folder),
+        download_groups=download_groups,
         downloads_folder="~/" + folder.name,
         tools=build_tools(packages, findings, updates, system.kernel),
     )

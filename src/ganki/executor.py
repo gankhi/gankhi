@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 IDLE, RUNNING, DONE, FAILED = "idle", "running", "done", "failed"
 MAX_LINES = 400
+KEEP_SNAPSHOTS = 20
 _STATUS_FORMAT = "${binary:Package}\t${db:Status-Abbrev}\n"
 
 Runner = Callable[[list[str], Callable[[str], None]], int]
@@ -50,7 +51,16 @@ def write_snapshot(directory: Path, now: datetime | None = None) -> Path:
     path = directory / f"programas-{stamp}.txt"
     path.write_text("\n".join(sorted(lines)) + "\n")
     path.chmod(0o600)
+    prune_snapshots(directory)
     return path
+
+
+def prune_snapshots(directory: Path, keep: int = KEEP_SNAPSHOTS) -> None:
+    """Keep only the newest ``keep`` snapshots. Only files named like ours are touched."""
+    old = sorted(directory.glob("programas-*.txt"), key=lambda f: f.name, reverse=True)[keep:]
+    for path in old:
+        if path.is_file() and not path.is_symlink():
+            path.unlink(missing_ok=True)
 
 
 def available() -> bool:
