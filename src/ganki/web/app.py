@@ -20,7 +20,7 @@ from typing import Any
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
-from ganki import actions, narration, paging, speech
+from ganki import actions, narration, paging, report, speech
 from ganki.executor import ActionJob
 from ganki.progress import RUNNING as STEP_RUNNING
 from ganki.progress import Progress
@@ -107,7 +107,8 @@ def create_app(
 
     @app.after_request
     def harden(response: Response) -> Response:
-        response.headers["Content-Security-Policy"] = CSP
+        if response.headers.pop("X-Ganki-No-CSP", None) is None:
+            response.headers["Content-Security-Policy"] = CSP
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
@@ -316,6 +317,19 @@ def create_app(
         return jsonify(
             state=job.state, steps=steps, facts=lines, percent=min(100, round(done_weight))
         )
+
+    @app.route("/report.pdf")
+    def report_pdf() -> Response:
+        """The scan as a PDF, made on the spot from the latest result."""
+        result = job.result
+        if result is None or job.state != DONE:
+            abort(404)
+        lang = current_language()
+        document = report.build_report(result, lang, datetime.now().strftime("%Y-%m-%d %H:%M"))
+        response = Response(document, mimetype="application/pdf")
+        response.headers["Content-Disposition"] = 'inline; filename="ganki-report.pdf"'
+        response.headers["X-Ganki-No-CSP"] = "1"  # see harden(): the PDF viewer needs this
+        return response
 
     @app.route("/api/status")
     def status() -> Response:
