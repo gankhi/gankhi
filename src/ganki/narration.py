@@ -54,7 +54,7 @@ def scanning_message(lang: str) -> str:
 
 
 def build(result: ScanResult, lang: str) -> list[Segment]:
-    """The explanation, in the order it is spoken."""
+    """The explanation, in the order it is spoken: a short summary, then what is most urgent."""
 
     def say(key: str, **values: object) -> str:
         return i18n.translate(lang, key, **values)
@@ -62,16 +62,6 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
     segments = [Segment("system", say("say_intro"), framing=True)]
     system = result.system
     if system is not None:
-        text = say(
-            "say_system",
-            os=system.os_name,
-            user=system.user,
-            uptime=_spoken_duration(system.uptime_seconds, lang),
-        )
-        if system.reboot_required:
-            text += " " + say("say_reboot")
-        segments.append(Segment("system", text))
-
         free = spoken_size(system.disk_free // 1024, lang)
         level = (
             "tight"
@@ -83,7 +73,6 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
         segments.append(
             Segment("disk", say(f"say_disk_{level}", percent=system.disk_percent, free=free))
         )
-
         level = (
             "high"
             if system.ram_percent >= RAM_HIGH
@@ -93,44 +82,27 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
         )
         segments.append(Segment("ram", say(f"say_ram_{level}", percent=system.ram_percent)))
 
+    reclaim = result.reclaimable
+    text = ""
+    if reclaim.total_kib:
+        text = say("say_reclaim_brief", total=spoken_size(reclaim.total_kib, lang))
+    if result.pending_updates:
+        text = (text + " " + say("say_reclaim_updates", n=result.pending_updates)).strip()
+    if text:
+        segments.append(Segment("reclaim", text))
+
     programs = [t for t in result.tools if t.is_program]
     vulnerable = [t for t in programs if t.state == "vulnerable"]
     outdated = [t for t in programs if t.state == "outdated"]
-    ok_count = len(programs) - len(vulnerable) - len(outdated)
-    segments.append(
-        Segment(
-            "programs",
-            say(
-                "say_programs",
-                total=len(programs),
-                ok=ok_count,
-                outdated=len(outdated),
-                vulnerable=len(vulnerable),
-            ),
-        )
-    )
-
-    segments.append(Segment("tools", _vulnerability_text(result, vulnerable, say)))
-
-    reclaim = result.reclaimable
-    if reclaim.total_kib:
-        parts = []
-        if reclaim.old_kernel_kib:
-            parts.append(say("say_reclaim_kernels", size=spoken_size(reclaim.old_kernel_kib, lang)))
-        if reclaim.apt_cache_kib:
-            parts.append(say("say_reclaim_cache", size=spoken_size(reclaim.apt_cache_kib, lang)))
-        if reclaim.orphan_kib:
-            parts.append(say("say_reclaim_orphans", size=spoken_size(reclaim.orphan_kib, lang)))
-        segments.append(
-            Segment(
-                "reclaim",
-                say(
-                    "say_reclaim",
-                    total=spoken_size(reclaim.total_kib, lang),
-                    parts=", ".join(parts),
-                ),
-            )
-        )
+    if vulnerable:
+        summary = say("say_tools_summary", vulnerable=len(vulnerable), outdated=len(outdated))
+    elif outdated:
+        summary = say("say_tools_outdated_only", outdated=len(outdated))
+    else:
+        summary = say("say_tools_clean")
+    segments.append(Segment("tools", summary))
+    for text in _advice(_most_urgent(vulnerable), say):
+        segments.append(Segment("tools", text))
 
     if result.download_groups:
         total_bytes = sum(g.size_bytes for g in result.download_groups)
@@ -148,27 +120,23 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
             )
         )
 
-    for text in _advice(vulnerable, say):
-        segments.append(Segment("tools", text))
-
+    if system is not None and system.reboot_required:
+        segments.append(Segment("system", say("say_reboot")))
     segments.append(Segment("tools", say("say_outro"), framing=True))
     return segments
 
 
-def _vulnerability_text(result: ScanResult, vulnerable: list, say) -> str:  # type: ignore[no-untyped-def]
-    everything = sum(1 for t in result.tools if t.state == "vulnerable")
-    hidden = everything - len(vulnerable)
-    if not vulnerable:
-        text = say("say_vuln_none")
-    else:
-        fixable = sum(1 for t in vulnerable if t.fixed_in)
-        unfixable = len(vulnerable) - fixable
-        text = say("say_vuln", n=len(vulnerable), fixable=fixable, unfixable=unfixable)
-        if any(t.end_of_support for t in vulnerable):
-            text += " " + say("say_vuln_eol")
-    if hidden > 0:
-        text += " " + say("say_vuln_hidden", n=hidden)
-    return text
+MOST_URGENT = 3
+
+
+def _most_urgent(vulnerable: list) -> list:  # type: ignore[type-arg]
+    """The few programs worth naming: highest Ubuntu priority first, then the ones with a fix."""
+    order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "negligible": 4}
+    ranked = sorted(
+        vulnerable,
+        key=lambda t: (order.get(t.top_priority, 5), 0 if t.fixed_in else 1, -t.cve_count, t.name),
+    )
+    return ranked[:MOST_URGENT]
 
 
 _VIRTUAL_MACHINES = re.compile(r"virtualbox|qemu|vmware|virt-manager|gnome-boxes")
