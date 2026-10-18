@@ -29,6 +29,7 @@ class SandboxedApp:
     tool: str  # snap or flatpak
     source: str  # who publishes it (snap) or the remote it came from (flatpak)
     size_kib: int | None = None  # what it takes on disk; None when it cannot be known
+    app_id: str = ""  # what the command needs: the snap name or the flatpak application id
 
 
 def _snap_size(name: str, revision: str, folder: Path) -> int | None:
@@ -63,7 +64,9 @@ def parse_snap(output: str, folder: Path = SNAP_FOLDER) -> list[SandboxedApp]:
             continue
         source = parts[4].rstrip("*✓✪")
         apps.append(
-            SandboxedApp(parts[0], parts[1], "snap", source, _snap_size(parts[0], parts[2], folder))
+            SandboxedApp(
+                parts[0], parts[1], "snap", source, _snap_size(parts[0], parts[2], folder), parts[0]
+            )
         )
     return apps[:MAX_APPS]
 
@@ -77,9 +80,38 @@ def parse_flatpak(output: str) -> list[SandboxedApp]:
             continue
         application, name, version, origin, size = parts[:5]
         apps.append(
-            SandboxedApp(name or application, version, "flatpak", origin, _flatpak_size(size))
+            SandboxedApp(
+                name or application, version, "flatpak", origin, _flatpak_size(size), application
+            )
         )
     return apps[:MAX_APPS]
+
+
+_SNAP_NAME = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+_FLATPAK_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+# snaps that other snaps are built on: removing one can break apps that look unrelated
+_SHARED_SNAP = re.compile(r"^(?:gnome-|gtk-|mesa-|kf\d|qt\d|core\d|ffmpeg-|bare$)")
+
+
+def update_command(app: SandboxedApp) -> str | None:
+    """The command to update this app; Ganki never runs it. None if the name looks odd."""
+    if app.tool == "snap" and _SNAP_NAME.match(app.app_id):
+        return f"sudo snap refresh {app.app_id}"
+    if app.tool == "flatpak" and _FLATPAK_ID.match(app.app_id):
+        return f"flatpak update {app.app_id}"
+    return None
+
+
+def remove_command(app: SandboxedApp) -> str | None:
+    if app.tool == "snap" and _SNAP_NAME.match(app.app_id):
+        return f"sudo snap remove {app.app_id}"
+    if app.tool == "flatpak" and _FLATPAK_ID.match(app.app_id):
+        return f"flatpak uninstall {app.app_id}"
+    return None
+
+
+def is_shared_runtime(app: SandboxedApp) -> bool:
+    return app.tool == "snap" and bool(_SHARED_SNAP.match(app.app_id))
 
 
 def collect_sandboxed() -> list[SandboxedApp]:

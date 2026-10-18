@@ -302,6 +302,17 @@ TEXTS: dict[str, dict[str, str]] = {
             "update it with apt or inside a virtual environment."
         ),
         "ext_cmd_note": "Ganki does not run it for you and never touches your projects.",
+        "ext_cmd_before_pip": (
+            "Before removing it, check that nothing needs it: run python3 -m pip show NAME and "
+            "read the Required-by line (replace NAME with the package)."
+        ),
+        "ext_cmd_before_npm": "Before removing it, check that none of your projects uses it.",
+        "sbx_cmd_update": "To update it, copy this command and paste it into a terminal:",
+        "sbx_cmd_remove": "If you do not use it, to remove it:",
+        "sbx_cmd_shared": (
+            "This looks like a base that other apps are built on: removing it can break apps "
+            "that seem unrelated. Remove it only if you know nothing needs it."
+        ),
         "report_sandboxed": "Snap and Flatpak apps",
         "sbx_note": (
             "{n} apps installed with snap or flatpak. Each one carries its own libraries, "
@@ -767,6 +778,17 @@ TEXTS: dict[str, dict[str, str]] = {
             "actualizalo con apt o dentro de un entorno virtual."
         ),
         "ext_cmd_note": "Ganki no lo ejecuta por vos y nunca toca tus proyectos.",
+        "ext_cmd_before_pip": (
+            "Antes de quitarlo, fijate que nada lo necesite: corré python3 -m pip show NOMBRE y "
+            "leé la línea Required-by (cambiá NOMBRE por el paquete)."
+        ),
+        "ext_cmd_before_npm": "Antes de quitarlo, fijate que ninguno de tus proyectos lo use.",
+        "sbx_cmd_update": "Para actualizarla, copiá este comando y pegalo en una consola:",
+        "sbx_cmd_remove": "Si no la usás, para quitarla:",
+        "sbx_cmd_shared": (
+            "Esto parece una base sobre la que se construyen otras apps: quitarla puede romper "
+            "apps que parecen no tener relación. Quitala solo si sabés que nada la necesita."
+        ),
         "report_sandboxed": "Apps de Snap y Flatpak",
         "sbx_note": (
             "{n} apps instaladas con snap o flatpak. Cada una trae sus propias librerías, "

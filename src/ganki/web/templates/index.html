@@ -223,7 +223,13 @@
     <tbody>
     {% for app in result.sandboxed[:200] %}
       <tr><td class="wrap"><strong>{{ app.name }}</strong>
-        <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div></td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td colspan="2">{{ app.source }}</td></tr>
+        <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div>
+        {% set sup = sandboxed_update(app) %}{% set srm = sandboxed_remove(app) %}
+        {% if sup or srm %}<div class="howto">
+          {% if sup %}<p class="small">{{ t('sbx_cmd_update') }}</p><code class="cmd">{{ sup }}</code>{% endif %}
+          {% if srm %}<p class="small">{{ t('sbx_cmd_remove') }}</p><code class="cmd">{{ srm }}</code>{% endif %}
+          {% if sandboxed_shared(app) %}<p class="small muted">{{ t('sbx_cmd_shared') }}</p>{% endif %}
+        </div>{% endif %}</td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td colspan="2">{{ app.source }}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>
@@ -250,8 +256,9 @@
           {% set rm = remove_command(tool) %}
           {% if up or rm %}
           <div class="howto">
-            {% if up %}<p class="small">{{ t('ext_cmd_update') }}</p><code class="cmd">{{ up }}</code>
-            {% else %}<p class="small">{{ t('ext_cmd_remove') }}</p><code class="cmd">{{ rm }}</code>{% endif %}
+            {% if up %}<p class="small">{{ t('ext_cmd_update') }}</p><code class="cmd">{{ up }}</code>{% endif %}
+            {% if rm %}<p class="small">{{ t('ext_cmd_remove') }}</p><code class="cmd">{{ rm }}</code>
+            <p class="small muted">{{ t('ext_cmd_before_' ~ tool.tool) }}</p>{% endif %}
             <p class="small muted">{{ t('ext_cmd_' ~ tool.tool) }} {{ t('ext_cmd_note') }}</p>
           </div>
           {% endif %}
