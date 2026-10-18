@@ -336,6 +336,7 @@ def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, mo
     monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path)
     monkeypatch.setattr(server, "create_app", lambda *_args, **_kwargs: FakeApp())
     monkeypatch.setattr(server.webbrowser, "open", lambda url: False)
+    monkeypatch.setattr(server.shutil, "which", lambda name: None)  # no desktop opener either
 
     server.main([])
     saved = (tmp_path / server.ACCESS_FILE).read_text().strip()
@@ -664,3 +665,40 @@ def test_the_hover_option_is_gone_from_the_assistant():
     client = login(build().test_client())
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "voice-hover" not in html and 'id="voice-on"' in html
+
+
+def test_a_second_click_opens_the_running_copy_instead_of_failing(tmp_path, monkeypatch):
+    import threading
+
+    from ganki.web import server
+
+    app = build()
+    started = threading.Thread(
+        target=lambda: app.run(host="127.0.0.1", port=PORT, use_reloader=False), daemon=True
+    )
+    started.start()
+    import time
+
+    time.sleep(1)
+    url = f"http://127.0.0.1:{PORT}/?access={SECRET}"
+    server.save_access_url(url, tmp_path)
+    monkeypatch.setattr(server, "default_cache_dir", lambda: tmp_path)
+    opened = []
+    monkeypatch.setattr(server, "open_in_browser", lambda address: opened.append(address) or True)
+    assert server.looks_like_ganki(url)
+    assert not server.looks_like_ganki(f"http://127.0.0.1:{PORT}/?access=wrong")
+    assert server.main(["--port", str(PORT)]) == 0
+    assert opened == [url]
+
+
+def test_the_desktop_opener_is_the_fallback_when_no_browser_is_found(monkeypatch):
+    from ganki.web import server
+
+    calls = []
+    monkeypatch.setattr(server.webbrowser, "open", lambda address: False)
+    monkeypatch.setattr(server.shutil, "which", lambda name: "/usr/bin/xdg-open")
+    monkeypatch.setattr(server.subprocess, "Popen", lambda cmd, **kw: calls.append(cmd))
+    assert server.open_in_browser("http://127.0.0.1:1/") is True
+    assert calls == [["/usr/bin/xdg-open", "http://127.0.0.1:1/"]]
+    monkeypatch.setattr(server.shutil, "which", lambda name: None)
+    assert server.open_in_browser("http://127.0.0.1:1/") is False

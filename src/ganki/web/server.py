@@ -15,9 +15,13 @@ import logging
 import os
 import re
 import secrets
+import shutil
 import socket
+import subprocess  # noqa: S404  (only to hand the address to the desktop's own opener)
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 import webbrowser
 from pathlib import Path
 
@@ -68,6 +72,63 @@ def port_is_free(port: int) -> bool:
     return True
 
 
+def open_in_browser(url: str) -> bool:
+    """Open the address in the person's own browser, whichever it is.
+
+    The standard opener goes first (it honours the BROWSER variable and the desktop's default).
+    If it finds nothing, the desktop's own ``xdg-open`` is tried before giving up.
+    """
+    if webbrowser.open(url):
+        return True
+    opener = shutil.which("xdg-open")
+    if opener is None:
+        return False
+    try:
+        subprocess.Popen(  # noqa: S603  (absolute path from which(), fixed arguments, no shell)
+            [opener, url],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError:
+        return False
+    return True
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Do not follow the redirect: the redirect itself is the answer we are looking for."""
+
+    def redirect_request(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+        return None
+
+
+def looks_like_ganki(url: str) -> bool:
+    """Does a copy of Ganki accept this very address? A valid key is answered with a redirect."""
+    opener = urllib.request.build_opener(_NoRedirect)
+    try:
+        with opener.open(url, timeout=2) as reply:  # noqa: S310  (127.0.0.1 only)
+            return reply.status in (301, 302, 303, 307, 308)
+    except urllib.error.HTTPError as error:
+        return error.code in (301, 302, 303, 307, 308)
+    except (OSError, ValueError):
+        return False
+
+
+def open_running_copy(port: int) -> bool:
+    """A second click on the icon: open the copy that is already running instead of failing."""
+    saved = default_cache_dir() / ACCESS_FILE
+    try:
+        url = saved.read_text().strip()
+    except OSError:
+        return False
+    if not url.startswith(f"http://{HOST}:{port}/") or not looks_like_ganki(url):
+        return False
+    print("Ganki is already running. Opening it in your browser.")
+    if not open_in_browser(url):
+        print(f"Open this file's address in your browser (only you can read it):\n  {saved}")
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ganki", description="Ganki local dashboard")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -88,6 +149,8 @@ def main(argv: list[str] | None = None) -> int:
 
 def _serve(args: argparse.Namespace) -> int:
     if not port_is_free(args.port):
+        if not args.no_open and open_running_copy(args.port):
+            return 0
         print(f"Port {args.port} is already in use. Is Ganki already running?")
         print("Close the other one, or choose another port with --port.")
         return 1
@@ -98,7 +161,7 @@ def _serve(args: argparse.Namespace) -> int:
     url = f"http://{HOST}:{args.port}/?access={access_key}"
     saved = save_access_url(url, default_cache_dir())
 
-    opened = False if args.no_open else webbrowser.open(url)
+    opened = False if args.no_open else open_in_browser(url)
     if opened:
         print(f"Ganki is running on http://{HOST}:{args.port}/ and opened in your browser.")
     else:
