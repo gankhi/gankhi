@@ -473,3 +473,20 @@ def test_the_rows_explain_the_flag_only_when_the_python_is_protected(monkeypatch
     html = page()
     assert "pip install --upgrade --break-system-packages" in html
     assert "Ubuntu protects its own Python" in html
+
+
+def test_the_headline_numbers_add_up_programs_and_python_npm_packages():
+    from test_web import BASE, build, login, make_result, wait_until_done
+
+    programs = [t for t in make_result().tools if t.is_program]
+    own_bad = sum(1 for t in programs if t.state == "vulnerable")
+    own_old = sum(1 for t in programs if t.state == "outdated")
+    total = len(programs) + 3  # evilpkg, oldlib and calm
+    bad = own_bad + 2  # evilpkg and oldlib have notices
+    client = login(build(with_external).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert f"{total - bad - own_old} of {total} up to date" in html
+    assert f"{bad} with vulnerabilities" in html
+    assert "Includes 3 Python and npm packages" in html

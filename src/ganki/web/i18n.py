@@ -22,7 +22,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_detail": "{used} used, {free} free of {total}",
         "ram": "Memory (RAM)",
         "ram_detail": "{used} in use, {free} free",
-        "programs": "Programs up to date",
+        "programs": "Programs and packages up to date",
+        "totals_note": (
+            'Includes {n} Python and npm packages. For those, "up to date" means no known '
+            "security notice: Ganki does not check whether a newer version exists."
+        ),
         "programs_detail": "{vuln} with vulnerabilities, {old} outdated",
         "reclaim": "Recoverable space",
         "reclaim_hint": "Review before cleaning. Nothing is removed from here yet.",
@@ -499,7 +503,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_free_big": "{free} free",
         "disk_used_of": "{used} used of {total}",
         "last_scan_short": "last scan",
-        "x_of_y_ok": "{ok} of {all} programs up to date",
+        "x_of_y_ok": "{ok} of {all} up to date",
         "pill_vuln": "{n} with vulnerabilities",
         "leg_disk_used": "{size} used",
         "leg_disk_free": "{size} free",
@@ -531,7 +535,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_detail": "{used} ocupados, {free} libres de {total}",
         "ram": "Memoria RAM",
         "ram_detail": "{used} en uso, {free} libres",
-        "programs": "Programas al día",
+        "programs": "Programas y paquetes al día",
+        "totals_note": (
+            'Incluye {n} paquetes de Python y npm. En esos, "al día" significa sin avisos de '
+            "seguridad conocidos: Ganki no revisa si existe una versión más nueva."
+        ),
         "programs_detail": "{vuln} con vulnerabilidades, {old} desactualizados",
         "reclaim": "Espacio recuperable",
         "reclaim_hint": "Revisar antes de limpiar. Todavía no se quita nada desde acá.",
@@ -1026,7 +1034,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_free_big": "{free} libres",
         "disk_used_of": "{used} ocupados de {total}",
         "last_scan_short": "último escaneo",
-        "x_of_y_ok": "{ok} de {all} programas al día",
+        "x_of_y_ok": "{ok} de {all} al día",
         "pill_vuln": "{n} con vulnerabilidades",
         "leg_disk_used": "{size} ocupados",
         "leg_disk_free": "{size} libres",
