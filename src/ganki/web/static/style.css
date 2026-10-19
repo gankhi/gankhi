@@ -132,6 +132,13 @@ table.aligned col.c-size { width: 10%; }
 table.aligned col.c-state { width: 14%; }
 table.aligned col.c-last { width: 11%; }
 table.aligned td { white-space: normal; overflow-wrap: anywhere; }
+/* Downloads detail: the three tables share one grid, so the size columns line up. */
+table.dl-table { table-layout: fixed; min-width: 640px; }
+table.dl-table col.c-dfiles { width: 90px; }
+table.dl-table col.c-dsize { width: 120px; }
+table.dl-table col.c-dopen { width: 180px; }
+table.dl-table button.open-folder { white-space: nowrap; }
+table.dl-table td { white-space: normal; overflow-wrap: anywhere; }
 td.wrap { white-space: normal; min-width: 280px; max-width: 560px; }
 td .small { display: inline-block; margin-top: 1px; }
 .new { color: var(--green); }
