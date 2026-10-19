@@ -89,6 +89,7 @@ STEP_WEIGHTS = {
 }
 FILTERS = ("all", "ok", "outdated", "vulnerable")
 MAX_QUERY_CHARS = 100
+MAX_REQUEST_BYTES = 64 * 1024  # the page only ever sends tiny JSON bodies
 CSP = (
     "default-src 'none'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self'; "
     "img-src 'self'; media-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
@@ -137,6 +138,7 @@ def create_app(
     confirmed action for real (both replaced in tests).
     """
     app = Flask(__name__)
+    app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
     voice = speaker or speech.Speaker()
 
     def warm_voice(result: ScanResult) -> None:

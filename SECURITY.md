@@ -5,8 +5,8 @@ machine, so security reports are taken seriously.
 
 ## Supported versions
 
-The project is in early development (alpha). Only the latest commit on `main`
-receives fixes.
+Ganki is young (0.1.x). Only the latest release and the latest commit on `main`
+receive fixes.
 
 ## Reporting a vulnerability
 
@@ -22,8 +22,27 @@ keep you informed about the fix. Reporters are credited unless they prefer not t
 
 ## Design principles that count as security bugs when broken
 
-- The web interface listens only on `127.0.0.1`.
-- No command is run through a shell; only an allowlist of fixed commands.
-- Protected packages and paths cannot be removed, even by a crafted request.
-- File paths are resolved and validated before any deletion; deletions go to the
-  trash first.
+- The web interface listens only on `127.0.0.1`, behind a random access key, a
+  host check, a same-origin check on every change, and a strict content policy.
+- No command is run through a shell; only an allowlist of fixed commands with
+  fixed arguments. The few that change the system (update, remove, clean,
+  autoremove) go through the system's own password window (`pkexec`), and
+  nothing else is accepted, even from a crafted request.
+- Protected packages (the system, the running kernel, essential software) cannot
+  be removed or dragged out by another removal, even by a crafted request.
+- Package names are validated strictly and must belong to the latest scan.
+- Ganki never deletes files itself. For downloads it can only open a folder
+  inside Downloads in the file manager; paths are resolved and checked first.
+- Vulnerability data is read in memory, never extracted to disk, and is only
+  ever treated as data.
+- Nothing about your computer leaves it. The only network use is downloading
+  the public vulnerability lists.
+
+## Known limits
+
+- Anything that already runs as your user can read the access key file
+  (`~/.cache/ganki/dashboard-url`, mode 600) and use Ganki. That is true of any
+  local tool.
+- The vulnerability lists are fetched over HTTPS but are not signed.
+- The optional voice installer downloads Piper (version pinned, wheels only) and
+  voice files from Hugging Face without a checksum.

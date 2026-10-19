@@ -183,6 +183,8 @@ def test_a_package_name_cannot_carry_a_newline_or_an_option():
 
     assert valid_package("vim") == "vim"
     assert valid_package("libc6:amd64") == "libc6:amd64"
+    assert valid_package("vim-") is None  # apt would read it as "remove vim"
+    assert valid_package("g++") == "g++"
     for bad in ("vim\n", "vim\n--purge", "-vim", "--purge", "vim foo", "", "A", "vim;ls"):
         assert valid_package(bad) is None
 

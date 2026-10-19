@@ -247,7 +247,7 @@ class AdvisoryIndex(Mapping[str, list[Advisory]]):
 
     def __getitem__(self, name: str) -> list[Advisory]:
         rows = self._db.execute(
-            f"SELECT {_COLUMNS} FROM adv WHERE source = ? ORDER BY rowid",  # noqa: S608
+            f"SELECT {_COLUMNS} FROM adv WHERE source = ? ORDER BY rowid",  # noqa: S608  # nosec B608  (_COLUMNS is a constant; the value is a parameter)
             (name,),
         ).fetchall()
         if not rows:

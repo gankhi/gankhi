@@ -13,6 +13,7 @@ set -euo pipefail
 
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 VOICE_DIR="$DATA_HOME/ganki/voice"
+PIPER_VERSION="1.8.0"  # a fixed, reviewed version: never "whatever is newest"
 VOICES=("es_AR-daniela-high" "en_US-lessac-medium")
 
 say() { printf '%s\n' "$*"; }
@@ -37,7 +38,9 @@ fi
 mkdir -p "$VOICE_DIR"
 chmod 700 "$VOICE_DIR"
 [ -x "$VOICE_DIR/venv/bin/python" ] || python3 -m venv "$VOICE_DIR/venv"
-"$VOICE_DIR/venv/bin/pip" install --quiet --upgrade pip piper-tts
+"$VOICE_DIR/venv/bin/pip" install --quiet --upgrade pip
+# Ready-made wheels only: an installer script from the internet is never run on this computer.
+"$VOICE_DIR/venv/bin/pip" install --quiet --only-binary=:all: "piper-tts==$PIPER_VERSION"
 for voice in "${VOICES[@]}"; do
     (cd "$VOICE_DIR" && ./venv/bin/python -m piper.download_voices "$voice") \
         || die "the voice $voice could not be downloaded. Check your connection and try again."
