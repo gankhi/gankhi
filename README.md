@@ -1,6 +1,8 @@
 # Ganki
 
-A local dashboard for Linux that shows what is installed on your computer, what is out of date, and what you can safely clean up to free disk space.
+**Ganki** brings together in one screen what you would normally look at separately: the inventory of installed programs, pending updates, known vulnerabilities (checked on your computer against Ubuntu's public list) and the space you can reclaim. From there you can also update, remove and clean up, always with a preview and your confirmation. It sends no data from your computer anywhere.
+
+A local, private dashboard for Debian/Ubuntu-based Linux.
 
 > **Status: first public version (0.1.0).** Ganki can change your system: it can update or remove programs, empty apt's download cache and remove unused packages. Every change shows a preview first and needs your confirmation, and there is no undo button. It has been tested on Ubuntu 24.04-based Linux only.
 
