@@ -11,7 +11,7 @@
   {% if detail.files %}
   <p class="small" id="open-result" role="status" data-ok="{{ t('dl_open_ok') }}" data-failed="{{ t('dl_open_failed') }}"></p>
   <h3>{{ t('dl_detail_folders') }}</h3>
-  <div class="scroll"><table>
+  <div class="scroll"><table class="dl-table"><colgroup><col class="c-dname"><col class="c-dfiles"><col class="c-dsize"><col class="c-dopen"></colgroup>
     <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('dl_detail_files') }}</th><th class="num">{{ t('col_size') }}</th><th></th></tr></thead>
     <tbody>
     {% for f in detail.folders %}
@@ -21,21 +21,21 @@
   </table></div>
 
   <h3>{{ t('dl_detail_kinds') }}</h3>
-  <div class="scroll"><table>
-    <thead><tr><th>{{ t('dl_detail_type') }}</th><th class="num">{{ t('dl_detail_files') }}</th><th class="num">{{ t('col_size') }}</th></tr></thead>
+  <div class="scroll"><table class="dl-table"><colgroup><col class="c-dname"><col class="c-dfiles"><col class="c-dsize"><col class="c-dopen"></colgroup>
+    <thead><tr><th>{{ t('dl_detail_type') }}</th><th class="num">{{ t('dl_detail_files') }}</th><th class="num">{{ t('col_size') }}</th><th></th></tr></thead>
     <tbody>
     {% for k in detail.kinds %}
-      <tr><td class="mono">{{ k.extension or t('dl_detail_no_ext') }}</td><td class="num mono">{{ k.files }}</td><td class="num mono">{{ k.size_bytes|bytes }}</td></tr>
+      <tr><td class="mono">{{ k.extension or t('dl_detail_no_ext') }}</td><td class="num mono">{{ k.files }}</td><td class="num mono">{{ k.size_bytes|bytes }}</td><td></td></tr>
     {% endfor %}
     </tbody>
   </table></div>
 
   <h3>{{ t('dl_detail_biggest') }}</h3>
-  <div class="scroll"><table>
-    <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('col_size') }}</th><th></th></tr></thead>
+  <div class="scroll"><table class="dl-table"><colgroup><col class="c-dname"><col class="c-dfiles"><col class="c-dsize"><col class="c-dopen"></colgroup>
+    <thead><tr><th>{{ t('dl_detail_name') }}</th><th></th><th class="num">{{ t('col_size') }}</th><th></th></tr></thead>
     <tbody>
     {% for f in detail.biggest %}
-      <tr><td class="mono">{{ f.path }}</td><td class="num mono">{{ f.size_bytes|bytes }}</td><td>{{ open_button(f.full) }}</td></tr>
+      <tr><td class="mono">{{ f.path }}</td><td></td><td class="num mono">{{ f.size_bytes|bytes }}</td><td>{{ open_button(f.full) }}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>
