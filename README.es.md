@@ -1,6 +1,8 @@
 # Ganki
 
-Un panel local para Linux que muestra qué hay instalado en tu computadora, qué está desactualizado y qué podés limpiar con seguridad para liberar espacio en disco.
+**Ganki** reúne en una sola pantalla lo que normalmente se mira por separado: el inventario de programas, las actualizaciones pendientes, las vulnerabilidades conocidas (comparadas en tu equipo con la lista pública de Ubuntu) y el espacio que podés recuperar. Desde ahí también podés actualizar, quitar y limpiar, siempre con una vista previa y tu confirmación. No envía datos de tu computadora a ningún lado.
+
+Un panel local y privado para Linux basado en Debian/Ubuntu.
 
 > **Estado: primera versión pública (0.1.0).** Ganki puede modificar tu sistema: puede actualizar o quitar programas, vaciar la caché de descargas de apt y quitar paquetes sin uso. Cada cambio muestra primero una vista previa y necesita tu confirmación, y no hay botón de deshacer. Solo se probó en Linux basado en Ubuntu 24.04.
 
