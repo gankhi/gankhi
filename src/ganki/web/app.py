@@ -17,12 +17,23 @@ import threading
 from collections.abc import Callable
 from datetime import datetime
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 from typing import Any
 
 from flask import Flask, abort, jsonify, make_response, redirect, render_template, request
 from werkzeug.wrappers import Response
 
-from ganki import actions, advice, downloads, external_tools, narration, paging, report, speech
+from ganki import (
+    actions,
+    advice,
+    downloads,
+    external_tools,
+    folders,
+    narration,
+    paging,
+    report,
+    speech,
+)
 from ganki.collectors import sandboxed
 from ganki.executor import ActionJob
 from ganki.progress import RUNNING as STEP_RUNNING
@@ -118,6 +129,7 @@ def create_app(
     executor: ActionJob | None = None,
     speaker: speech.Speaker | None = None,
     progress: Progress | None = None,
+    opener: Callable[[Path], bool] = folders.open_folder,
 ) -> Flask:
     """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token.
 
@@ -486,6 +498,22 @@ def create_app(
             detail=downloads.group_detail(folder, key),
             folder_name="~/" + folder.name,
         )
+
+    @app.route("/api/open-folder", methods=["POST"])
+    def open_downloads_folder() -> Response:
+        """Show a folder of Downloads in the file manager. Only a folder, only inside Downloads."""
+        data = request.get_json(silent=True)
+        relative = data.get("path") if isinstance(data, dict) else None
+        folder = (
+            folders.folder_to_open(downloads.downloads_dir(), relative)
+            if isinstance(relative, str)
+            else None
+        )
+        if folder is None:
+            return make_response(jsonify(error="invalid"), 400)
+        if not opener(folder):
+            return make_response(jsonify(error="unavailable"), 503)
+        return jsonify(opened=True)
 
     @app.route("/api/status")
     def status() -> Response:

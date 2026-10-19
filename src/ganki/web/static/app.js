@@ -140,6 +140,17 @@
     });
   }
 
+  // Downloads detail: show the folder that holds a file, so it can be looked at and deleted by hand.
+  var openResult = document.getElementById("open-result");
+  Array.prototype.forEach.call(document.querySelectorAll("button.open-folder"), function (button) {
+    button.addEventListener("click", function () {
+      fetch("/api/open-folder", { method: "POST", headers: { "X-Ganki": "1", "Content-Type": "application/json" },
+                                   credentials: "same-origin", body: JSON.stringify({ path: button.dataset.path }) })
+        .then(function (r) { openResult.textContent = r.ok ? openResult.dataset.ok : openResult.dataset.failed; })
+        .catch(function () { openResult.textContent = openResult.dataset.failed; });
+    });
+  });
+
   var copy = document.getElementById("copy");
   if (copy) {
     copy.addEventListener("click", function () {

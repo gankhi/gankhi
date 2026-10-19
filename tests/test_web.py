@@ -1103,3 +1103,36 @@ def test_autoremove_accepts_a_leftover_library_but_still_refuses_core_packages()
     assert (
         "Protected packages it would remove" in refused and "sudo apt-get autoremove" not in refused
     )
+
+
+def test_a_folder_of_downloads_can_be_opened_but_nothing_else(tmp_path, monkeypatch):
+    from ganki import downloads
+
+    base = tmp_path / "Descargas"
+    (base / "fotos").mkdir(parents=True)
+    (base / "fotos" / "a.jpg").write_text("x")
+    monkeypatch.setattr(downloads, "downloads_dir", lambda: base)
+    opened = []
+    app = create_app(make_result, SECRET, PORT, opener=lambda folder: opened.append(folder) or True)
+    app.testing = True
+    client = login(app.test_client())
+    wait_until_done(client)
+
+    def ask(path, headers=None):
+        return client.post(
+            "/api/open-folder",
+            json={"path": path},
+            base_url=BASE,
+            headers={"X-Ganki": "1"} if headers is None else headers,
+        )
+
+    assert ask("fotos/a.jpg").status_code == 200 and opened == [(base / "fotos").resolve()]
+    assert ask("../etc").status_code == 400 and ask("/etc").status_code == 400
+    assert (
+        client.post(
+            "/api/open-folder", json=None, base_url=BASE, headers={"X-Ganki": "1"}
+        ).status_code
+        == 400
+    )
+    assert ask("fotos/a.jpg", headers={}).status_code == 403
+    assert len(opened) == 1
