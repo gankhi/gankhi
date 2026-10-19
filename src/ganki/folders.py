@@ -28,16 +28,23 @@ def folder_to_open(base: Path, relative: str) -> Path | None:
     if os.path.isabs(relative):
         return None
     try:
-        root = base.resolve(strict=True)
-        target = (root / relative).resolve(strict=True)
+        root = os.path.realpath(base, strict=True)
     except (OSError, RuntimeError, ValueError):
         return None
-    if target != root and not target.is_relative_to(root):
+    inside = root.rstrip(os.sep) + os.sep
+    # First the plain (lexical) check, then the same check again once symlinks are resolved.
+    # Something that is the root itself is not a file or folder "inside" it, so it is refused.
+    lexical = os.path.normpath(os.path.join(root, relative))
+    if not lexical.startswith(inside):
         return None
-    folder = target if target.is_dir() else target.parent
-    if folder != root and not folder.is_relative_to(root):
+    try:
+        target = os.path.realpath(lexical, strict=True)
+    except (OSError, RuntimeError, ValueError):
         return None
-    return folder
+    if not target.startswith(inside):
+        return None
+    folder = target if os.path.isdir(target) else os.path.dirname(target)
+    return Path(folder)
 
 
 def open_folder(folder: Path) -> bool:
