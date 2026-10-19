@@ -126,7 +126,7 @@ def create_app(
     simulator: actions.Simulator = actions.simulate,
     executor: ActionJob | None = None,
     progress: Progress | None = None,
-    opener: Callable[[Path], bool] = folders.open_folder,
+    opener: Callable[[Path], bool] = folders.show_in_file_manager,
 ) -> Flask:
     """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token.
 
@@ -471,11 +471,11 @@ def create_app(
 
     @app.route("/api/open-folder", methods=["POST"])
     def open_downloads_folder() -> Response:
-        """Show a folder of Downloads in the file manager. Only a folder, only inside Downloads."""
+        """Show a file or folder of Downloads in the file manager. Only inside Downloads."""
         data = request.get_json(silent=True)
         relative = data.get("path") if isinstance(data, dict) else None
         folder = (
-            folders.folder_to_open(downloads.downloads_dir(), relative)
+            folders.inside_downloads(downloads.downloads_dir(), relative)
             if isinstance(relative, str)
             else None
         )
