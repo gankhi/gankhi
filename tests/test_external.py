@@ -370,6 +370,32 @@ def test_snap_and_flatpak_sizes_are_read_in_the_same_unit(tmp_path):
     assert flat[0].size_kib == 245_100_000 // 1024 and flat[1].size_kib is None
 
 
+@pytest.fixture(autouse=True)
+def plain_python(monkeypatch):
+    """The commands depend on the machine's Python: tests start from one pip accepts."""
+    monkeypatch.setattr("ganki.external_tools.externally_managed", lambda: False)
+
+
+def test_a_protected_python_gets_the_flag_pip_asks_for(monkeypatch, tmp_path):
+    from ganki import external_tools
+    from ganki.external_tools import ExternalTool, remove_command, update_command
+
+    monkeypatch.setattr("ganki.external_tools.externally_managed", lambda: True)
+    pip = ExternalTool("oldlib", "1.0", "pip", "PyPI", True, "high", 2, "2.1")
+    npm = ExternalTool("lib", "1.0", "npm", "npm", True, "high", 1, "3.0.1")
+    assert update_command(pip) == (
+        "python3 -m pip install --upgrade --break-system-packages 'oldlib>=2.1'"
+    )
+    assert remove_command(pip) == "python3 -m pip uninstall --break-system-packages oldlib"
+    assert "--break-system-packages" not in (remove_command(npm) or "")  # npm has no such rule
+    # the marker file is what tells (it sits in Python's standard library folder)
+    monkeypatch.undo()
+    monkeypatch.setattr(external_tools.sysconfig, "get_path", lambda _name: str(tmp_path))
+    assert not external_tools.externally_managed()
+    (tmp_path / "EXTERNALLY-MANAGED").write_text("[externally-managed]\n")
+    assert external_tools.externally_managed()
+
+
 def test_the_update_and_remove_commands_are_exact_and_safe():
     from ganki.external_tools import ExternalTool, remove_command, update_command
 
@@ -431,3 +457,19 @@ def test_the_rows_offer_to_remove_as_well_as_update():
     update = html.index("pip install --upgrade")
     assert "python3 -m pip uninstall oldlib" in html[update:]  # both for the same package
     assert "python3 -m pip show NAME" in html  # check what needs it before removing
+
+
+def test_the_rows_explain_the_flag_only_when_the_python_is_protected(monkeypatch):
+    from test_web import BASE, build, login, wait_until_done
+
+    def page():
+        client = login(build(with_external).test_client())
+        client.get("/", base_url=BASE)
+        wait_until_done(client)
+        return client.get("/", base_url=BASE).get_data(as_text=True)
+
+    assert "--break-system-packages" not in page()
+    monkeypatch.setattr("ganki.external_tools.externally_managed", lambda: True)
+    html = page()
+    assert "pip install --upgrade --break-system-packages" in html
+    assert "Ubuntu protects its own Python" in html
