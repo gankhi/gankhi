@@ -72,7 +72,7 @@
     <div class="status">
       <div class="statusrow">
         <strong>{{ t('x_of_y_ok', ok=totals.ok, all=totals.all) }}</strong>
-        {% if totals.vulnerable %}<span class="pill bad"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M12 8v4M12 16h.01"/></svg>{{ t('pill_vuln', n=totals.vulnerable) }}</span>{% endif %}
+        {% if totals.vulnerable %}<a class="pill bad" href="{{ url_for('index', f='vulnerable') }}#tools" title="{{ t('pill_vuln_open') }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M12 8v4M12 16h.01"/></svg>{{ t('pill_vuln', n=totals.vulnerable) }}</a>{% endif %}
       </div>
       <div class="actions">
         {% if result.pending_updates %}<a class="btn primary big" href="{{ url_for('preview_page', action='all') }}">↑ {{ t('btn_update_all') }}</a>{% endif %}
@@ -136,7 +136,7 @@
   </div>
 </section>
 
-<section class="card tools" data-explain="tools" tabindex="0">
+<section class="card tools" id="tools" data-explain="tools" tabindex="0">
   <div class="toolshead">
     <div><h2>{{ t('tools') }}</h2><p class="muted">{{ t('tools_sub', n=counts.all) }}</p></div>
     <form method="get" action="/" class="search">
