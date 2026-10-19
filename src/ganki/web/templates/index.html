@@ -328,18 +328,16 @@
 {% endif %}
 
 <aside class="assistant" id="assistant" aria-label="{{ t('assistant_title') }}"
-  data-lang="{{ lang }}" data-state="{{ state }}" data-no-voice="{{ t('assistant_no_voice') }}"
-  data-ready="{{ t('assistant_ready') }}" data-prompt="{{ t('assistant_prompt') }}" data-natural="{{ 1 if natural_voice else 0 }}">
+  data-lang="{{ lang }}" data-state="{{ state }}"
+  data-ready="{{ t('assistant_ready') }}" data-prompt="{{ t('assistant_prompt') }}">
   <div class="assistant-head">
-    <strong>🔊 {{ t('assistant_title') }}</strong>
+    <strong>💬 {{ t('assistant_title') }}</strong>
     <button type="button" id="assistant-close" class="icon" aria-label="{{ t('assistant_close') }}" title="{{ t('assistant_close') }}"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </div>
   <p id="assistant-caption" class="caption" aria-live="polite"></p>
   <div class="assistant-buttons">
-    <button type="button" id="voice-on">{{ t('assistant_listen') }}</button>
-    <button type="button" id="voice-play" class="ghost" hidden>{{ t('assistant_play') }}</button>
-    <button type="button" id="voice-stop" class="ghost" hidden>{{ t('assistant_pause') }}</button>
+    <button type="button" id="assistant-explain">{{ t('assistant_play') }}</button>
   </div>
 </aside>
-<button type="button" id="assistant-open" class="assistant-open" hidden aria-label="{{ t('assistant_open') }}" title="{{ t('assistant_open') }}">🔊</button>
+<button type="button" id="assistant-open" class="assistant-open" hidden aria-label="{{ t('assistant_open') }}" title="{{ t('assistant_open') }}">💬</button>
 {% endblock %}

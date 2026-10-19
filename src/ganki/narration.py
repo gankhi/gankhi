@@ -1,7 +1,7 @@
 """Turn the scan into a spoken explanation, with fixed rules and no AI model.
 
 Everything is computed from numbers Ganki already has, on this machine. The text
-comes from ``i18n`` templates; the voice is the browser's own (local voices only).
+comes from ``i18n`` templates; it is shown as text.
 Each segment is tied to a part of the page (``section``) so the page can highlight it.
 """
 
@@ -33,7 +33,7 @@ def thousands(number: int, lang: str) -> str:
 
 
 def spoken_size(kib: int, lang: str) -> str:
-    """``2097152`` -> ``2 gigas`` (written the way a voice should read it)."""
+    """``2097152`` -> ``2 gigas`` (written the way a person would say it)."""
     units = (
         ("gigas", "gigabytes", 1024**2),
         ("megas", "megabytes", 1024),

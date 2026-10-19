@@ -1,7 +1,7 @@
 """The report: what the scan found, written as a PDF to read, keep or print.
 
 Built on this computer from the scan result; nothing is sent anywhere. The summary uses
-the same sentences the assistant speaks, then adds the details in tables.
+the same sentences the assistant shows, then adds the details in tables.
 """
 
 from __future__ import annotations

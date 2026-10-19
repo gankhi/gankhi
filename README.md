@@ -68,10 +68,6 @@ Each start creates a new secret key that is kept out of the terminal: the browse
 
 Typing `127.0.0.1:PORT` alone does not work, and that is on purpose: the address carries a secret key that changes on every start, so other programs on your computer cannot read your data. If a page says the key is missing, open Ganki from the icon or with one of the ways above.
 
-## Natural voice (optional)
-
-Ganki can explain your system out loud. Browsers on Linux rarely have a local voice, so the optional `scripts/install-voice.sh` adds Piper and an Argentine Spanish voice and an English one inside `~/.local/share/ganki/voice`. It downloads about 170 MB once; after that the voice runs on your computer and nothing is sent anywhere. Without it you still get captions. The page allows audio only from Ganki itself (`media-src 'self'`).
-
 ## Requirements
 
 Debian/Ubuntu-based Linux and Python 3.10 or newer. Developed and tested on an Ubuntu 24.04 base. Windows and macOS are not supported.

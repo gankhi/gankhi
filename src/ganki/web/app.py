@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import hmac
 import subprocess
-import threading
 from collections.abc import Callable
 from datetime import datetime
 from email.utils import parsedate_to_datetime
@@ -32,7 +31,6 @@ from ganki import (
     narration,
     paging,
     report,
-    speech,
 )
 from ganki.collectors import sandboxed
 from ganki.executor import ActionJob
@@ -47,7 +45,6 @@ from ganki.web.jobs import DONE, IDLE, RUNNING, ScanJob
 
 SESSION_COOKIE = "ganki_session"
 LANG_COOKIE = "ganki_lang"
-WARM_SEGMENTS = 4
 MONTHS = {
     "es": "ene feb mar abr may jun jul ago sep oct nov dic".split(),
     "en": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(),
@@ -92,7 +89,7 @@ MAX_QUERY_CHARS = 100
 MAX_REQUEST_BYTES = 64 * 1024  # the page only ever sends tiny JSON bodies
 CSP = (
     "default-src 'none'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self'; "
-    "img-src 'self'; media-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+    "img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 )
 
 
@@ -128,7 +125,6 @@ def create_app(
     port: int,
     simulator: actions.Simulator = actions.simulate,
     executor: ActionJob | None = None,
-    speaker: speech.Speaker | None = None,
     progress: Progress | None = None,
     opener: Callable[[Path], bool] = folders.open_folder,
 ) -> Flask:
@@ -139,25 +135,8 @@ def create_app(
     """
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
-    voice = speaker or speech.Speaker()
 
-    def warm_voice(result: ScanResult) -> None:
-        """Speak-ahead: make the first parts of the narration while the page is still loading.
-
-        Synthesis takes a few seconds, so doing it only when the browser asks made the voice
-        start late. The audio goes to the same cache the browser's request reads from.
-        """
-
-        def work() -> None:
-            for lang in i18n.LANGUAGES:
-                if not voice.available(lang):
-                    continue
-                for segment in narration.build(result, lang)[:WARM_SEGMENTS]:
-                    voice.speak(lang, segment.text)
-
-        threading.Thread(target=work, daemon=True).start()
-
-    job = ScanJob(scan, progress, on_done=warm_voice)
+    job = ScanJob(scan, progress)
     runner_job = executor or ActionJob(on_done=job.start)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
     app.jinja_env.filters["size"] = paging.human_size
@@ -297,7 +276,6 @@ def create_app(
             "state": job.state,
             "result": result,
             "now": datetime.now(),
-            "natural_voice": voice.available(lang),
         }
         if result is not None and job.state in (DONE, RUNNING):
             context.update(tool_view(result))
@@ -358,32 +336,6 @@ def create_app(
                 {"section": i.section, "text": i.text, "framing": i.framing} for i in segments
             ],
         )
-
-    @app.route("/api/speak")
-    def speak() -> Response:
-        """Audio of one part of the narration. The text is built here, never taken from the page."""
-        lang = current_language()
-        result = job.result
-        if request.args.get("scanning") == "1":
-            text = narration.scanning_message(lang)
-        elif result is None or job.state != DONE:
-            abort(404)
-        else:
-            segments = narration.build(result, lang)
-            section = request.args.get("section", "")
-            index = request.args.get("seg", "")
-            if index.isdigit() and int(index) < len(segments):
-                text = segments[int(index)].text
-            elif section:
-                text = " ".join(s.text for s in segments if s.section == section and not s.framing)
-            else:
-                abort(400)
-        if not text:
-            abort(404)
-        audio = voice.speak(lang, text)
-        if audio is None:
-            abort(503)
-        return Response(audio, mimetype="audio/wav")
 
     @app.route("/api/progress")
     def scan_progress() -> Response:

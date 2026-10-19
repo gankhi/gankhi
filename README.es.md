@@ -68,10 +68,6 @@ Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el na
 
 Escribir solo `127.0.0.1:PUERTO` no funciona, y es a propósito: la dirección lleva una clave secreta que cambia en cada inicio, para que otros programas de tu computadora no puedan leer tus datos. Si una página dice que falta la clave, abrí Ganki desde el ícono o con alguna de las formas de arriba.
 
-## Voz natural (opcional)
-
-Ganki puede explicar tu sistema en voz alta. Los navegadores en Linux casi nunca tienen una voz local, así que `scripts/install-voice.sh` (opcional) agrega Piper y una voz en español argentino y una en inglés dentro de `~/.local/share/ganki/voice`. Descarga unos 170 MB una sola vez; después la voz corre en tu computadora y no se envía nada. Sin ella igual tenés los subtítulos. La página solo admite audio que venga de Ganki (`media-src 'self'`).
-
 ## Requisitos
 
 Linux basado en Debian/Ubuntu y Python 3.10 o superior. Desarrollado y probado sobre una base Ubuntu 24.04. No funciona en Windows ni en macOS.

@@ -5,9 +5,7 @@
   var headers = { "X-Ganki": "1" };
 
   function finished() {
-    var assistant = window.GankiAssistant;
-    var handled = assistant ? assistant.onScanDone() : false;
-    if (!handled) { location.reload(); }
+    location.reload();
   }
 
   // While the scan runs: show each step and the first facts as they arrive.
