@@ -14,7 +14,6 @@ Primera versión pública.
 - Lista las apps de snap y flatpak. No las revisa: traen sus propias librerías.
 - Muestra disco, memoria y actualizaciones, y estima cuánto podés recuperar (kernels
   viejos, caché de apt, paquetes huérfanos, Descargas).
-- Explica el resultado en voz alta, en español y en inglés, con una voz local (opcional).
 - Genera un informe en PDF, con colores por prioridad y agrupado por familia.
 - Actualiza o quita un programa, vacía la caché de descargas de apt y quita paquetes sin
   uso (kernels viejos, huérfanos) solo después de una vista previa y de tu confirmación
@@ -41,4 +40,3 @@ Primera versión pública.
 
 ### Instalación
 - `scripts/install.sh` instala Ganki sin sudo.
-- `scripts/install-voice.sh` (opcional) agrega las voces en español e inglés, unos 170 MB.

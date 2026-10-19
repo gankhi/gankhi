@@ -460,15 +460,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "assistant_title": "Assistant",
         "assistant_close": "Close the assistant",
         "assistant_open": "Open the assistant",
-        "assistant_prompt": "Do you want me to read you the summary when the scan ends?",
-        "assistant_listen": "Turn on voice",
+        "assistant_prompt": "When the scan ends, I can explain the result here in writing.",
         "assistant_play": "Explain my system",
-        "assistant_pause": "Stop",
-        "assistant_no_voice": (
-            "There is no local voice yet. You can still read the captions. For a natural "
-            "voice, run scripts/install-voice.sh"
-        ),
-        "assistant_ready": "Scan finished. Do you want me to explain it?",
+        "assistant_ready": "Scan finished. Press the button and I will explain it.",
         "details_note": "Source: Ubuntu security data, compared locally.",
         "downloads": "Downloads by type",
         "downloads_summary": "{n} files, {size}",
@@ -991,15 +985,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "assistant_title": "Asistente",
         "assistant_close": "Cerrar el asistente",
         "assistant_open": "Abrir el asistente",
-        "assistant_prompt": "¿Querés que te lea el resumen cuando termine el análisis?",
-        "assistant_listen": "Activar voz",
+        "assistant_prompt": "Cuando termine el análisis, te explico el resultado acá, por escrito.",
         "assistant_play": "Explicar mi sistema",
-        "assistant_pause": "Detener",
-        "assistant_no_voice": (
-            "Todavía no hay una voz local. Igual podés leer los subtítulos. Para una voz "
-            "natural, ejecutá scripts/install-voice.sh"
-        ),
-        "assistant_ready": "Terminó el análisis. ¿Querés que te lo explique?",
+        "assistant_ready": "Terminó el análisis. Tocá el botón y te lo explico.",
         "details_note": "Fuente: datos de seguridad de Ubuntu, comparados en tu equipo.",
         "downloads": "Descargas por tipo",
         "downloads_summary": "{n} archivos, {size}",

@@ -44,5 +44,3 @@ keep you informed about the fix. Reporters are credited unless they prefer not t
   (`~/.cache/ganki/dashboard-url`, mode 600) and use Ganki. That is true of any
   local tool.
 - The vulnerability lists are fetched over HTTPS but are not signed.
-- The optional voice installer downloads Piper (version pinned, wheels only) and
-  voice files from Hugging Face without a checksum.

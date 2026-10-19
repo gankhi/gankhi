@@ -14,7 +14,6 @@ First public version.
 - Lists snap and flatpak apps. It does not check them: they carry their own libraries.
 - Shows disk, memory and updates, and estimates what you can recover (old kernels, apt
   cache, orphaned packages, Downloads).
-- Explains the result out loud, in Spanish and English, with a local voice (optional).
 - Writes a PDF report, coloured by priority and grouped by family.
 - Updates or removes a program, empties apt's download cache and removes unused packages
   (old kernels, orphans) only after a preview and your explicit confirmation. The password
@@ -41,4 +40,3 @@ First public version.
 
 ### Install
 - `scripts/install.sh` installs Ganki without sudo.
-- `scripts/install-voice.sh` (optional) adds the Spanish and English voices, about 170 MB.

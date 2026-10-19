@@ -63,6 +63,8 @@ if [ "$assume_yes" = false ]; then
 fi
 
 mkdir -p "$APP_DIR" "$BIN_DIR" "$DESKTOP_DIR"
+# Older versions could add a natural voice here. It is gone now: remove what it left.
+rm -rf -- "$APP_DIR/voice"
 python3 -m venv "$APP_DIR/venv"
 "$APP_DIR/venv/bin/python" -m pip install --quiet --upgrade pip
 

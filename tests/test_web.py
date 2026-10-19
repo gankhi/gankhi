@@ -735,10 +735,11 @@ def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
     assert "3.0 MiB" in html and '<td class="num mono">—</td>' in html  # size, or a dash
 
 
-def test_the_hover_option_is_gone_from_the_assistant():
+def test_the_assistant_is_text_only():
     client = login(build().test_client())
     html = client.get("/", base_url=BASE).get_data(as_text=True)
-    assert "voice-hover" not in html and 'id="voice-on"' in html
+    assert 'id="voice-on"' not in html and 'id="assistant-explain"' in html
+    assert client.get("/api/speak", base_url=BASE).status_code == 404
 
 
 def test_a_second_click_opens_the_running_copy_instead_of_failing(tmp_path, monkeypatch):
