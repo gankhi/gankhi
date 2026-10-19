@@ -1127,7 +1127,8 @@ def test_a_folder_of_downloads_can_be_opened_but_nothing_else(tmp_path, monkeypa
             headers={"X-Ganki": "1"} if headers is None else headers,
         )
 
-    assert ask("fotos/a.jpg").status_code == 200 and opened == [(base / "fotos").resolve()]
+    assert ask("fotos/a.jpg").status_code == 200
+    assert opened == [(base / "fotos" / "a.jpg").resolve()]  # the file itself, to be selected
     assert ask("../etc").status_code == 400 and ask("/etc").status_code == 400
     assert (
         client.post(
