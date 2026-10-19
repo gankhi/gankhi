@@ -300,9 +300,6 @@ TEXTS: dict[str, dict[str, str]] = {
             "before anything is changed."
         ),
         "progress_title": "Analysing this machine",
-        "progress_hint": (
-            "You can see what it is doing right now. Results show up here as they are found."
-        ),
         "progress_first_run": (
             "The first scan, or the first one after restarting the computer, can take several "
             "minutes. The next ones are faster."
@@ -824,9 +821,6 @@ TEXTS: dict[str, dict[str, str]] = {
             "antes de cambiar algo."
         ),
         "progress_title": "Analizando esta máquina",
-        "progress_hint": (
-            "Acá ves qué está haciendo ahora. Los resultados aparecen a medida que se encuentran."
-        ),
         "progress_first_run": (
             "El primer análisis, o el primero después de reiniciar la computadora, puede tardar "
             "varios minutos. Los siguientes son más rápidos."
