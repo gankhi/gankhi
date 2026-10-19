@@ -1136,3 +1136,17 @@ def test_a_folder_of_downloads_can_be_opened_but_nothing_else(tmp_path, monkeypa
     )
     assert ask("fotos/a.jpg", headers={}).status_code == 403
     assert len(opened) == 1
+
+
+def test_oversized_request_is_refused() -> None:
+    """A huge body is cut off before it is read (the page only sends tiny JSON)."""
+    app = create_app(make_result, SECRET, PORT)
+    app.testing = True
+    client = login(app.test_client())
+    response = client.post(
+        "/api/run",
+        data=b"x" * (200 * 1024),
+        base_url=BASE,
+        headers={"X-Ganki": "1", "Content-Type": "application/json"},
+    )
+    assert response.status_code == 413

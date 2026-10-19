@@ -87,7 +87,10 @@ def valid_package(name: str) -> str | None:
     The returned text is built from the match itself, not handed on from the caller.
     """
     found = PACKAGE_NAME.fullmatch(name)
-    return found.group(0) if found else None
+    # apt reads a trailing "-" as "remove this" inside an install, so such a name is refused.
+    if found is None or found.group(0).endswith("-"):
+        return None
+    return found.group(0)
 
 
 def _checked_arguments(
