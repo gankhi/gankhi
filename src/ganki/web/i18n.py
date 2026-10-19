@@ -427,6 +427,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_total": "Total",
         "report_caution": "Review everything before cleaning or removing anything.",
         "dl_detail_total": "{files} files, {size}",
+        "dl_open": "Open folder",
+        "dl_open_ok": (
+            "The folder was opened in your file manager. Look at the file there and delete it "
+            "yourself if you do not need it."
+        ),
+        "dl_open_failed": (
+            "The folder could not be opened. Open your Downloads folder by hand and look for "
+            "it there."
+        ),
         "dl_detail_hint": (
             "This is only a look: Ganki does not delete anything here. Check each item "
             "yourself before removing it."
@@ -942,6 +951,14 @@ TEXTS: dict[str, dict[str, str]] = {
         "report_total": "Total",
         "report_caution": "Revisá todo antes de limpiar o quitar algo.",
         "dl_detail_total": "{files} archivos, {size}",
+        "dl_open": "Abrir carpeta",
+        "dl_open_ok": (
+            "Se abrió la carpeta en tu administrador de archivos. Mirá el archivo ahí y borralo "
+            "vos si no lo necesitás."
+        ),
+        "dl_open_failed": (
+            "No se pudo abrir la carpeta. Abrí tu carpeta de Descargas a mano y buscalo ahí."
+        ),
         "dl_detail_hint": (
             "Esto es solo para mirar: Ganki no borra nada desde acá. Revisá cada cosa "
             "vos antes de quitarla."

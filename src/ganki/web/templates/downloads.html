@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% macro open_button(path) %}<button type="button" class="open-folder" data-path="{{ path }}">{{ t('dl_open') }}</button>{% endmacro %}
 {% block content %}
 <section class="card preview">
   <p><a href="{{ url_for('index') }}">← {{ t('back') }}</a></p>
@@ -8,12 +9,13 @@
   {% if detail.truncated %}<p class="hint bad" role="status">{{ t('dl_detail_truncated') }}</p>{% endif %}
 
   {% if detail.files %}
+  <p class="small" id="open-result" role="status" data-ok="{{ t('dl_open_ok') }}" data-failed="{{ t('dl_open_failed') }}"></p>
   <h3>{{ t('dl_detail_folders') }}</h3>
   <div class="scroll"><table>
-    <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('dl_detail_files') }}</th><th class="num">{{ t('col_size') }}</th></tr></thead>
+    <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('dl_detail_files') }}</th><th class="num">{{ t('col_size') }}</th><th></th></tr></thead>
     <tbody>
     {% for f in detail.folders %}
-      <tr><td class="mono">{{ f.name }}{% if f.is_folder %}/{% endif %}</td><td class="num mono">{{ f.files }}</td><td class="num mono">{{ f.size_bytes|bytes }}</td></tr>
+      <tr><td class="mono">{{ f.name }}{% if f.is_folder %}/{% endif %}</td><td class="num mono">{{ f.files }}</td><td class="num mono">{{ f.size_bytes|bytes }}</td><td>{{ open_button(f.full) }}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>
@@ -30,10 +32,10 @@
 
   <h3>{{ t('dl_detail_biggest') }}</h3>
   <div class="scroll"><table>
-    <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('col_size') }}</th></tr></thead>
+    <thead><tr><th>{{ t('dl_detail_name') }}</th><th class="num">{{ t('col_size') }}</th><th></th></tr></thead>
     <tbody>
     {% for f in detail.biggest %}
-      <tr><td class="mono">{{ f.path }}</td><td class="num mono">{{ f.size_bytes|bytes }}</td></tr>
+      <tr><td class="mono">{{ f.path }}</td><td class="num mono">{{ f.size_bytes|bytes }}</td><td>{{ open_button(f.full) }}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>

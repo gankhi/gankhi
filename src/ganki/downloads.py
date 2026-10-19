@@ -89,12 +89,14 @@ class FolderUse:
     is_folder: bool
     files: int
     size_bytes: int
+    full: str = ""  # the same name, not shortened (used to open its folder)
 
 
 @dataclass(frozen=True)
 class BigFile:
     path: str  # relative to Downloads, never the full path
     size_bytes: int
+    full: str = ""  # the same path, not shortened (used to open its folder)
 
 
 @dataclass(frozen=True)
@@ -166,8 +168,8 @@ def group_detail(folder: Path, key: str) -> GroupDetail:
         key=key,
         files=files,
         size_bytes=total,
-        folders=[FolderUse(_short(n), is_dir, c, b) for (n, is_dir), (c, b) in folders],
-        biggest=[BigFile(_short(p), s) for s, p in sorted(biggest, reverse=True)],
+        folders=[FolderUse(_short(n), is_dir, c, b, n) for (n, is_dir), (c, b) in folders],
+        biggest=[BigFile(_short(p), s, p) for s, p in sorted(biggest, reverse=True)],
         kinds=[KindUse(ext, c, b) for ext, (c, b) in kinds],
         truncated=truncated,
     )
