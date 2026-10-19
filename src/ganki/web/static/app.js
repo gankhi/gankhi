@@ -162,6 +162,17 @@
     });
   });
 
+  // "Back" goes back in the browser's history, so the page comes back at the same place it was left
+  // (a plain link would load it again from the top). With no history (opened directly) it is a link.
+  Array.prototype.forEach.call(document.querySelectorAll("a[data-back]"), function (link) {
+    link.addEventListener("click", function (event) {
+      if (window.history.length > 1) {
+        event.preventDefault();
+        window.history.back();
+      }
+    });
+  });
+
   var copy = document.getElementById("copy");
   if (copy) {
     copy.addEventListener("click", function () {

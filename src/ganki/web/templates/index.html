@@ -293,7 +293,7 @@
 
 <section class="bottom">
 <div class="card" data-explain="downloads" tabindex="0">
-  <div class="toolshead"><h2>{{ t('downloads') }}</h2>
+  <div class="toolshead" id="downloads"><h2>{{ t('downloads') }}</h2>
   {% if result.download_groups %}
     {% set total_files = result.download_groups|sum(attribute='files') %}
     {% set total_bytes = result.download_groups|sum(attribute='size_bytes') %}
