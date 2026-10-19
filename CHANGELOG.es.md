@@ -16,14 +16,28 @@ Primera versión pública.
   viejos, caché de apt, paquetes huérfanos, Descargas).
 - Explica el resultado en voz alta, en español y en inglés, con una voz local (opcional).
 - Genera un informe en PDF, con colores por prioridad y agrupado por familia.
-- Actualiza o quita un programa solo después de una vista previa y de tu confirmación
-  explícita. La contraseña la pide la ventana del propio sistema, nunca Ganki.
+- Actualiza o quita un programa, vacía la caché de descargas de apt y quita paquetes sin
+  uso (kernels viejos, huérfanos) solo después de una vista previa y de tu confirmación
+  explícita. La contraseña la pide la ventana del propio sistema, nunca Ganki. Ganki se
+  niega a un cambio que quitaría software del que depende el sistema.
+- Abre la carpeta de una descarga pesada para que mires el archivo y lo borres vos.
+  Ganki nunca borra tus archivos.
+- Pone primero lo que más importa: las actualizaciones que arreglan avisos críticos o
+  altos, y las de seguridad de Ubuntu, van antes que el resto.
 
 ### Seguro por diseño
 - Escucha solo en `127.0.0.1`, con una clave de acceso al azar.
 - Ejecuta solo una lista fija de comandos de lectura. Los que cambian el sistema están
   escritos de forma exacta y no se acepta nada más.
 - Sin cuentas, sin estadísticas, sin recursos externos en la página.
+
+### Límites conocidos
+- Solo Linux (basado en Debian/Ubuntu). Probado sobre una base Ubuntu 24.04.
+- No hay botón de deshacer. Antes de un cambio se guarda una copia temporal de la lista
+  de paquetes, como registro; volver atrás implica reinstalar a mano.
+- Los comandos de actualizar y quitar que se muestran para las apps de snap y flatpak son
+  para copiar y ejecutar vos; no se ejercitaron en las pruebas automáticas.
+- Cerrar la ventana de terminal que se abre con Ganki lo detiene.
 
 ### Instalación
 - `scripts/install.sh` instala Ganki sin sudo.

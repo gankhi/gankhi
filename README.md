@@ -2,25 +2,25 @@
 
 A local dashboard for Linux that shows what is installed on your computer, what is out of date, and what you can safely clean up to free disk space.
 
-> **Status: early development (alpha).** Nothing in this repository modifies your system yet. The first milestone is a read-only inventory of installed software.
+> **Status: first public version (0.1.0).** Ganki can change your system: it can update or remove programs, empty apt's download cache and remove unused packages. Every change shows a preview first and needs your confirmation, and there is no undo button. It has been tested on Ubuntu 24.04-based Linux only.
 
 [Leer en español](README.es.md)
 
 ## Goals
 
-- Inventory of installed software (apt first; snap, flatpak, pip, npm and Docker later) with version, size and install date.
+- Inventory of installed software (apt, snap, flatpak, pip and npm; Docker later) with version, size and install date.
 - Show which programs are outdated and which have known vulnerabilities.
-- Find large downloads, screenshots and duplicate files, grouped by type.
-- Free disk space through explicit, reversible actions.
+- Show large downloads grouped by type and open their folder so you can review them (screenshots and duplicate files later).
+- Free disk space through explicit actions that always show a preview first.
 - Run entirely on your own machine, in your browser, with no data leaving it.
 
 ## Design principles
 
 - **Read-only first.** Features that only show information come before any feature that changes the system.
-- **Preview before acting.** Every removal shows exactly what will be affected and how much space it frees.
+- **Preview before acting.** Every change shows exactly what will be affected and, when apt can tell, how much space it frees.
 - **Protected items.** Essential system packages cannot be removed from the interface.
-- **Reversible by default.** Files go to the trash, and the package list is saved before changes.
-- **Local only.** The web interface will listen on `127.0.0.1` only.
+- **Your files stay yours.** Ganki never deletes your files: it opens their folder so you decide. Before a package change it saves a temporary copy of the package list as a record (there is no undo button).
+- **Local only.** The web interface listens on `127.0.0.1` only.
 - **Reuse, don't reinvent.** Ganki coordinates proven tools instead of reimplementing them.
 
 ## Roadmap
@@ -33,7 +33,7 @@ A local dashboard for Linux that shows what is installed on your computer, what 
 - [x] Packaging (installer and desktop launcher)
 - [ ] Screenshots and duplicates view
 - [ ] Docker images
-- [ ] Guarded removal and cleanup actions
+- [x] Guarded update, removal and cleanup actions (apt)
 
 ## What Ganki downloads
 
@@ -47,6 +47,8 @@ and versions of what you have installed are compared on your computer and never 
 From a copy of this repository, without `sudo` (everything goes inside your home folder):
 
 ```
+git clone https://github.com/gankigit/ganki.git
+cd ganki
 scripts/install.sh
 ```
 
@@ -72,7 +74,7 @@ Ganki can explain your system out loud. Browsers on Linux rarely have a local vo
 
 ## Requirements
 
-Debian/Ubuntu-based Linux and Python 3.10 or newer. Developed on an Ubuntu 24.04 base.
+Debian/Ubuntu-based Linux and Python 3.10 or newer. Developed and tested on an Ubuntu 24.04 base. Windows and macOS are not supported.
 
 ## Development notes
 
