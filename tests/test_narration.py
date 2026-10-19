@@ -27,10 +27,12 @@ def test_every_segment_points_at_a_section_of_the_page(lang):
     assert {"system", "disk", "ram", "tools"} <= sections
 
 
-def test_spoken_sizes_are_written_for_a_voice():
-    assert narration.spoken_size(2 * 1024**2, "es") == "2 gigas"
-    assert narration.spoken_size(1536 * 1024, "es") == "1,5 gigas"
-    assert narration.spoken_size(512, "en") == "512 kilobytes"
+def test_sizes_in_the_explanation_use_the_same_units_as_the_page():
+    assert narration.spoken_size(2 * 1024**2, "es") == "2,0 GiB"
+    assert narration.spoken_size(1536 * 1024, "es") == "1,5 GiB"
+    assert narration.spoken_size(886, "es") == "886 KiB"
+    assert narration.spoken_size(512, "en") == "512 KiB"
+    assert narration.spoken_size(1536, "en") == "1.5 MiB"
 
 
 def test_scanning_message_asks_to_wait():

@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from ganki import families
+from ganki import families, paging
 from ganki.service import ScanResult
 from ganki.web import i18n
 
@@ -33,20 +33,9 @@ def thousands(number: int, lang: str) -> str:
 
 
 def spoken_size(kib: int, lang: str) -> str:
-    """``2097152`` -> ``2 gigas`` (written the way a person would say it)."""
-    units = (
-        ("gigas", "gigabytes", 1024**2),
-        ("megas", "megabytes", 1024),
-        ("kilos", "kilobytes", 1),
-    )
-    for es, en, factor in units:
-        if kib >= factor or factor == 1:
-            value = kib / factor
-            number = f"{value:.1f}".rstrip("0").rstrip(".")
-            if lang == "es":
-                number = number.replace(".", ",")
-            return f"{number} {es if lang == 'es' else en}"
-    return "0"
+    """``1536`` -> ``1,5 MiB`` (``1.5 MiB`` in English): the same units as the rest of the page."""
+    text = paging.human_size(kib)
+    return text.replace(".", ",") if lang == "es" else text
 
 
 def _spoken_duration(seconds: int, lang: str) -> str:
