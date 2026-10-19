@@ -266,6 +266,7 @@
             {% if up %}<p class="small">{{ t('ext_cmd_update') }}</p><code class="cmd">{{ up }}</code>{% endif %}
             {% if rm %}<p class="small">{{ t('ext_cmd_remove') }}</p><code class="cmd">{{ rm }}</code>
             <p class="small muted">{{ t('ext_cmd_before_' ~ tool.tool) }}</p>{% endif %}
+            {% if tool.tool == 'pip' and pip_managed and (up or rm) %}<p class="small muted">{{ t('ext_cmd_managed') }}</p>{% endif %}
             <p class="small muted">{{ t('ext_cmd_' ~ tool.tool) }} {{ t('ext_cmd_note') }}</p>
           </div>
           {% endif %}

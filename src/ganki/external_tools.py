@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import re
 import shlex
+import sysconfig
 from dataclasses import dataclass
+from pathlib import Path
 
 from ganki import versions
 from ganki.collectors.external import ExternalPackage
@@ -33,13 +35,29 @@ _NAME = re.compile(r"^(?:@[a-z0-9][a-z0-9._-]*/)?[A-Za-z0-9][A-Za-z0-9._-]*$")
 _VERSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9.+!_-]*$")
 
 
+def externally_managed() -> bool:
+    """Does the system's Python refuse pip changes unless told otherwise (PEP 668)?
+
+    Ubuntu 23.04 and later (and Debian 12) mark their Python this way: a plain
+    ``pip install`` or ``pip uninstall`` stops with "externally-managed-environment".
+    """
+    try:
+        return (Path(sysconfig.get_path("stdlib")) / "EXTERNALLY-MANAGED").is_file()
+    except (OSError, KeyError):
+        return False
+
+
+def _pip_flag() -> str:
+    return " --break-system-packages" if externally_managed() else ""
+
+
 def update_command(tool: ExternalTool) -> str | None:
     """The command the person can run to get the fixed version; Ganki never runs it itself."""
     if not tool.fixed_in or not _NAME.match(tool.name) or not _VERSION.match(tool.fixed_in):
         return None  # an odd name or version is never pasted into a command
     wanted = shlex.quote(f"{tool.name}>={tool.fixed_in}")
     if tool.tool == "pip":
-        return f"python3 -m pip install --upgrade {wanted}"
+        return f"python3 -m pip install --upgrade{_pip_flag()} {wanted}"
     if tool.tool == "npm":
         return f"npm install -g {shlex.quote(f'{tool.name}@>={tool.fixed_in}')}"
     return None
@@ -50,7 +68,7 @@ def remove_command(tool: ExternalTool) -> str | None:
     if not _NAME.match(tool.name):
         return None
     if tool.tool == "pip":
-        return f"python3 -m pip uninstall {shlex.quote(tool.name)}"
+        return f"python3 -m pip uninstall{_pip_flag()} {shlex.quote(tool.name)}"
     if tool.tool == "npm":
         return f"npm uninstall -g {shlex.quote(tool.name)}"
     return None

@@ -276,6 +276,7 @@ def create_app(
             "sandboxed_shared": sandboxed.is_shared_runtime,
             "update_command": external_tools.update_command,
             "remove_command": external_tools.remove_command,
+            "pip_managed": external_tools.externally_managed(),
             "state": job.state,
             "result": result,
             "now": datetime.now(),

@@ -327,6 +327,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "sbx_title": "Snap and Flatpak apps",
         "sbx_sub": "{n} installed. They carry their own libraries, so Ganki does not check them.",
         "sbx_col_source": "Source",
+        "ext_cmd_managed": (
+            "Ubuntu protects its own Python, so pip refuses to change anything unless you add "
+            "--break-system-packages. Here it only touches what you installed yourself, in your "
+            "own folder."
+        ),
         "ext_cmd_update": "To update it, copy this command and paste it into a terminal:",
         "ext_cmd_remove": "If you do not use it, to remove it:",
         "ext_cmd_npm": (
@@ -848,6 +853,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "sbx_title": "Apps de Snap y Flatpak",
         "sbx_sub": "{n} instaladas. Traen sus propias librerías, así que Ganki no las revisa.",
         "sbx_col_source": "Origen",
+        "ext_cmd_managed": (
+            "Ubuntu protege su propio Python, por eso pip se niega a cambiar algo si no agregás "
+            "--break-system-packages. Acá solo toca lo que instalaste vos, en tu propia carpeta."
+        ),
         "ext_cmd_update": "Para actualizarlo, copiá este comando y pegalo en una consola:",
         "ext_cmd_remove": "Si no lo usás, para quitarlo:",
         "ext_cmd_npm": (
