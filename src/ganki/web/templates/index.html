@@ -72,8 +72,8 @@
     </dl>
     <div class="status">
       <div class="statusrow">
-        <strong>{{ t('x_of_y_ok', ok=counts.ok, all=counts.all) }}</strong>
-        {% if counts.vulnerable %}<span class="pill bad"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M12 8v4M12 16h.01"/></svg>{{ t('pill_vuln', n=counts.vulnerable) }}</span>{% endif %}
+        <strong>{{ t('x_of_y_ok', ok=totals.ok, all=totals.all) }}</strong>
+        {% if totals.vulnerable %}<span class="pill bad"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M12 8v4M12 16h.01"/></svg>{{ t('pill_vuln', n=totals.vulnerable) }}</span>{% endif %}
       </div>
       <div class="actions">
         {% if result.pending_updates %}<a class="btn primary big" href="{{ url_for('preview_page', action='all') }}">↑ {{ t('btn_update_all') }}</a>{% endif %}
@@ -109,17 +109,18 @@
     </div>
   </div>
   {% endif %}
-  {% set total = counts.all or 1 %}
+  {% set total = totals.all or 1 %}
   <div class="card ringcard" data-explain="programs" tabindex="0">
     <h3>{{ t('programs') }}</h3>
     <div class="ringrow">
-      {{ ring([(100 * counts.ok / total, 'good'), (100 * counts.outdated / total, 'warn'), (100 * counts.vulnerable / total, 'bad')], counts.ok ~ '/' ~ counts.all, t('ring_ok'), t('programs')) }}
+      {{ ring([(100 * totals.ok / total, 'good'), (100 * totals.outdated / total, 'warn'), (100 * totals.vulnerable / total, 'bad')], totals.ok ~ '/' ~ totals.all, t('ring_ok'), t('programs')) }}
       <ul class="legend">
-        <li><i class="sw good"></i>{{ t('leg_ok', n=counts.ok) }}</li>
-        <li><i class="sw warn"></i>{{ t('leg_old', n=counts.outdated) }}</li>
-        {% if counts.vulnerable %}<li><i class="sw bad"></i>{{ t('leg_vuln', n=counts.vulnerable) }}</li>{% endif %}
+        <li><i class="sw good"></i>{{ t('leg_ok', n=totals.ok) }}</li>
+        <li><i class="sw warn"></i>{{ t('leg_old', n=totals.outdated) }}</li>
+        {% if totals.vulnerable %}<li><i class="sw bad"></i>{{ t('leg_vuln', n=totals.vulnerable) }}</li>{% endif %}
       </ul>
     </div>
+    {% if totals.outside %}<p class="small muted">{{ t('totals_note', n=totals.outside) }}</p>{% endif %}
   </div>
   <div class="card wide" data-explain="reclaim" tabindex="0">
     <div class="reclaimhead"><h3>{{ t('reclaim') }}</h3><span class="bigsize">{{ rec.total_kib|size }}</span></div>

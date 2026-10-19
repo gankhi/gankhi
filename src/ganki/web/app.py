@@ -238,7 +238,22 @@ def create_app(
             and (not text or text in t.name.lower() or text in t.description.lower())
         ]
         kernel = [r for r in result.risks if r.kind == RUNNING_KERNEL]
+        # The headline numbers add up everything Ganki checked: system programs and also the
+        # Python and npm packages. (Snap and Flatpak apps are not checked, so they are not
+        # counted as "up to date".) The filter chips keep counting the programs table only.
+        outside = len(result.external)
+        outside_bad = sum(1 for p in result.external if p.vulnerable)
+        total_all = len(universe) + outside
+        total_bad = sum(1 for t in universe if t.state == VULNERABLE) + outside_bad
+        total_old = sum(1 for t in universe if t.state == OUTDATED)
         return {
+            "totals": {
+                "all": total_all,
+                "outdated": total_old,
+                "vulnerable": total_bad,
+                "ok": total_all - total_old - total_bad,
+                "outside": outside,
+            },
             "page": paging.paginate(shown, request.args.get("page", 1, type=int)),
             "counts": {
                 "all": len(universe),
