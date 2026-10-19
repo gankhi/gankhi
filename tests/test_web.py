@@ -1163,3 +1163,18 @@ def test_the_vulnerability_count_in_the_header_opens_the_list():
     assert 'id="tools"' in html
     listed = client.get("/?f=vulnerable", base_url=BASE).get_data(as_text=True)
     assert 'aria-current="true"' in listed
+
+
+def test_back_links_return_to_the_same_place_in_the_page():
+    """The back link goes back in the history (same scroll position); the href is the fallback."""
+    from pathlib import Path
+
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    detail = client.get("/downloads/other", base_url=BASE).get_data(as_text=True)
+    assert 'href="/#downloads" data-back' in detail
+    home = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert 'id="downloads"' in home
+    script = (Path(__file__).parent.parent / "src/ganki/web/static/app.js").read_text()
+    assert "a[data-back]" in script and "history.back()" in script

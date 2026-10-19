@@ -2,7 +2,7 @@
 {% macro open_button(path) %}<button type="button" class="open-folder" data-path="{{ path }}">{{ t('dl_open') }}</button>{% endmacro %}
 {% block content %}
 <section class="card preview">
-  <p><a href="{{ url_for('index') }}">← {{ t('back') }}</a></p>
+  <p><a href="{{ url_for('index') }}#downloads" data-back>← {{ t('back') }}</a></p>
   <h2>{{ t('dl_' ~ detail.key) }}</h2>
   <p class="muted mono">{{ folder_name }} · {{ t('dl_detail_total', files=detail.files, size=detail.size_bytes|bytes) }}</p>
   <p class="hint">{{ t('dl_detail_hint') }}</p>
