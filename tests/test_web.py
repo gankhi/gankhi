@@ -1151,3 +1151,14 @@ def test_oversized_request_is_refused() -> None:
         headers={"X-Ganki": "1", "Content-Type": "application/json"},
     )
     assert response.status_code == 413
+
+
+def test_the_vulnerability_count_in_the_header_opens_the_list():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert 'class="pill bad" href="/?f=vulnerable#tools"' in html
+    assert 'id="tools"' in html
+    listed = client.get("/?f=vulnerable", base_url=BASE).get_data(as_text=True)
+    assert 'aria-current="true"' in listed
