@@ -43,7 +43,20 @@
       factsList.textContent = "";
       data.facts.forEach(function (line) {
         var fact = document.createElement("li");
-        fact.textContent = line;
+        // "Label: value" are two different things: draw them apart so they do not run together.
+        var cut = line.indexOf(": ");
+        if (cut > 0) {
+          var label = document.createElement("span");
+          label.className = "fact-label";
+          label.textContent = line.slice(0, cut + 1);
+          var value = document.createElement("span");
+          value.className = "fact-value";
+          value.textContent = line.slice(cut + 2);
+          fact.appendChild(label);
+          fact.appendChild(value);
+        } else {
+          fact.textContent = line;
+        }
         factsList.appendChild(fact);
       });
     }
