@@ -1078,3 +1078,28 @@ def test_a_refusal_names_the_protected_packages_behind_it():
     html = client.get("/preview?action=autoremove", base_url=BASE).get_data(as_text=True)
     assert "Protected packages it would remove" in html and "bash" in html
     assert "linux-image-6.8.0-100-generic" not in html
+
+
+def test_autoremove_accepts_a_leftover_library_but_still_refuses_core_packages():
+    from dataclasses import replace
+
+    def scan():
+        packages = [
+            Package("libold1:i386", "1", "i386", 90, "lib", priority="required"),
+            Package("coreutils", "9", "amd64", 900, "core", essential=True),
+        ]
+        return replace(make_result(), tools=build_tools(packages, [], [], "6.8.0-137-generic"))
+
+    def client_for(simulation):
+        client = login(build(scan, lambda a, n, u=False: simulation, FakeExecutor()).test_client())
+        client.get("/", base_url=BASE)
+        wait_until_done(client)
+        return client
+
+    page = "/preview?action=autoremove"
+    ok = client_for("Remv libold1:i386 [1]\n").get(page, base_url=BASE).get_data(as_text=True)
+    assert "libold1:i386" in ok and "sudo apt-get autoremove" in ok
+    refused = client_for("Remv coreutils [9]\n").get(page, base_url=BASE).get_data(as_text=True)
+    assert (
+        "Protected packages it would remove" in refused and "sudo apt-get autoremove" not in refused
+    )
