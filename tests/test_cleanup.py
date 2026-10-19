@@ -48,12 +48,23 @@ def test_parse_autoremove_reads_remv_lines():
 
 
 def test_estimate_adds_up_the_three_sources(tmp_path, monkeypatch):
-    monkeypatch.setattr(cleanup, "orphan_packages", lambda: ["bash"])
+    # apt would remove two of the three old kernel packages and one other package
+    removable = ["bash", "linux-image-6.8.0-90-generic", "linux-headers-6.8.0-56"]
+    monkeypatch.setattr(cleanup, "orphan_packages", lambda: removable)
     monkeypatch.setattr(cleanup, "apt_cache_kib", lambda: 700)
     result = cleanup.estimate(KERNELS, "6.8.0-137-generic")
-    assert result.old_kernel_kib == 14000 + 38000 + 83000
+    # the kernel apt keeps (linux-modules-6.8.0-90) is not promised, and nothing counts twice
+    assert result.old_kernel_kib == 14000 + 83000
     assert (result.apt_cache_kib, result.orphan_kib) == (700, 1500)
-    assert result.total_kib == 135000 + 700 + 1500
+    assert result.orphan_packages == ["bash"]
+    assert result.total_kib == 97000 + 700 + 1500
+
+
+def test_old_kernels_are_not_counted_when_apt_would_not_remove_them(monkeypatch):
+    monkeypatch.setattr(cleanup, "orphan_packages", lambda: [])
+    monkeypatch.setattr(cleanup, "apt_cache_kib", lambda: 0)
+    result = cleanup.estimate(KERNELS, "6.8.0-137-generic")
+    assert result.old_kernel_kib == 0 and result.total_kib == 0
 
 
 def test_failing_simulation_gives_no_orphans(monkeypatch):

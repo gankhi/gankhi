@@ -74,14 +74,22 @@ def orphan_packages() -> list[str]:
 
 
 def estimate(packages: list[Package], running_release: str) -> Reclaimable:
-    """Combine the three sources of recoverable space."""
-    old = old_kernel_packages(packages, running_release)
+    """Combine the three sources of recoverable space.
+
+    Only what apt itself would remove counts: an older kernel that apt keeps (the one before
+    the newest, or a newer one not running yet) is not recoverable, so it is not promised.
+    Kernels are counted once, under their own line, not again among the unused packages.
+    """
     orphans = orphan_packages()
+    removable = set(orphans)
+    old = [p for p in old_kernel_packages(packages, running_release) if p.name in removable]
+    kernel_names = {p.name for p in old}
+    others = [name for name in orphans if name not in kernel_names]
     sizes = {p.name: p.size_kib for p in packages}
     return Reclaimable(
         old_kernel_kib=sum(p.size_kib for p in old),
         old_kernel_packages=[p.name for p in old],
         apt_cache_kib=apt_cache_kib(),
-        orphan_kib=sum(sizes.get(name, 0) for name in orphans),
-        orphan_packages=orphans,
+        orphan_kib=sum(sizes.get(name, 0) for name in others),
+        orphan_packages=others,
     )
