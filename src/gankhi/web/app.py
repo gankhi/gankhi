@@ -12,6 +12,7 @@ Defences, in order of what they stop:
 from __future__ import annotations
 
 import hmac
+import re
 import subprocess
 from collections.abc import Callable
 from datetime import datetime
@@ -85,6 +86,8 @@ STEP_WEIGHTS = {
     "analysis": 10,
 }
 FILTERS = ("all", "ok", "outdated", "vulnerable")
+# Pages the language switch may return to: fixed paths, optional plain query. Never a full URL.
+SAFE_NEXT = re.compile(r"/(downloads/[a-z]{1,20}|preview)(\?[A-Za-z0-9=&%._+-]{0,300})?")
 MAX_QUERY_CHARS = 100
 MAX_REQUEST_BYTES = 64 * 1024  # the page only ever sends tiny JSON bodies
 CSP = (
@@ -197,7 +200,9 @@ def create_app(
     def set_language(code: str) -> Response:
         if code not in i18n.LANGUAGES:
             abort(404)
-        response = redirect("/")
+        # Back to the page the switch was on, but only to this app's own detail pages.
+        target = request.args.get("next", "")
+        response = redirect(target if SAFE_NEXT.fullmatch(target) else "/")
         response.set_cookie(
             LANG_COOKIE, code, httponly=True, secure=True, samesite="Strict", path="/"
         )

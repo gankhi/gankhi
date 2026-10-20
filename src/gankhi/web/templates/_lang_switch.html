@@ -1,0 +1,5 @@
+{% set here = request.path ~ ('?' ~ request.query_string.decode() if request.query_string else '') %}
+<nav class="lang solo" aria-label="Language">
+  <a data-replace href="/lang/es?next={{ here|urlencode }}"{% if lang == 'es' %} aria-current="true"{% endif %}>ES</a>
+  <a data-replace href="/lang/en?next={{ here|urlencode }}"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a>
+</nav>

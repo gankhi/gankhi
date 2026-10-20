@@ -1178,3 +1178,44 @@ def test_back_links_return_to_the_same_place_in_the_page():
     assert 'id="downloads"' in home
     script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
     assert "a[data-back]" in script and "history.back()" in script
+
+
+def test_detail_pages_have_a_language_switch_that_returns_to_the_same_page():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    for page in ("/downloads/archives", "/preview?action=update&pkg=vim"):
+        html = client.get(page, base_url=BASE).get_data(as_text=True)
+        assert 'aria-label="Language"' in html
+        assert "/lang/es?next=" in html and "/lang/en?next=" in html
+    back = client.get("/lang/es?next=/downloads/archives", base_url=BASE)
+    assert back.status_code == 302 and back.headers["Location"] == "/downloads/archives"
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "https://evil.example/",
+        "//evil.example/",
+        "/\\evil.example",
+        "/downloads/../x",
+        "javascript:1",
+        "",
+    ],
+)
+def test_the_language_switch_never_redirects_outside_the_app(target):
+    client = login(build().test_client())
+    response = client.get("/lang/en", query_string={"next": target}, base_url=BASE)
+    assert response.status_code == 302 and response.headers["Location"] == "/"
+
+
+def test_the_language_switch_replaces_the_history_entry():
+    from pathlib import Path
+
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/downloads/archives", base_url=BASE).get_data(as_text=True)
+    assert html.count("data-replace") == 2
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
+    assert "a[data-replace]" in script and "location.replace" in script
