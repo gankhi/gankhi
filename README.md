@@ -49,8 +49,8 @@ and versions of what you have installed are compared on your computer and never 
 From a copy of this repository, without `sudo` (everything goes inside your home folder):
 
 ```
-git clone https://github.com/gankigit/ganki.git
-cd ganki
+git clone https://github.com/gankhi/gankhi.git
+cd gankhi
 scripts/install.sh
 ```
 
