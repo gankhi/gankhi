@@ -173,6 +173,14 @@
     });
   });
 
+  // Changing the language replaces the current history entry, so "Back" still leaves the page.
+  Array.prototype.forEach.call(document.querySelectorAll("a[data-replace]"), function (link) {
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+      window.location.replace(link.href);
+    });
+  });
+
   var copy = document.getElementById("copy");
   if (copy) {
     copy.addEventListener("click", function () {

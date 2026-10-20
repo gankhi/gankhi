@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% macro open_button(path) %}<button type="button" class="open-folder" data-path="{{ path }}">{{ t('dl_open') }}</button>{% endmacro %}
+{% block lang_nav %}{% include "_lang_switch.html" %}{% endblock %}
 {% block content %}
 <section class="card preview">
   <p><a href="{{ url_for('index') }}#downloads" data-back>← {{ t('back') }}</a></p>

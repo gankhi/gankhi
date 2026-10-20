@@ -1180,6 +1180,42 @@ def test_back_links_return_to_the_same_place_in_the_page():
     assert "a[data-back]" in script and "history.back()" in script
 
 
+def test_detail_pages_have_a_language_switch_that_stays_on_the_same_page():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    for page in ("/downloads/archives", "/preview?action=update&pkg=vim"):
+        html = client.get(page, base_url=BASE).get_data(as_text=True)
+        assert 'aria-label="Language"' in html
+        assert "lang=es" in html and "lang=en" in html
+    spanish = client.get("/downloads/archives?lang=es", base_url=BASE)
+    assert "Volver" in spanish.get_data(as_text=True)
+    assert "gankhi_lang=es" in spanish.headers.get("Set-Cookie", "")
+    english = client.get("/preview?action=update&pkg=vim&lang=en", base_url=BASE)
+    assert "Back" in english.get_data(as_text=True)
+    ignored = client.get("/downloads/archives?lang=xx", base_url=BASE)
+    assert ignored.status_code == 200 and "gankhi_lang" not in ignored.headers.get("Set-Cookie", "")
+
+
+def test_the_language_route_ignores_any_destination_in_the_request():
+    client = login(build().test_client())
+    for target in ("https://evil.example/", "//evil.example/", "/downloads/pdf"):
+        response = client.get("/lang/en", query_string={"next": target}, base_url=BASE)
+        assert response.status_code == 302 and response.headers["Location"] == "/"
+
+
+def test_the_language_switch_replaces_the_history_entry():
+    from pathlib import Path
+
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/downloads/archives", base_url=BASE).get_data(as_text=True)
+    assert html.count("data-replace") == 2
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
+    assert "a[data-replace]" in script and "location.replace" in script
+
+
 def test_the_vulnerable_list_says_when_python_or_npm_packages_make_up_the_difference():
     """The header counts programs plus Python/npm packages; the list explains the gap."""
     from dataclasses import replace

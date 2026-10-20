@@ -1,0 +1,7 @@
+{% set here = dict(request.view_args or {}) %}
+{% set args = request.args.to_dict() %}
+{% set _ = args.pop('lang', none) %}
+<nav class="lang solo" aria-label="Language">
+  <a data-replace href="{{ url_for(request.endpoint, lang='es', **dict(here, **args)) }}"{% if lang == 'es' %} aria-current="true"{% endif %}>ES</a>
+  <a data-replace href="{{ url_for(request.endpoint, lang='en', **dict(here, **args)) }}"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a>
+</nav>

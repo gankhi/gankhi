@@ -186,18 +186,25 @@ def create_app(
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Cache-Control"] = "no-store"
+        chosen = request.args.get("lang", "")
+        if chosen in i18n.LANGUAGES:  # the switch on the detail pages: remember it, no redirect
+            response.set_cookie(
+                LANG_COOKIE, chosen, httponly=True, secure=True, samesite="Strict", path="/"
+            )
         return response
 
     def current_language() -> str:
+        asked = request.args.get("lang", "")
         return i18n.pick_language(
-            request.cookies.get(LANG_COOKIE), request.headers.get("Accept-Language")
+            asked if asked in i18n.LANGUAGES else request.cookies.get(LANG_COOKIE),
+            request.headers.get("Accept-Language"),
         )
 
     @app.route("/lang/<code>")
     def set_language(code: str) -> Response:
         if code not in i18n.LANGUAGES:
             abort(404)
-        response = redirect("/")
+        response = redirect("/")  # a fixed address, never taken from the request
         response.set_cookie(
             LANG_COOKIE, code, httponly=True, secure=True, samesite="Strict", path="/"
         )
