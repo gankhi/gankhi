@@ -1214,3 +1214,29 @@ def test_the_language_switch_replaces_the_history_entry():
     assert html.count("data-replace") == 2
     script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
     assert "a[data-replace]" in script and "location.replace" in script
+
+
+def test_the_vulnerable_list_says_when_python_or_npm_packages_make_up_the_difference():
+    """The header counts programs plus Python/npm packages; the list explains the gap."""
+    from dataclasses import replace
+
+    from gankhi.external_tools import ExternalTool
+
+    def with_pip_package():
+        outside = ExternalTool("requests", "2.0", "pip", "PyPI", vulnerable=True, cve_count=1)
+        return replace(make_result(), external=[outside])
+
+    client = login(build(with_pip_package).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    listed = client.get("/?f=vulnerable", base_url=BASE).get_data(as_text=True)
+    assert "1 more with vulnerabilities are Python or npm packages" in listed
+    assert "vulnerabilities are Python or npm" not in client.get("/", base_url=BASE).get_data(
+        as_text=True
+    )
+    plain = login(build().test_client())
+    plain.get("/", base_url=BASE)
+    wait_until_done(plain)
+    assert "Python or npm packages, in the section" not in plain.get(
+        "/?f=vulnerable", base_url=BASE
+    ).get_data(as_text=True)
