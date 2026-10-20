@@ -1180,33 +1180,28 @@ def test_back_links_return_to_the_same_place_in_the_page():
     assert "a[data-back]" in script and "history.back()" in script
 
 
-def test_detail_pages_have_a_language_switch_that_returns_to_the_same_page():
+def test_detail_pages_have_a_language_switch_that_stays_on_the_same_page():
     client = login(build().test_client())
     client.get("/", base_url=BASE)
     wait_until_done(client)
     for page in ("/downloads/archives", "/preview?action=update&pkg=vim"):
         html = client.get(page, base_url=BASE).get_data(as_text=True)
         assert 'aria-label="Language"' in html
-        assert "/lang/es?next=" in html and "/lang/en?next=" in html
-    back = client.get("/lang/es?next=/downloads/archives", base_url=BASE)
-    assert back.status_code == 302 and back.headers["Location"] == "/downloads/archives"
+        assert "lang=es" in html and "lang=en" in html
+    spanish = client.get("/downloads/archives?lang=es", base_url=BASE)
+    assert "Volver" in spanish.get_data(as_text=True)
+    assert "gankhi_lang=es" in spanish.headers.get("Set-Cookie", "")
+    english = client.get("/preview?action=update&pkg=vim&lang=en", base_url=BASE)
+    assert "Back" in english.get_data(as_text=True)
+    ignored = client.get("/downloads/archives?lang=xx", base_url=BASE)
+    assert ignored.status_code == 200 and "gankhi_lang" not in ignored.headers.get("Set-Cookie", "")
 
 
-@pytest.mark.parametrize(
-    "target",
-    [
-        "https://evil.example/",
-        "//evil.example/",
-        "/\\evil.example",
-        "/downloads/../x",
-        "javascript:1",
-        "",
-    ],
-)
-def test_the_language_switch_never_redirects_outside_the_app(target):
+def test_the_language_route_ignores_any_destination_in_the_request():
     client = login(build().test_client())
-    response = client.get("/lang/en", query_string={"next": target}, base_url=BASE)
-    assert response.status_code == 302 and response.headers["Location"] == "/"
+    for target in ("https://evil.example/", "//evil.example/", "/downloads/pdf"):
+        response = client.get("/lang/en", query_string={"next": target}, base_url=BASE)
+        assert response.status_code == 302 and response.headers["Location"] == "/"
 
 
 def test_the_language_switch_replaces_the_history_entry():

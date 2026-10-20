@@ -12,7 +12,6 @@ Defences, in order of what they stop:
 from __future__ import annotations
 
 import hmac
-import re
 import subprocess
 from collections.abc import Callable
 from datetime import datetime
@@ -86,8 +85,6 @@ STEP_WEIGHTS = {
     "analysis": 10,
 }
 FILTERS = ("all", "ok", "outdated", "vulnerable")
-# Pages the language switch may return to: fixed paths, optional plain query. Never a full URL.
-SAFE_NEXT = re.compile(r"/(downloads/[a-z]{1,20}|preview)(\?[A-Za-z0-9=&%._+-]{0,300})?")
 MAX_QUERY_CHARS = 100
 MAX_REQUEST_BYTES = 64 * 1024  # the page only ever sends tiny JSON bodies
 CSP = (
@@ -189,20 +186,25 @@ def create_app(
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["Cache-Control"] = "no-store"
+        chosen = request.args.get("lang", "")
+        if chosen in i18n.LANGUAGES:  # the switch on the detail pages: remember it, no redirect
+            response.set_cookie(
+                LANG_COOKIE, chosen, httponly=True, secure=True, samesite="Strict", path="/"
+            )
         return response
 
     def current_language() -> str:
+        asked = request.args.get("lang", "")
         return i18n.pick_language(
-            request.cookies.get(LANG_COOKIE), request.headers.get("Accept-Language")
+            asked if asked in i18n.LANGUAGES else request.cookies.get(LANG_COOKIE),
+            request.headers.get("Accept-Language"),
         )
 
     @app.route("/lang/<code>")
     def set_language(code: str) -> Response:
         if code not in i18n.LANGUAGES:
             abort(404)
-        # Back to the page the switch was on, but only to this app's own detail pages.
-        target = request.args.get("next", "")
-        response = redirect(target if SAFE_NEXT.fullmatch(target) else "/")
+        response = redirect("/")  # a fixed address, never taken from the request
         response.set_cookie(
             LANG_COOKIE, code, httponly=True, secure=True, samesite="Strict", path="/"
         )
