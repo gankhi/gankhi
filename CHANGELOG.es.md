@@ -2,7 +2,7 @@
 
 Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 
-## 0.1.0 (2026-10-18)
+## 0.1.0 (2026-10-20)
 
 Primera versión pública. (Durante el desarrollo el proyecto se llamaba Ganki; el instalador pasa una copia vieja al nombre nuevo y conserva sus ajustes.)
 
@@ -14,6 +14,7 @@ Primera versión pública. (Durante el desarrollo el proyecto se llamaba Ganki; 
 - Lista las apps de snap y flatpak. No las revisa: traen sus propias librerías.
 - Muestra disco, memoria y actualizaciones, y estima cuánto podés recuperar (kernels
   viejos, caché de apt, paquetes huérfanos, Descargas).
+- Explica el resultado por escrito, sección por sección, en español y en inglés.
 - Genera un informe en PDF, con colores por prioridad y agrupado por familia.
 - Actualiza o quita un programa, vacía la caché de descargas de apt y quita paquetes sin
   uso (kernels viejos, huérfanos) solo después de una vista previa y de tu confirmación
