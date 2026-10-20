@@ -8,6 +8,16 @@ A local, private dashboard for Ubuntu-based Linux.
 
 [Leer en español](README.es.md)
 
+## Screenshots
+
+The screenshots use sample data.
+
+![Home: system summary, disk and memory, recoverable space and installed programs](docs/screenshots/home.png)
+
+![Programs with known vulnerabilities and the fix available for each](docs/screenshots/vulnerabilities.png)
+
+![Preview shown before any change, with the exact command that would run](docs/screenshots/preview.png)
+
 ## Goals
 
 - Inventory of installed software (apt, snap, flatpak, pip and npm; Docker later) with version, size and install date.
