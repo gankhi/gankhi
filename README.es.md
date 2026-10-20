@@ -49,8 +49,8 @@ versiones de lo que tenés instalado se comparan en tu computadora y no se enví
 Desde una copia de este repositorio, sin `sudo` (todo queda dentro de tu carpeta personal):
 
 ```
-git clone https://github.com/gankigit/ganki.git
-cd ganki
+git clone https://github.com/gankhi/gankhi.git
+cd gankhi
 scripts/install.sh
 ```
 
