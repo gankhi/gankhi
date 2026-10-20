@@ -2,7 +2,7 @@
 
 All notable changes to Gankhi. Dates are written year-month-day.
 
-## 0.1.0 (2026-10-18)
+## 0.1.0 (2026-10-20)
 
 First public version. (During development the project was called Ganki; the installer moves an old copy to the new name and keeps its settings.)
 
@@ -14,6 +14,7 @@ First public version. (During development the project was called Ganki; the inst
 - Lists snap and flatpak apps. It does not check them: they carry their own libraries.
 - Shows disk, memory and updates, and estimates what you can recover (old kernels, apt
   cache, orphaned packages, Downloads).
+- Explains the result in writing, section by section, in Spanish and English.
 - Writes a PDF report, coloured by priority and grouped by family.
 - Updates or removes a program, empties apt's download cache and removes unused packages
   (old kernels, orphans) only after a preview and your explicit confirmation. The password
