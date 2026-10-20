@@ -1,7 +1,7 @@
 # ruff: noqa: S101
 # (pytest tests rely on bare asserts)
-from ganki import advice
-from ganki.tools import CveLine, Tool
+from gankhi import advice
+from gankhi.tools import CveLine, Tool
 
 
 def tool(name, summaries=(), priority="high", total=None):
@@ -114,7 +114,7 @@ def test_a_fixed_notice_keeps_the_update_advice_and_skips_the_conditions():
     assert "How it can be used" not in text and "Press Update" in text
 
 
-def test_a_program_unknown_to_ganki_still_gets_precautions_from_its_own_notices():
+def test_a_program_unknown_to_gankhi_still_gets_precautions_from_its_own_notices():
     text = " ".join(explain(tool("some-new-program", [ORACLE])))
     assert "access to an account on your computer" in text and "GENERIC" not in text
     plain = explain(tool("some-new-program", ["Something happens"]))
@@ -146,7 +146,7 @@ class App:
         self.name, self.tool = name, tool_name
 
 
-def test_a_snap_explains_that_ganki_does_not_check_it_and_what_to_do():
+def test_a_snap_explains_that_gankhi_does_not_check_it_and_what_to_do():
     text = " ".join(advice.sandboxed_paragraphs(App("firefox", "snap"), "en"))
     assert "cannot tell you whether it has known flaws" in text
     assert "snap checks and updates its apps by itself" in text
@@ -248,7 +248,7 @@ def test_an_update_from_the_security_channel_is_important():
     assert "security" in info["hint"]
 
 
-def test_a_browser_update_is_important_and_says_when_ganki_has_no_notices_for_it():
+def test_a_browser_update_is_important_and_says_when_gankhi_has_no_notices_for_it():
     brave = _outdated("brave-browser", "stable", description="Web browser from Brave")
     info = advice.update_info(brave, "en")
     assert info["kind"] == "imp" and "exposed" in info["hint"]

@@ -4,7 +4,7 @@
 
 import pytest
 
-from ganki.release import UnsupportedReleaseError, detect_ecosystem, parse_os_release
+from gankhi.release import UnsupportedReleaseError, detect_ecosystem, parse_os_release
 
 LINUX_LITE = """NAME="Linux Lite"
 VERSION="7.4"
@@ -56,7 +56,7 @@ def test_missing_file_is_unsupported(tmp_path):
 
 
 def test_pro_ecosystem_name():
-    from ganki.release import pro_ecosystem
+    from gankhi.release import pro_ecosystem
 
     assert pro_ecosystem("Ubuntu:24.04:LTS") == "Ubuntu:Pro:24.04:LTS"
     assert pro_ecosystem("Ubuntu:25.10") == "Ubuntu:Pro:25.10"

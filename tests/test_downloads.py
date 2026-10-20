@@ -2,7 +2,7 @@
 # (pytest tests rely on bare asserts)
 """Tests for the Downloads folder summary."""
 
-from ganki.downloads import classify, downloads_dir, scan_downloads
+from gankhi.downloads import classify, downloads_dir, scan_downloads
 
 
 def test_classify_by_suffix_ignoring_case():

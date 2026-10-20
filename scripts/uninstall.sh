@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Remove what scripts/install.sh added. It only touches Ganki's own files inside
-# your home folder. The downloaded vulnerability data (~/.cache/ganki) is kept
+# Remove what scripts/install.sh added. It only touches Gankhi's own files inside
+# your home folder. The downloaded vulnerability data (~/.cache/gankhi) is kept
 # unless you pass --purge.
 #
 # Usage: scripts/uninstall.sh [--yes] [--purge]
@@ -8,12 +8,12 @@
 set -euo pipefail
 
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-APP_DIR="$DATA_HOME/ganki"
-BIN_LINK="$HOME/.local/bin/ganki"
-DESKTOP_FILE="$DATA_HOME/applications/ganki.desktop"
-CHOOSE_FILE="$DATA_HOME/applications/ganki-choose-browser.desktop"
-CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/ganki"
-CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/ganki"
+APP_DIR="$DATA_HOME/gankhi"
+BIN_LINK="$HOME/.local/bin/gankhi"
+DESKTOP_FILE="$DATA_HOME/applications/gankhi.desktop"
+CHOOSE_FILE="$DATA_HOME/applications/gankhi-choose-browser.desktop"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/gankhi"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/gankhi"
 
 say() { printf '%s\n' "$*"; }
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
@@ -39,7 +39,7 @@ say "  $APP_DIR"
 say "  $BIN_LINK"
 say "  $DESKTOP_FILE and $CHOOSE_FILE"
 say "  $CONFIG_DIR (your remembered browser)"
-say "  The Ganki icons on your Desktop folder, if they are there"
+say "  The Gankhi icons on your Desktop folder, if they are there"
 [ "$purge" = true ] && say "  $CACHE_DIR (downloaded vulnerability data)"
 if [ "$assume_yes" = false ]; then
     read -r -p "Continue? [y/N] (s/y = yes) " answer
@@ -49,14 +49,14 @@ fi
 rm -rf -- "$APP_DIR"
 rm -f -- "$BIN_LINK" "$DESKTOP_FILE" "$CHOOSE_FILE"
 rm -rf -- "$CONFIG_DIR"
-# Remove the Desktop shortcut only if it is ours (it launches the ganki command).
+# Remove the Desktop shortcut only if it is ours (it launches the gankhi command).
 configured="$(sed -n 's/^XDG_DESKTOP_DIR="\(.*\)"$/\1/p' "$HOME/.config/user-dirs.dirs" 2>/dev/null | head -n 1)" || configured=""
 for folder in "${configured//\$HOME/$HOME}" "$HOME/Desktop"; do
-    for name in Ganki.desktop Ganki-elegir-navegador.desktop; do
+    for name in Gankhi.desktop Gankhi-elegir-navegador.desktop; do
         shortcut="$folder/$name"
         case "$shortcut" in "$HOME"/*) ;; *) continue ;; esac
-        if [ -f "$shortcut" ] && grep -q '^Exec=.*/ganki"' "$shortcut"; then rm -f -- "$shortcut"; fi
+        if [ -f "$shortcut" ] && grep -q '^Exec=.*/gankhi"' "$shortcut"; then rm -f -- "$shortcut"; fi
     done
 done
 [ "$purge" = true ] && rm -rf -- "$CACHE_DIR"
-say "Ganki was removed."
+say "Gankhi was removed."

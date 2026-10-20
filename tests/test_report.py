@@ -3,8 +3,8 @@
 
 import re
 
-from ganki import pdfwriter, report
-from ganki.pdfwriter import MARGIN, PAGE_WIDTH, Pdf
+from gankhi import pdfwriter, report
+from gankhi.pdfwriter import MARGIN, PAGE_WIDTH, Pdf
 from test_web import BASE, build, login, make_result, wait_until_done
 
 
@@ -18,7 +18,7 @@ def objects_of(data: bytes) -> dict[int, int]:
 
 
 def test_the_file_is_a_well_formed_pdf():
-    pdf = Pdf("Title", "Ganki")
+    pdf = Pdf("Title", "Gankhi")
     pdf.heading("Hello")
     pdf.paragraph("Some text.")
     data = pdf.build()
@@ -97,7 +97,7 @@ def test_report_endpoint():
     assert response.headers["Content-Disposition"].startswith("inline")
     assert response.headers["Cache-Control"] == "no-store"
     assert response.headers["X-Content-Type-Options"] == "nosniff"
-    assert "X-Ganki-No-CSP" not in response.headers
+    assert "X-Gankhi-No-CSP" not in response.headers
 
 
 def test_report_needs_the_session():
@@ -146,7 +146,7 @@ def test_every_critical_or_high_notice_is_listed_even_past_the_limit():
 def test_priorities_are_coloured_and_the_words_stay():
     data = report.build_report(make_result(), "es", "now")
     assert b"0.620 0.000 0.120 rg" in data  # red text for critical or high
-    from ganki.web import i18n
+    from gankhi.web import i18n
 
     words = {
         i18n.translate("es", t.top_priority).encode("cp1252")
@@ -157,7 +157,7 @@ def test_priorities_are_coloured_and_the_words_stay():
 
 
 def test_long_names_break_after_a_dash_not_in_the_middle_of_a_word():
-    from ganki.pdfwriter import text_width, wrap
+    from gankhi.pdfwriter import text_width, wrap
 
     lines = wrap("openjdk-17-jre-headless:amd64", 11, text_width("openjdk-17-jre-hea", 11))
     assert lines[0].endswith("-") and all(line for line in lines)

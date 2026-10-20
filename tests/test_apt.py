@@ -2,8 +2,8 @@
 # (pytest tests rely on bare asserts)
 """Tests for the apt collector: pure parsing, no access to the real system."""
 
-from ganki.collectors import apt
-from ganki.collectors.apt import (
+from gankhi.collectors import apt
+from gankhi.collectors.apt import (
     Package,
     install_date,
     menu_packages,

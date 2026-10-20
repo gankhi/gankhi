@@ -4,8 +4,8 @@
 import threading
 import time
 
-from ganki.progress import STEPS, Progress
-from ganki.web.app import create_app
+from gankhi.progress import STEPS, Progress
+from gankhi.web.app import create_app
 from test_web import BASE, PORT, SECRET, login, make_result
 
 
@@ -96,7 +96,7 @@ def test_progress_text_follows_the_language():
     client = login(app.test_client())
     client.get("/", base_url=BASE)
     time.sleep(0.3)
-    client.set_cookie("ganki_lang", "es", domain="127.0.0.1")
+    client.set_cookie("gankhi_lang", "es", domain="127.0.0.1")
     data = client.get("/api/progress", base_url=BASE).get_json()
     assert any("paquetes instalados" in line for line in data["facts"])
     release.set()
@@ -109,8 +109,8 @@ def test_progress_needs_the_session():
 
 
 def test_cards_are_coloured_with_the_same_limits_as_the_spoken_summary():
-    from ganki import narration
-    from ganki.web.app import level_tone
+    from gankhi import narration
+    from gankhi.web.app import level_tone
 
     assert level_tone(narration.DISK_TIGHT, narration.DISK_BUSY, narration.DISK_TIGHT) == "bad"
     assert level_tone(narration.DISK_BUSY, narration.DISK_BUSY, narration.DISK_TIGHT) == "warn"
@@ -120,7 +120,7 @@ def test_cards_are_coloured_with_the_same_limits_as_the_spoken_summary():
 def test_the_first_scan_notice_is_shown_right_under_the_title():
     app, release = slow_app()
     client = login(app.test_client())
-    client.set_cookie("ganki_lang", "es", domain="127.0.0.1")
+    client.set_cookie("gankhi_lang", "es", domain="127.0.0.1")
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     title = html.index("Analizando esta máquina")
     notice = html.index("varios minutos")

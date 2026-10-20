@@ -2,8 +2,8 @@
 # (pytest tests rely on bare asserts)
 """Tests for grouping findings per package and telling kernels apart."""
 
-from ganki.osv import Finding
-from ganki.summary import (
+from gankhi.osv import Finding
+from gankhi.summary import (
     OLD_KERNEL,
     PROGRAM,
     RUNNING_KERNEL,

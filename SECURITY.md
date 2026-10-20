@@ -1,11 +1,11 @@
 # Security Policy
 
-Ganki is a local tool that can inspect and remove software and files on your
+Gankhi is a local tool that can inspect and remove software and files on your
 machine, so security reports are taken seriously.
 
 ## Supported versions
 
-Ganki is young (0.1.x). Only the latest release and the latest commit on `main`
+Gankhi is young (0.1.x). Only the latest release and the latest commit on `main`
 receive fixes.
 
 ## Reporting a vulnerability
@@ -14,7 +14,7 @@ Please **do not open a public issue** for security problems.
 
 1. Preferred: use GitHub's private reporting. Go to the **Security** tab of this
    repository and choose **Report a vulnerability**.
-2. Alternative: email gankigit@proton.me with the subject `Ganki security`.
+2. Alternative: email gankigit@proton.me with the subject `Gankhi security`.
 
 Please include what you found, how to reproduce it, and the impact you expect.
 This is a volunteer project: I aim to acknowledge reports within 7 days and will
@@ -31,7 +31,7 @@ keep you informed about the fix. Reporters are credited unless they prefer not t
 - Protected packages (the system, the running kernel, essential software) cannot
   be removed or dragged out by another removal, even by a crafted request.
 - Package names are validated strictly and must belong to the latest scan.
-- Ganki never deletes files itself. For downloads it can only open a folder
+- Gankhi never deletes files itself. For downloads it can only open a folder
   inside Downloads in the file manager; paths are resolved and checked first.
 - Vulnerability data is read in memory, never extracted to disk, and is only
   ever treated as data.
@@ -41,6 +41,6 @@ keep you informed about the fix. Reporters are credited unless they prefer not t
 ## Known limits
 
 - Anything that already runs as your user can read the access key file
-  (`~/.cache/ganki/dashboard-url`, mode 600) and use Ganki. That is true of any
+  (`~/.cache/gankhi/dashboard-url`, mode 600) and use Gankhi. That is true of any
   local tool.
 - The vulnerability lists are fetched over HTTPS but are not signed.

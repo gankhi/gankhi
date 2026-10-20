@@ -4,7 +4,7 @@
 
 import pytest
 
-from ganki.debversion import compare
+from gankhi.debversion import compare
 
 # (older, newer): the first is strictly older than the second.
 ORDERED_PAIRS = [

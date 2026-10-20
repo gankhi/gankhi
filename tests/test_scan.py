@@ -4,12 +4,12 @@
 
 from pathlib import Path
 
-import ganki.scan as scan
-import ganki.service as service
-from ganki.collectors.apt import Package
-from ganki.feed import FeedStatus
-from ganki.osv import Advisory
-from ganki.release import UnsupportedReleaseError
+import gankhi.scan as scan
+import gankhi.service as service
+from gankhi.collectors.apt import Package
+from gankhi.feed import FeedStatus
+from gankhi.osv import Advisory
+from gankhi.release import UnsupportedReleaseError
 
 
 def test_main_prints_a_summary(monkeypatch, capsys):

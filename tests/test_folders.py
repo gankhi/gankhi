@@ -2,7 +2,7 @@
 # (pytest tests rely on bare asserts)
 """Opening a folder of Downloads: only folders, only inside Downloads."""
 
-from ganki import folders
+from gankhi import folders
 
 
 def make_downloads(tmp_path):

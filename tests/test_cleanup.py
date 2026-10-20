@@ -2,8 +2,8 @@
 # (pytest tests rely on bare asserts)
 """Tests for estimating recoverable space."""
 
-from ganki import cleanup
-from ganki.collectors.apt import Package
+from gankhi import cleanup
+from gankhi.collectors.apt import Package
 
 
 def pkg(name, size):
