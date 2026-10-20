@@ -241,7 +241,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "With the disk like this, clean first and update after, so the updates have room."
         ),
         "say_tools_summary": (
-            "Programs with security problems: {vulnerable}. Out of date: {outdated}."
+            "System programs with security problems: {vulnerable}. Out of date: {outdated}."
         ),
         "say_tools_programs_ok": (
             "None of your programs has a known security problem. Programs out of date: {outdated}."
@@ -497,6 +497,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "x_of_y_ok": "{ok} of {all} up to date",
         "pill_vuln": "{n} with vulnerabilities",
         "pill_vuln_open": "See the list of what has vulnerabilities",
+        "vuln_outside_note": (
+            "This list shows the system programs. {n} more with vulnerabilities are "
+            "Python or npm packages, in the section below."
+        ),
         "leg_disk_used": "{size} used",
         "leg_disk_free": "{size} free",
         "leg_ram_used": "{size} in use",
@@ -760,7 +764,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "para que las actualizaciones tengan lugar."
         ),
         "say_tools_summary": (
-            "Programas con problemas de seguridad: {vulnerable}. Desactualizados: {outdated}."
+            "Programas del sistema con problemas de seguridad: {vulnerable}. "
+            "Desactualizados: {outdated}."
         ),
         "say_tools_programs_ok": (
             "Ninguno de tus programas tiene un problema de seguridad conocido. "
@@ -1020,6 +1025,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "x_of_y_ok": "{ok} de {all} al día",
         "pill_vuln": "{n} con vulnerabilidades",
         "pill_vuln_open": "Ver la lista de lo que tiene vulnerabilidades",
+        "vuln_outside_note": (
+            "Esta lista muestra los programas del sistema. {n} más con vulnerabilidades son "
+            "paquetes de Python o npm, en la sección de abajo."
+        ),
         "leg_disk_used": "{size} ocupados",
         "leg_disk_free": "{size} libres",
         "leg_ram_used": "{size} en uso",
