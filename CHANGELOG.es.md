@@ -32,7 +32,7 @@ Primera versión pública. (Durante el desarrollo el proyecto se llamaba Ganki; 
 - Sin cuentas, sin estadísticas, sin recursos externos en la página.
 
 ### Límites conocidos
-- Solo Linux (basado en Debian/Ubuntu). Probado sobre una base Ubuntu 24.04.
+- Solo Linux (Ubuntu y derivadas; en Debian puro no hay revisión de vulnerabilidades). Probado sobre una base Ubuntu 24.04.
 - No hay botón de deshacer. Antes de un cambio se guarda una copia temporal de la lista
   de paquetes, como registro; volver atrás implica reinstalar a mano.
 - Los comandos de actualizar y quitar que se muestran para las apps de snap y flatpak son

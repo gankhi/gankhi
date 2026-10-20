@@ -2,7 +2,7 @@
 
 **Gankhi** reúne en una sola pantalla lo que normalmente se mira por separado: el inventario de programas, las actualizaciones pendientes, las vulnerabilidades conocidas (comparadas en tu equipo con la lista pública de Ubuntu) y el espacio que podés recuperar. Desde ahí también podés actualizar, quitar y limpiar, siempre con una vista previa y tu confirmación. No envía datos de tu computadora a ningún lado.
 
-Un panel local y privado para Linux basado en Debian/Ubuntu.
+Un panel local y privado para Linux basado en Ubuntu.
 
 > **Estado: primera versión pública (0.1.0).** Gankhi puede modificar tu sistema: puede actualizar o quitar programas, vaciar la caché de descargas de apt y quitar paquetes sin uso. Cada cambio muestra primero una vista previa y necesita tu confirmación, y no hay botón de deshacer. Solo se probó en Linux basado en Ubuntu 24.04.
 
@@ -56,6 +56,8 @@ scripts/install.sh
 
 Después abrí **Gankhi** desde el menú de aplicaciones, o ejecutá `gankhi` en una terminal. Se abre en tu navegador y solo acepta conexiones de tu propia computadora. Se cierra con `Ctrl+C` en su terminal. Si tenés más de un navegador instalado, una ventanita pregunta con cuál abrirlo y puede recordar la elección. Con el segundo ícono **Gankhi (elegir navegador)** vuelve a preguntar. Para quitarlo: `scripts/uninstall.sh`.
 
+**La primera vez**, el escritorio puede preguntar si querés ejecutar el ícono de Gankhi. Elegí «Ejecutar» o «Confiar en este lanzador». Lo pregunta una sola vez; después abre directo. (Si no abre, clic derecho sobre el ícono → «Permitir ejecución».)
+
 Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el navegador se abre con ella y se guarda una copia en `~/.cache/gankhi/dashboard-url`, legible solo por vos.
 
 ### Formas de abrir Gankhi
@@ -72,7 +74,7 @@ Escribir solo `127.0.0.1:PUERTO` no funciona, y es a propósito: la dirección l
 
 ## Requisitos
 
-Linux basado en Debian/Ubuntu y Python 3.10 o superior. Desarrollado y probado sobre una base Ubuntu 24.04. No funciona en Windows ni en macOS.
+Linux con apt y Python 3.10 o superior. Desarrollado y probado sobre una base Ubuntu 24.04. Los sistemas previstos son Ubuntu y sus derivadas (Linux Mint, Linux Lite y similares). En Debian puro el inventario, las actualizaciones y la limpieza usan apt y deberían funcionar, pero la revisión de vulnerabilidades no: usa la lista de Ubuntu, que solo cubre versiones de Ubuntu, así que Gankhi la desactiva ahí. No funciona en Windows ni en macOS.
 
 ## Notas de desarrollo
 
