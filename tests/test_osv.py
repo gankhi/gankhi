@@ -11,9 +11,9 @@ import io
 import json
 import tarfile
 
-from ganki import osv
-from ganki.collectors.apt import Package
-from ganki.osv import MAX_RECORD_BYTES, find_findings, is_snap_stub, load_advisories, parse_record
+from gankhi import osv
+from gankhi.collectors.apt import Package
+from gankhi.osv import MAX_RECORD_BYTES, find_findings, is_snap_stub, load_advisories, parse_record
 
 ECOSYSTEM = "Ubuntu:24.04:LTS"
 PRO = "Ubuntu:Pro:24.04:LTS"
@@ -362,7 +362,7 @@ def test_the_saved_index_gives_the_same_findings(tmp_path):
 
 
 def test_a_long_summary_is_cut_at_a_whole_word_and_marked():
-    from ganki.osv import SUMMARY_CHARS, _shorten
+    from gankhi.osv import SUMMARY_CHARS, _shorten
 
     text = "word " * 100
     short = _shorten(text.strip())

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Gankhi">
+  <rect width="128" height="128" rx="26" fill="#000"/>
+  <circle cx="64" cy="64" r="36" fill="none" stroke="#3b95d6" stroke-width="12"/>
+  <circle cx="64" cy="64" r="12" fill="#12e060"/>
+  <path d="M64 28 L64 12" stroke="#ff2a3c" stroke-width="12" stroke-linecap="round"/>
+</svg>

@@ -1,10 +1,10 @@
 # Cambios
 
-Los cambios importantes de Ganki. Las fechas van como año-mes-día.
+Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 
 ## 0.1.0 (2026-10-18)
 
-Primera versión pública.
+Primera versión pública. (Durante el desarrollo el proyecto se llamaba Ganki; el instalador pasa una copia vieja al nombre nuevo y conserva sus ajustes.)
 
 ### Qué hace
 - Lista los programas instalados con apt y los compara con la lista pública de seguridad
@@ -17,10 +17,10 @@ Primera versión pública.
 - Genera un informe en PDF, con colores por prioridad y agrupado por familia.
 - Actualiza o quita un programa, vacía la caché de descargas de apt y quita paquetes sin
   uso (kernels viejos, huérfanos) solo después de una vista previa y de tu confirmación
-  explícita. La contraseña la pide la ventana del propio sistema, nunca Ganki. Ganki se
+  explícita. La contraseña la pide la ventana del propio sistema, nunca Gankhi. Gankhi se
   niega a un cambio que quitaría software del que depende el sistema.
 - Abre la carpeta de una descarga pesada para que mires el archivo y lo borres vos.
-  Ganki nunca borra tus archivos.
+  Gankhi nunca borra tus archivos.
 - Pone primero lo que más importa: las actualizaciones que arreglan avisos críticos o
   altos, y las de seguridad de Ubuntu, van antes que el resto.
 
@@ -36,7 +36,7 @@ Primera versión pública.
   de paquetes, como registro; volver atrás implica reinstalar a mano.
 - Los comandos de actualizar y quitar que se muestran para las apps de snap y flatpak son
   para copiar y ejecutar vos; no se ejercitaron en las pruebas automáticas.
-- Cerrar la ventana de terminal que se abre con Ganki lo detiene.
+- Cerrar la ventana de terminal que se abre con Gankhi lo detiene.
 
 ### Instalación
-- `scripts/install.sh` instala Ganki sin sudo.
+- `scripts/install.sh` instala Gankhi sin sudo.

@@ -1,10 +1,10 @@
-# Ganki
+# Gankhi
 
-**Ganki** reúne en una sola pantalla lo que normalmente se mira por separado: el inventario de programas, las actualizaciones pendientes, las vulnerabilidades conocidas (comparadas en tu equipo con la lista pública de Ubuntu) y el espacio que podés recuperar. Desde ahí también podés actualizar, quitar y limpiar, siempre con una vista previa y tu confirmación. No envía datos de tu computadora a ningún lado.
+**Gankhi** reúne en una sola pantalla lo que normalmente se mira por separado: el inventario de programas, las actualizaciones pendientes, las vulnerabilidades conocidas (comparadas en tu equipo con la lista pública de Ubuntu) y el espacio que podés recuperar. Desde ahí también podés actualizar, quitar y limpiar, siempre con una vista previa y tu confirmación. No envía datos de tu computadora a ningún lado.
 
 Un panel local y privado para Linux basado en Debian/Ubuntu.
 
-> **Estado: primera versión pública (0.1.0).** Ganki puede modificar tu sistema: puede actualizar o quitar programas, vaciar la caché de descargas de apt y quitar paquetes sin uso. Cada cambio muestra primero una vista previa y necesita tu confirmación, y no hay botón de deshacer. Solo se probó en Linux basado en Ubuntu 24.04.
+> **Estado: primera versión pública (0.1.0).** Gankhi puede modificar tu sistema: puede actualizar o quitar programas, vaciar la caché de descargas de apt y quitar paquetes sin uso. Cada cambio muestra primero una vista previa y necesita tu confirmación, y no hay botón de deshacer. Solo se probó en Linux basado en Ubuntu 24.04.
 
 [Read in English](README.md)
 
@@ -21,9 +21,9 @@ Un panel local y privado para Linux basado en Debian/Ubuntu.
 - **Primero solo lectura.** Las funciones que solo muestran información van antes que cualquiera que modifique el sistema.
 - **Vista previa antes de actuar.** Cada cambio muestra exactamente qué se ve afectado y, cuando apt puede decirlo, cuánto espacio libera.
 - **Elementos protegidos.** Los paquetes esenciales del sistema no se pueden quitar desde la interfaz.
-- **Tus archivos son tuyos.** Ganki nunca borra tus archivos: abre su carpeta para que decidas vos. Antes de un cambio de paquetes guarda una copia temporal de la lista como registro (no hay botón de deshacer).
+- **Tus archivos son tuyos.** Gankhi nunca borra tus archivos: abre su carpeta para que decidas vos. Antes de un cambio de paquetes guarda una copia temporal de la lista como registro (no hay botón de deshacer).
 - **Solo local.** La interfaz web escucha únicamente en `127.0.0.1`.
-- **Reutilizar, no reinventar.** Ganki coordina herramientas probadas en lugar de reimplementarlas.
+- **Reutilizar, no reinventar.** Gankhi coordina herramientas probadas en lugar de reimplementarlas.
 
 ## Hoja de ruta
 
@@ -37,7 +37,7 @@ Un panel local y privado para Linux basado en Debian/Ubuntu.
 - [ ] Imágenes de Docker
 - [x] Acciones de actualización, borrado y limpieza con protecciones (apt)
 
-## Qué descarga Ganki
+## Qué descarga Gankhi
 
 Dos tipos de archivos públicos, solo cuando cambiaron y nunca algo sobre tu computadora: la lista
 de vulnerabilidades de Ubuntu de Canonical y, solo si tenés paquetes instalados con `pip` o `npm`,
@@ -54,21 +54,21 @@ cd ganki
 scripts/install.sh
 ```
 
-Después abrí **Ganki** desde el menú de aplicaciones, o ejecutá `ganki` en una terminal. Se abre en tu navegador y solo acepta conexiones de tu propia computadora. Se cierra con `Ctrl+C` en su terminal. Si tenés más de un navegador instalado, una ventanita pregunta con cuál abrirlo y puede recordar la elección. Con el segundo ícono **Ganki (elegir navegador)** vuelve a preguntar. Para quitarlo: `scripts/uninstall.sh`.
+Después abrí **Gankhi** desde el menú de aplicaciones, o ejecutá `gankhi` en una terminal. Se abre en tu navegador y solo acepta conexiones de tu propia computadora. Se cierra con `Ctrl+C` en su terminal. Si tenés más de un navegador instalado, una ventanita pregunta con cuál abrirlo y puede recordar la elección. Con el segundo ícono **Gankhi (elegir navegador)** vuelve a preguntar. Para quitarlo: `scripts/uninstall.sh`.
 
-Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el navegador se abre con ella y se guarda una copia en `~/.cache/ganki/dashboard-url`, legible solo por vos.
+Cada inicio crea una clave secreta nueva que no se muestra en la terminal: el navegador se abre con ella y se guarda una copia en `~/.cache/gankhi/dashboard-url`, legible solo por vos.
 
-### Formas de abrir Ganki
+### Formas de abrir Gankhi
 
 | Querés | Hacé esto |
 |---|---|
-| Abrirlo en tu navegador predeterminado | Doble clic en el ícono **Ganki**, o elegilo en el menú de aplicaciones. |
+| Abrirlo en tu navegador predeterminado | Doble clic en el ícono **Gankhi**, o elegilo en el menú de aplicaciones. |
 | Abrirlo otra vez | Otro clic en el ícono: vuelve a abrir la copia que ya está corriendo. |
-| Elegir el navegador | Con más de un navegador instalado, una ventanita pregunta con cuál abrirlo (lista los que encuentra, o te deja elegir un programa de tus archivos) y puede recordar la elección. Para que vuelva a preguntar, o para deshacer una elección recordada, usá el segundo ícono **Ganki (elegir navegador)** y respondé "Preguntar siempre" (o `ganki --ask-browser`). No uses "Abrir con" del administrador de archivos sobre el ícono: eso intenta abrir el archivo del lanzador y el navegador solo lo descarga. |
-| Usar siempre un navegador, sin la ventanita | En una terminal: `BROWSER=librewolf ganki` (el comando de tu navegador). |
-| Abrirlo a mano | En una terminal: `ganki --no-open`, y pegá en cualquier navegador la dirección completa guardada en `~/.cache/ganki/dashboard-url`. |
+| Elegir el navegador | Con más de un navegador instalado, una ventanita pregunta con cuál abrirlo (lista los que encuentra, o te deja elegir un programa de tus archivos) y puede recordar la elección. Para que vuelva a preguntar, o para deshacer una elección recordada, usá el segundo ícono **Gankhi (elegir navegador)** y respondé "Preguntar siempre" (o `gankhi --ask-browser`). No uses "Abrir con" del administrador de archivos sobre el ícono: eso intenta abrir el archivo del lanzador y el navegador solo lo descarga. |
+| Usar siempre un navegador, sin la ventanita | En una terminal: `BROWSER=librewolf gankhi` (el comando de tu navegador). |
+| Abrirlo a mano | En una terminal: `gankhi --no-open`, y pegá en cualquier navegador la dirección completa guardada en `~/.cache/gankhi/dashboard-url`. |
 
-Escribir solo `127.0.0.1:PUERTO` no funciona, y es a propósito: la dirección lleva una clave secreta que cambia en cada inicio, para que otros programas de tu computadora no puedan leer tus datos. Si una página dice que falta la clave, abrí Ganki desde el ícono o con alguna de las formas de arriba.
+Escribir solo `127.0.0.1:PUERTO` no funciona, y es a propósito: la dirección lleva una clave secreta que cambia en cada inicio, para que otros programas de tu computadora no puedan leer tus datos. Si una página dice que falta la clave, abrí Gankhi desde el ícono o con alguna de las formas de arriba.
 
 ## Requisitos
 

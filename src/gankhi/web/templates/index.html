@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% set TOP_ROWS = 5 %}
+{% macro badge(priority) %}<span class="badge p-{{ priority or 'unknown' }}">{{ t(priority or 'unknown') }}</span>{% endmacro %}
+{# the three tables share these columns, so name, origin, version and size line up #}
+{% macro cols() %}<colgroup><col class="c-name"><col class="c-origin"><col class="c-version"><col class="c-size"><col class="c-state"><col class="c-last"></colgroup>{% endmacro %}
+{% macro note(kind, tag, hint, more) %}<details class="note"><summary><span class="tag {{ kind }}">{{ tag }}</span></summary><p>{{ hint }}</p>{% for paragraph in more %}<p>{{ paragraph }}</p>{% endfor %}</details>{% endmacro %}
+{% macro ring(segments, center, caption, label) %}
+{# Each segment is (percent, tone); they are laid end to end around the circle. #}
+<svg class="ring" viewBox="0 0 140 140" role="img" aria-label="{{ label }}: {{ center }} {{ caption }}">
+  <circle class="track" cx="70" cy="70" r="52" fill="none" stroke-width="14"/>
+  <g transform="rotate(-90 70 70)">
+  {% set ns = namespace(offset=0) %}
+  {% for pct, tone in segments if pct > 0 %}
+    <circle class="seg {{ tone }}" cx="70" cy="70" r="52" fill="none" stroke-width="14" pathLength="100" stroke-dasharray="{{ pct|round(2) }} 100" stroke-dashoffset="{{ -ns.offset|round(2) }}"/>
+    {% set ns.offset = ns.offset + pct %}
+  {% endfor %}
+  </g>
+  <text x="70" y="70" text-anchor="middle" class="ring-big{% if center|string|length > 8 %} xlong{% elif center|string|length > 5 %} long{% endif %}">{{ center }}</text>
+  <text x="70" y="90" text-anchor="middle" class="ring-cap">{{ caption }}</text>
+</svg>
+{% endmacro %}
+
+{% block content %}
+{% if not (result and state in ('done', 'running')) %}<nav class="lang solo" aria-label="Language"><a href="/lang/es">ES</a><a href="/lang/en">EN</a></nav>{% endif %}
+{% if state == 'running' %}
+<section class="card scan" id="progress" aria-live="polite">
+  <svg class="radar" viewBox="0 0 140 140" width="120" height="120" aria-hidden="true">
+    <circle cx="70" cy="70" r="62" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+    <circle cx="70" cy="70" r="42" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+    <circle cx="70" cy="70" r="22" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+    <g class="sweep"><path d="M70 70 L70 8 A62 62 0 0 1 120 33 Z" fill="currentColor" fill-opacity=".25"/><line x1="70" y1="70" x2="70" y2="8" stroke="currentColor" stroke-width="2"/></g>
+    <circle class="blip b1" cx="98" cy="48" r="3"/><circle class="blip b2" cx="46" cy="92" r="3"/><circle class="blip b3" cx="88" cy="100" r="3"/>
+  </svg>
+  <div class="scan-body">
+    <h2>{{ t('progress_title') }}</h2>
+    <p class="scan-note notice">{{ t('progress_first_run') }}</p>
+    <svg class="bar" viewBox="0 0 100 4" preserveAspectRatio="none" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="{{ t('progress_title') }}">
+      <rect width="100" height="4" class="bar-track"/><rect id="bar-fill" width="0" height="4" class="bar-fill"/>
+    </svg>
+    <ol id="steps" class="steps"></ol>
+    <div id="cards" class="kpis"></div>
+    <ul id="facts" class="facts mono"></ul>
+  </div>
+</section>
+{% endif %}
+{% if state == 'error' %}<p class="notice bad" role="alert">{{ t('error') }}</p>{% endif %}
+{% if state == 'unsupported' %}<p class="notice bad" role="alert">{{ t('unsupported') }}</p>{% endif %}
+
+{% if result and state in ('done', 'running') %}
+{% set sys = result.system %}
+{% set rec = result.reclaimable %}
+
+<header class="card head" data-explain="system" tabindex="0">
+  <div class="headrow">
+    <div class="prompt mono">{{ sys.user if sys else 'user' }}@gankhi:~$ <span>{{ t('prompt_cmd') }}</span></div>
+    <nav class="lang" aria-label="Language">
+      <a href="/lang/es"{% if lang == 'es' %} aria-current="true"{% endif %}>ES</a>
+      <a href="/lang/en"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a>
+    </nav>
+  </div>
+  <div class="headgrid">
+    <dl class="facts">
+      {% if sys %}
+      <div><dt>{{ t('lbl_system') }}</dt><dd>{{ sys.os_name }}</dd><dd class="mono sub">kernel {{ sys.kernel }} · {{ sys.architecture }}</dd></div>
+      <div><dt>{{ t('lbl_user') }}</dt><dd>{{ sys.user }}</dd><dd class="mono sub">{{ t('uptime', time=sys.uptime_seconds|uptime) }}</dd></div>
+      {% endif %}
+      <div><dt>{{ t('lbl_datetime') }}</dt><dd>{{ now.strftime('%Y-%m-%d · %H:%M') }}</dd><dd class="mono sub">{{ t('last_scan_short') }}: {{ result.scanned_at.strftime('%H:%M UTC') }}</dd></div>
+      {% if sys %}
+      <div><dt>{{ t('lbl_disk') }}</dt><dd>{{ t('disk_free_big', free=sys.disk_free|bytes) }}</dd><dd class="mono sub">{{ t('disk_used_of', used=sys.disk_used|bytes, total=sys.disk_total|bytes) }}</dd></div>
+      {% endif %}
+    </dl>
+    <div class="status">
+      <div class="statusrow">
+        <strong>{{ t('x_of_y_ok', ok=totals.ok, all=totals.all) }}</strong>
+        {% if totals.vulnerable %}<a class="pill bad" href="{{ url_for('index', f='vulnerable') }}#tools" title="{{ t('pill_vuln_open') }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M12 8v4M12 16h.01"/></svg>{{ t('pill_vuln', n=totals.vulnerable) }}</a>{% endif %}
+      </div>
+      <div class="actions">
+        {% if result.pending_updates %}<a class="btn primary big" href="{{ url_for('preview_page', action='all') }}">↑ {{ t('btn_update_all') }}</a>{% endif %}
+        <a class="btn" id="report-link" href="{{ url_for('report_pdf') }}" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>{{ t('report_open') }}</a>
+        <button id="rescan" type="button" class="ghost"{% if state == 'running' %} disabled{% endif %}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>{{ t('rescan') }}</button>
+      </div>
+      {% if sys and sys.reboot_required %}<div class="warnline" role="status">{{ t('reboot') }}</div>{% endif %}
+      <div class="small">{{ t('feed') }}: {{ t('feed_new') if result.feed_downloaded else t('feed_cached') }}</div>
+    </div>
+  </div>
+</header>
+
+<section class="cards">
+  {% if sys %}
+  <div class="card ringcard" data-explain="disk" tabindex="0">
+    <h3>{{ t('disk') }}</h3>
+    <div class="ringrow">
+      {{ ring([(sys.disk_percent, 'ok' if sys.disk_percent < 70 else ('warn' if sys.disk_percent < 85 else 'bad'))], sys.disk_percent ~ '%', t('ring_used'), t('disk')) }}
+      <ul class="legend">
+        <li><i class="sw {{ 'ok' if sys.disk_percent < 70 else ('warn' if sys.disk_percent < 85 else 'bad') }}"></i>{{ t('leg_disk_used', size=sys.disk_used|bytes) }}</li>
+        <li><i class="sw rest"></i>{{ t('leg_disk_free', size=sys.disk_free|bytes) }}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card ringcard" data-explain="ram" tabindex="0">
+    <h3>{{ t('ram') }}</h3>
+    <div class="ringrow">
+      {{ ring([(sys.ram_percent, 'ok' if sys.ram_percent < 70 else ('warn' if sys.ram_percent < 85 else 'bad'))], sys.ram_percent ~ '%', t('ring_in_use'), t('ram')) }}
+      <ul class="legend">
+        <li><i class="sw {{ 'ok' if sys.ram_percent < 70 else ('warn' if sys.ram_percent < 85 else 'bad') }}"></i>{{ t('leg_ram_used', size=sys.ram_used_kib|size) }}</li>
+        <li><i class="sw rest"></i>{{ t('leg_ram_free', size=(sys.ram_total_kib - sys.ram_used_kib)|size) }}</li>
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+  {% set total = totals.all or 1 %}
+  <div class="card ringcard" data-explain="programs" tabindex="0">
+    <h3>{{ t('programs') }}</h3>
+    <div class="ringrow">
+      {{ ring([(100 * totals.ok / total, 'good'), (100 * totals.outdated / total, 'warn'), (100 * totals.vulnerable / total, 'bad')], totals.ok ~ '/' ~ totals.all, t('ring_ok'), t('programs')) }}
+      <ul class="legend">
+        <li><i class="sw good"></i>{{ t('leg_ok', n=totals.ok) }}</li>
+        <li><i class="sw warn"></i>{{ t('leg_old', n=totals.outdated) }}</li>
+        {% if totals.vulnerable %}<li><i class="sw bad"></i>{{ t('leg_vuln', n=totals.vulnerable) }}</li>{% endif %}
+      </ul>
+    </div>
+    {% if totals.outside %}<p class="small muted">{{ t('totals_note', n=totals.outside) }}</p>{% endif %}
+  </div>
+  <div class="card wide" data-explain="reclaim" tabindex="0">
+    <div class="reclaimhead"><h3>{{ t('reclaim') }}</h3><span class="bigsize">{{ rec.total_kib|size }}</span></div>
+    <ul class="mini">
+      {% if rec.old_kernel_kib %}<li><span>{{ t('reclaim_kernels') }}</span><b class="mono">{{ rec.old_kernel_kib|size }}</b></li>{% endif %}
+      {% if rec.apt_cache_kib %}<li><span>{{ t('reclaim_cache') }}</span><b class="mono">{{ rec.apt_cache_kib|size }}</b></li>{% endif %}
+      {% if rec.orphan_kib %}<li><span>{{ t('reclaim_orphans') }}</span><b class="mono">{{ rec.orphan_kib|size }}</b></li>{% endif %}
+    </ul>
+    <span class="small">{{ t('review_clean') }}</span>
+    <div class="actions">
+      {% if rec.apt_cache_kib %}<a class="btn" href="{{ url_for('preview_page', action='clean') }}">{{ t('btn_clean_cache', size=rec.apt_cache_kib|size) }}</a>{% endif %}
+      {% if rec.old_kernel_kib or rec.orphan_kib %}<a class="btn" href="{{ url_for('preview_page', action='autoremove') }}">{{ t('btn_autoremove') }}</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="card tools" id="tools" data-explain="tools" tabindex="0">
+  <div class="toolshead">
+    <div><h2>{{ t('tools') }}</h2><p class="muted">{{ t('tools_sub', n=counts.all) }}</p></div>
+    <form method="get" action="/" class="search">
+      <input type="hidden" name="f" value="{{ filter }}">
+      <label for="q" class="small">{{ t('search_label') }}</label>
+      <span class="searchbox"><button type="submit" class="lupa" aria-label="{{ t('apply') }}" title="{{ t('apply') }}"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><input id="q" type="search" name="q" value="{{ q }}" maxlength="100" placeholder="{{ t('search_ph') }}"></span>
+      <label class="check"><input type="checkbox" name="show" value="all"{% if show_all %} checked{% endif %}> {{ t('show_all') }}</label>
+      <button type="submit" class="ghost">{{ t('apply') }}</button>
+    </form>
+  </div>
+  <nav class="chips" aria-label="{{ t('tools') }}">
+    {% for f in filters %}
+    <a href="{{ url_for('index', f=f, q=q or None, show='all' if show_all else None) }}"{% if f == filter %} aria-current="true"{% endif %}>{{ t('f_' ~ f) }} · {{ counts[f] }}</a>
+    {% endfor %}
+  </nav>
+
+  <input type="checkbox" id="more-tools" class="toggle">
+  <div class="scroll"><table class="aligned">{{ cols() }}
+    <thead><tr>
+      <th>{{ t('col_tool') }}</th><th>{{ t('col_origin') }}</th><th>{{ t('col_version') }}</th>
+      <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th><th>{{ t('col_actions') }}</th>
+    </tr></thead>
+    {% for group in (page.items[:TOP_ROWS], page.items[TOP_ROWS:]) %}
+    <tbody{% if loop.index == 2 %} class="more"{% endif %}>
+    {% for tool in group %}
+      <tr>
+        <td class="wrap"><strong>{{ tool.name }}</strong><br><span class="small">{{ tool.description }}</span>
+          {% if tool.fixed_in or tool.unfixable or tool.end_of_support %}
+          <div class="notes">
+            {% if tool.fixed_in and tool.unfixable %}{{ note('ok', t('tag_fixed') ~ ': ' ~ tool.fixable, t('hint_fixed_part', n=tool.fixable, m=tool.unfixable, version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}
+            {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('hint_fixed', version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}{% endif %}
+            {% if tool.unfixable and tool.fixed_in %}{{ note('bad', t('tag_no_fix') ~ ': ' ~ tool.unfixable, t('hint_some_no_fix', n=tool.unfixable), advise(tool, 'no_fix', 'more_no_fix')) }}
+            {% elif tool.unfixable %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}{% endif %}
+            {% if tool.end_of_support %}{{ note('old', t('tag_eol'), t('hint_eol'), advise(tool, 'eol', 'more_eol')) }}{% endif %}
+          </div>
+          {% endif %}
+          {% if tool.state == 'outdated' and tool.update_to %}{% set ui = update_info(tool) %}
+          <div class="notes">{{ note(ui.kind, ui.tag, ui.hint, ui.more) }}</div>
+          {% endif %}
+          {% if tool.cves %}
+          <details><summary>{{ t('cve_summary', n=tool.cve_count) }}{% if tool.fixed_in and tool.unfixable %} · {{ t('cve_split', fixed=tool.fixable, version=tool.fixed_in, open=tool.unfixable) }}{% elif tool.fixed_in %} · {{ t('fixed_in', version=tool.fixed_in) }}{% elif tool.unfixable %} · {{ t('no_fix_yet') }}{% endif %}</summary>
+            <ul class="cves">
+            {% for c in tool.cves %}
+              <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
+            {% endfor %}
+            </ul>
+            <p class="small">{{ t('details_note') }}</p>
+          </details>
+          {% endif %}
+        </td>
+        <td class="mono">apt</td>
+        <td class="mono">{{ tool.version }}{% if tool.update_to %} → <span class="new">{{ tool.update_to }}</span>{% endif %}</td>
+        <td class="num mono">{{ tool.size_kib|size }}</td>
+        <td>
+          {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
+          {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
+          {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
+          {% if tool.end_of_support %}<br><span class="state warn">{{ t('chip_eol') }}</span>{% endif %}
+        </td>
+        <td class="actions">
+          {% if tool.update_to %}<a class="btn primary" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
+          {% else %}<span class="btn off">{{ t('btn_update') }}</span>{% endif %}
+          {% if tool.protected %}<span class="btn off" title="{{ t('protected_hint') }}">🔒 {{ t('protected') }}</span>
+          {% else %}<a class="btn danger" href="{{ url_for('preview_page', action='remove', pkg=tool.name) }}">{{ t('btn_remove') }}</a>{% endif %}
+        </td>
+      </tr>
+    {% else %}
+      {% if loop.index == 1 and group is sameas page.items[:TOP_ROWS] %}<tr><td colspan="6" class="muted">{{ t('none') }}</td></tr>{% endif %}
+    {% endfor %}
+    </tbody>
+    {% endfor %}
+  </table></div>
+  {% if page.items|length > TOP_ROWS %}
+  <label for="more-tools" class="more-label"><span class="when-closed">{{ t('show_more', n=page.items|length - TOP_ROWS) }}</span><span class="when-open">{{ t('show_less') }}</span></label>
+  {% endif %}
+
+  {% if page.pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page.number > 1 %}<a href="{{ url_for('index', f=filter, q=q or None, show='all' if show_all else None, page=page.number - 1) }}">{{ t('prev') }}</a>{% endif %}
+    <span>{{ t('page_of', n=page.number, total=page.pages) }}</span>
+    {% if page.number < page.pages %}<a href="{{ url_for('index', f=filter, q=q or None, show='all' if show_all else None, page=page.number + 1) }}">{{ t('next') }}</a>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+
+{% if result.sandboxed %}
+<section class="card" data-explain="external" tabindex="0">
+  <div class="toolshead"><div><h2>{{ t('sbx_title') }}</h2><p class="muted">{{ t('sbx_sub', n=result.sandboxed|length) }}</p></div></div>
+  <div class="scroll"><table class="aligned">{{ cols() }}
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th class="num">{{ t('col_size') }}</th><th colspan="2">{{ t('sbx_col_source') }}</th></tr></thead>
+    <tbody>
+    {% for app in result.sandboxed[:200] %}
+      <tr><td class="wrap"><strong>{{ app.name }}</strong>
+        <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div>
+        {% set sup = sandboxed_update(app) %}{% set srm = sandboxed_remove(app) %}
+        {% if sup or srm %}<div class="howto">
+          {% if sup %}<p class="small">{{ t('sbx_cmd_update') }}</p><code class="cmd">{{ sup }}</code>{% endif %}
+          {% if srm %}<p class="small">{{ t('sbx_cmd_remove') }}</p><code class="cmd">{{ srm }}</code>{% endif %}
+          {% if sandboxed_shared(app) %}<p class="small muted">{{ t('sbx_cmd_shared') }}</p>{% endif %}
+        </div>{% endif %}</td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td colspan="2">{{ app.source }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endif %}
+{% if result.external or result.external_failed %}
+{% set ext_bad = result.external|selectattr('vulnerable')|list %}
+<section class="card" data-explain="external" tabindex="0">
+  <div class="toolshead"><div><h2>{{ t('ext_title') }}</h2><p class="muted">{{ t('ext_sub', n=result.external|length, bad=ext_bad|length) }}</p></div></div>
+  {% if result.external_failed %}<p class="hint bad">{{ t('ext_failed', tools=result.external_failed|join(', ')) }}</p>{% endif %}
+  {% if ext_bad %}
+  <div class="scroll"><table class="aligned">{{ cols() }}
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th colspan="3">{{ t('col_state') }}</th></tr></thead>
+    <tbody>
+    {% for tool in ext_bad %}
+      <tr>
+        <td class="wrap"><strong>{{ tool.name }}</strong>
+          <div class="notes">
+            {% if tool.malicious %}{{ note('bad', t('tag_malware'), t('ext_malware'), advise(tool, 'malware', 'more_malware')) }}
+            {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('ext_fix', version=tool.fixed_in, tool=tool.tool), advise(tool, 'ext_fix', 'more_ext_fix')) }}
+            {% else %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'ext_no_fix', 'more_no_fix')) }}{% endif %}
+          </div>
+          {% set up = none if tool.malicious else update_command(tool) %}
+          {% set rm = remove_command(tool) %}
+          {% if up or rm %}
+          <div class="howto">
+            {% if up %}<p class="small">{{ t('ext_cmd_update') }}</p><code class="cmd">{{ up }}</code>{% endif %}
+            {% if rm %}<p class="small">{{ t('ext_cmd_remove') }}</p><code class="cmd">{{ rm }}</code>
+            <p class="small muted">{{ t('ext_cmd_before_' ~ tool.tool) }}</p>{% endif %}
+            {% if tool.tool == 'pip' and pip_managed and (up or rm) %}<p class="small muted">{{ t('ext_cmd_managed') }}</p>{% endif %}
+            <p class="small muted">{{ t('ext_cmd_' ~ tool.tool) }} {{ t('ext_cmd_note') }}</p>
+          </div>
+          {% endif %}
+          {% if tool.cves %}
+          <details><summary>{{ t('cve_summary', n=tool.cve_count) }}</summary>
+            <ul class="cves">
+            {% for c in tool.cves %}
+              <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
+            {% endfor %}
+            </ul>
+          </details>
+          {% endif %}
+        </td>
+        <td class="mono">{{ tool.tool }}</td>
+        <td class="mono">{{ tool.version }}</td>
+        <td colspan="3"><span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'ext_no_priority') }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% elif result.external %}<p class="muted">{{ t('ext_none') }}</p>{% endif %}
+</section>
+{% endif %}
+
+<section class="bottom">
+<div class="card" data-explain="downloads" tabindex="0">
+  <div class="toolshead" id="downloads"><h2>{{ t('downloads') }}</h2>
+  {% if result.download_groups %}
+    {% set total_files = result.download_groups|sum(attribute='files') %}
+    {% set total_bytes = result.download_groups|sum(attribute='size_bytes') %}
+    <span class="mono small">{{ t('downloads_summary', n=total_files, size=total_bytes|bytes) }}</span></div>
+    <p class="muted mono">{{ result.downloads_folder }}</p>
+    <input type="checkbox" id="more-downloads" class="toggle">
+    <ul class="downloads">
+    {% for g in result.download_groups %}
+      <li{% if loop.index > 3 %} class="more"{% endif %}><span><a href="{{ url_for('downloads_detail', key=g.key) }}">{{ t('dl_' ~ g.key) }}</a> · {{ g.files }}</span><strong class="mono">{{ g.size_bytes|bytes }}</strong>
+        <meter min="0" max="{{ total_bytes }}" value="{{ g.size_bytes }}" aria-label="{{ t('dl_' ~ g.key) }}"></meter></li>
+    {% endfor %}
+    </ul>
+    {% if result.download_groups|length > 3 %}
+    <label for="more-downloads" class="more-label"><span class="when-closed">{{ t('show_more', n=result.download_groups|length - 3) }}</span><span class="when-open">{{ t('show_less') }}</span></label>
+    {% endif %}
+  {% else %}</div><p class="muted">{{ t('downloads_empty', folder=result.downloads_folder or '~') }}</p>{% endif %}
+</div>
+
+{% if kernel or result.snap_stubs %}
+<div class="card">
+  {% if kernel %}
+  <h2>{{ t('kernel') }}</h2>
+  <p class="small"><span class="mono">{{ kernel.installed_version }}</span> · {{ t('kernel_cves', n=kernel.cve_count, fixed=kernel.target_version or '?') }}</p>
+  {% endif %}
+  {% if result.snap_stubs %}
+  <h2>{{ t('snaps') }}</h2><p class="mono small">{{ result.snap_stubs|join(', ') }}</p>
+  {% endif %}
+</div>
+{% endif %}
+</section>
+{% endif %}
+
+<aside class="assistant" id="assistant" aria-label="{{ t('assistant_title') }}"
+  data-lang="{{ lang }}" data-state="{{ state }}"
+  data-ready="{{ t('assistant_ready') }}" data-prompt="{{ t('assistant_prompt') }}">
+  <div class="assistant-head">
+    <strong>💬 {{ t('assistant_title') }}</strong>
+    <button type="button" id="assistant-close" class="icon" aria-label="{{ t('assistant_close') }}" title="{{ t('assistant_close') }}"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <p id="assistant-caption" class="caption" aria-live="polite"></p>
+  <div class="assistant-buttons">
+    <button type="button" id="assistant-explain">{{ t('assistant_play') }}</button>
+  </div>
+</aside>
+<button type="button" id="assistant-open" class="assistant-open" hidden aria-label="{{ t('assistant_open') }}" title="{{ t('assistant_open') }}">💬</button>
+{% endblock %}

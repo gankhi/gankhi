@@ -3,7 +3,7 @@
 
 from dataclasses import replace
 
-from ganki import families, report
+from gankhi import families, report
 from test_web import make_result
 
 

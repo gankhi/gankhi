@@ -2,11 +2,11 @@
 # (pytest tests rely on bare asserts)
 """Tests for the per-tool status list and paging helpers."""
 
-from ganki.collectors.apt import Package
-from ganki.collectors.updates import Update
-from ganki.osv import Finding
-from ganki.paging import human_size, paginate
-from ganki.tools import OK, OUTDATED, VULNERABLE, build_tools, is_core, is_protected
+from gankhi.collectors.apt import Package
+from gankhi.collectors.updates import Update
+from gankhi.osv import Finding
+from gankhi.paging import human_size, paginate
+from gankhi.tools import OK, OUTDATED, VULNERABLE, build_tools, is_core, is_protected
 
 
 def pkg(name, manual=True):
@@ -83,7 +83,7 @@ def test_human_size():
 
 
 def test_end_of_support_only_flags_well_known_cases():
-    from ganki.tools import end_of_support
+    from gankhi.tools import end_of_support
 
     assert end_of_support("nodejs", "18.19.1+dfsg-6ubuntu5")
     assert end_of_support("nodejs", "20.11.0+dfsg-1")
@@ -134,7 +134,7 @@ def test_the_list_starts_with_what_an_update_fully_fixes_and_ends_with_what_cann
 
 
 def test_a_tool_remembers_whether_its_update_is_a_security_one():
-    from ganki.collectors.updates import Update
+    from gankhi.collectors.updates import Update
 
     updates = [
         Update("a", "amd64", "1", "2", "noble-updates,noble-security", True),

@@ -3,7 +3,7 @@
 
 import os
 
-from ganki import downloads
+from gankhi import downloads
 from test_web import BASE, build, login, make_result, wait_until_done
 
 

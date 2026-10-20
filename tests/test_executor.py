@@ -5,8 +5,8 @@ import threading
 
 import pytest
 
-from ganki import executor, runner
-from ganki.runner import CommandNotAllowedError, privileged_apt, run_privileged
+from gankhi import executor, runner
+from gankhi.runner import CommandNotAllowedError, privileged_apt, run_privileged
 
 
 def test_privileged_commands_are_written_out_exactly():
@@ -179,7 +179,7 @@ def test_only_the_newest_snapshots_are_kept(tmp_path):
 
 
 def test_a_package_name_cannot_carry_a_newline_or_an_option():
-    from ganki.runner import valid_package
+    from gankhi.runner import valid_package
 
     assert valid_package("vim") == "vim"
     assert valid_package("libc6:amd64") == "libc6:amd64"
@@ -196,7 +196,7 @@ def test_privileged_removal_refuses_a_name_with_a_trailing_newline():
 
 
 def test_simulations_refuse_a_package_with_a_trailing_newline():
-    from ganki.runner import run
+    from gankhi.runner import run
 
     with pytest.raises(CommandNotAllowedError):
         run(["/usr/bin/apt-get", "-s", "remove", "vim\n"])
@@ -218,7 +218,7 @@ def test_the_command_that_runs_is_rebuilt_not_the_callers_list(monkeypatch):
         seen["argv"] = argv
         return Fake()
 
-    monkeypatch.setattr("ganki.runner.subprocess.Popen", popen)
+    monkeypatch.setattr("gankhi.runner.subprocess.Popen", popen)
     given = privileged_apt("remove", "vim")
     run_privileged(given, lambda _line: None)
     assert seen["argv"] == given and seen["argv"] is not given
@@ -228,7 +228,7 @@ def test_the_copy_for_undoing_lives_where_the_system_empties_it(tmp_path, monkey
     runtime = tmp_path / "run-user"
     runtime.mkdir()
     monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime))
-    assert executor.snapshot_dir() == runtime / "ganki" / "snapshots"
+    assert executor.snapshot_dir() == runtime / "gankhi" / "snapshots"
     # without a runtime folder: a private temporary one, never the home folder
     monkeypatch.delenv("XDG_RUNTIME_DIR")
     monkeypatch.setattr(executor, "_fallback_dir", None)

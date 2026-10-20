@@ -4,8 +4,8 @@
 
 import pytest
 
-from ganki.collectors.updates import last_index_refresh, parse_upgradable
-from ganki.runner import CommandNotAllowedError, run
+from gankhi.collectors.updates import last_index_refresh, parse_upgradable
+from gankhi.runner import CommandNotAllowedError, run
 
 SAMPLE = """Listing...
 bash/noble-updates 5.2.21-2ubuntu4.1 amd64 [upgradable from: 5.2.21-2ubuntu4]
@@ -63,7 +63,7 @@ def test_runner_rejects_commands_not_on_the_allowlist(command):
 
 
 def test_apt_get_is_limited_to_the_simulated_autoremove():
-    from ganki import runner
+    from gankhi import runner
 
     for args in (
         ["/usr/bin/apt-get", "remove", "bash"],
@@ -88,7 +88,7 @@ def test_apt_get_is_limited_to_the_simulated_autoremove():
 
 
 def test_apt_get_simulated_autoremove_is_allowed(monkeypatch):
-    from ganki import runner
+    from gankhi import runner
 
     seen = []
 
@@ -106,7 +106,7 @@ def test_apt_get_simulated_autoremove_is_allowed(monkeypatch):
 
 
 def test_apt_get_only_simulates_the_previews(monkeypatch):
-    from ganki import runner
+    from gankhi import runner
 
     seen = []
 

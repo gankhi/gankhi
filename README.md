@@ -1,10 +1,10 @@
-# Ganki
+# Gankhi
 
-**Ganki** brings together in one screen what you would normally look at separately: the inventory of installed programs, pending updates, known vulnerabilities (checked on your computer against Ubuntu's public list) and the space you can reclaim. From there you can also update, remove and clean up, always with a preview and your confirmation. It sends no data from your computer anywhere.
+**Gankhi** brings together in one screen what you would normally look at separately: the inventory of installed programs, pending updates, known vulnerabilities (checked on your computer against Ubuntu's public list) and the space you can reclaim. From there you can also update, remove and clean up, always with a preview and your confirmation. It sends no data from your computer anywhere.
 
 A local, private dashboard for Debian/Ubuntu-based Linux.
 
-> **Status: first public version (0.1.0).** Ganki can change your system: it can update or remove programs, empty apt's download cache and remove unused packages. Every change shows a preview first and needs your confirmation, and there is no undo button. It has been tested on Ubuntu 24.04-based Linux only.
+> **Status: first public version (0.1.0).** Gankhi can change your system: it can update or remove programs, empty apt's download cache and remove unused packages. Every change shows a preview first and needs your confirmation, and there is no undo button. It has been tested on Ubuntu 24.04-based Linux only.
 
 [Leer en español](README.es.md)
 
@@ -21,9 +21,9 @@ A local, private dashboard for Debian/Ubuntu-based Linux.
 - **Read-only first.** Features that only show information come before any feature that changes the system.
 - **Preview before acting.** Every change shows exactly what will be affected and, when apt can tell, how much space it frees.
 - **Protected items.** Essential system packages cannot be removed from the interface.
-- **Your files stay yours.** Ganki never deletes your files: it opens their folder so you decide. Before a package change it saves a temporary copy of the package list as a record (there is no undo button).
+- **Your files stay yours.** Gankhi never deletes your files: it opens their folder so you decide. Before a package change it saves a temporary copy of the package list as a record (there is no undo button).
 - **Local only.** The web interface listens on `127.0.0.1` only.
-- **Reuse, don't reinvent.** Ganki coordinates proven tools instead of reimplementing them.
+- **Reuse, don't reinvent.** Gankhi coordinates proven tools instead of reimplementing them.
 
 ## Roadmap
 
@@ -37,7 +37,7 @@ A local, private dashboard for Debian/Ubuntu-based Linux.
 - [ ] Docker images
 - [x] Guarded update, removal and cleanup actions (apt)
 
-## What Ganki downloads
+## What Gankhi downloads
 
 Two kinds of public files, only when they changed, and never anything about your computer:
 Canonical's Ubuntu vulnerability list, and, only if you have packages installed with `pip` or
@@ -54,21 +54,21 @@ cd ganki
 scripts/install.sh
 ```
 
-Then open **Ganki** from your applications menu, or run `ganki` in a terminal. It opens in your browser and only accepts connections from your own computer. Close it with `Ctrl+C` in its terminal. If you have more than one browser installed, a small window asks which one to use and can remember the choice. Use the second icon **Ganki (choose browser)** to be asked again. To remove it: `scripts/uninstall.sh`.
+Then open **Gankhi** from your applications menu, or run `gankhi` in a terminal. It opens in your browser and only accepts connections from your own computer. Close it with `Ctrl+C` in its terminal. If you have more than one browser installed, a small window asks which one to use and can remember the choice. Use the second icon **Gankhi (choose browser)** to be asked again. To remove it: `scripts/uninstall.sh`.
 
-Each start creates a new secret key that is kept out of the terminal: the browser opens with it, and a copy is saved in `~/.cache/ganki/dashboard-url`, readable only by you.
+Each start creates a new secret key that is kept out of the terminal: the browser opens with it, and a copy is saved in `~/.cache/gankhi/dashboard-url`, readable only by you.
 
-### Ways to open Ganki
+### Ways to open Gankhi
 
 | You want to | Do this |
 |---|---|
-| Open it in your default browser | Double-click the **Ganki** icon, or choose it in the applications menu. |
+| Open it in your default browser | Double-click the **Gankhi** icon, or choose it in the applications menu. |
 | Open it a second time | Click the icon again: it reopens the copy that is already running. |
-| Choose the browser | With more than one browser installed, a small window asks which one to use (it lists the browsers it finds, or lets you pick a program from your files) and can remember the choice. To be asked again, or to undo a remembered choice, use the second icon **Ganki (choose browser)** and answer "Always ask" (or run `ganki --ask-browser`). Do not use your file manager's "Open with" on the icon: that tries to open the launcher file itself, and a browser just downloads it. |
-| Always use one browser, without the window | In a terminal: `BROWSER=librewolf ganki` (the command of your browser). |
-| Open it by hand | In a terminal: `ganki --no-open`, then paste the whole address saved in `~/.cache/ganki/dashboard-url` into any browser. |
+| Choose the browser | With more than one browser installed, a small window asks which one to use (it lists the browsers it finds, or lets you pick a program from your files) and can remember the choice. To be asked again, or to undo a remembered choice, use the second icon **Gankhi (choose browser)** and answer "Always ask" (or run `gankhi --ask-browser`). Do not use your file manager's "Open with" on the icon: that tries to open the launcher file itself, and a browser just downloads it. |
+| Always use one browser, without the window | In a terminal: `BROWSER=librewolf gankhi` (the command of your browser). |
+| Open it by hand | In a terminal: `gankhi --no-open`, then paste the whole address saved in `~/.cache/gankhi/dashboard-url` into any browser. |
 
-Typing `127.0.0.1:PORT` alone does not work, and that is on purpose: the address carries a secret key that changes on every start, so other programs on your computer cannot read your data. If a page says the key is missing, open Ganki from the icon or with one of the ways above.
+Typing `127.0.0.1:PORT` alone does not work, and that is on purpose: the address carries a secret key that changes on every start, so other programs on your computer cannot read your data. If a page says the key is missing, open Gankhi from the icon or with one of the ways above.
 
 ## Requirements
 

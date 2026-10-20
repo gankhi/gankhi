@@ -6,9 +6,9 @@ import zipfile
 
 import pytest
 
-from ganki import osv_external, versions
-from ganki.collectors import external
-from ganki.collectors.external import ExternalPackage
+from gankhi import osv_external, versions
+from gankhi.collectors import external
+from gankhi.collectors.external import ExternalPackage
 
 
 def test_pip_lists_only_what_pip_installed_and_names_are_normalised():
@@ -171,7 +171,7 @@ def test_a_corrupt_record_does_not_stop_the_reading(tmp_path):
 
 
 def test_only_the_listing_commands_can_run():
-    from ganki import runner
+    from gankhi import runner
 
     for command in (
         [runner.PYTHON, "-c", "print(1)"],
@@ -186,7 +186,7 @@ def test_only_the_listing_commands_can_run():
 def test_scan_external_with_a_failing_download_reports_the_tool_and_goes_on():
     import urllib.error
 
-    from ganki import external_scan
+    from gankhi import external_scan
 
     packages = [ExternalPackage("PyPI", "a", "1", "pip"), ExternalPackage("npm", "b", "1", "npm")]
 
@@ -201,7 +201,7 @@ def test_scan_external_with_a_failing_download_reports_the_tool_and_goes_on():
 
 
 def test_nothing_is_downloaded_when_pip_and_npm_have_nothing_installed():
-    from ganki import external_scan
+    from gankhi import external_scan
 
     def check(*_args):
         raise AssertionError("must not be called")
@@ -210,7 +210,7 @@ def test_nothing_is_downloaded_when_pip_and_npm_have_nothing_installed():
 
 
 def test_the_last_answer_is_reused_while_the_list_is_unchanged(tmp_path):
-    from ganki import external_scan, feed
+    from gankhi import external_scan, feed
 
     archive = tmp_path / "osv-PyPI.zip"
     make_archive(archive, [{"id": "G", "affected": [affected("a", events=[{"introduced": "0"}])]}])
@@ -228,8 +228,8 @@ def test_the_last_answer_is_reused_while_the_list_is_unchanged(tmp_path):
 
 
 def test_built_tools_put_affected_packages_first_and_keep_the_fix():
-    from ganki.external_tools import build_external_tools
-    from ganki.osv_external import ExternalFinding
+    from gankhi.external_tools import build_external_tools
+    from gankhi.osv_external import ExternalFinding
 
     packages = [
         ExternalPackage("PyPI", "calm", "1", "pip"),
@@ -248,7 +248,7 @@ def test_built_tools_put_affected_packages_first_and_keep_the_fix():
 def with_external(failed=()):
     from dataclasses import replace
 
-    from ganki.external_tools import ExternalTool
+    from gankhi.external_tools import ExternalTool
     from test_web import make_result
 
     tools = [
@@ -261,7 +261,7 @@ def with_external(failed=()):
 
 @pytest.mark.parametrize("lang", ["en", "es"])
 def test_the_voice_reads_python_and_npm(lang):
-    from ganki import narration
+    from gankhi import narration
 
     segments = [s for s in narration.build(with_external(["npm"]), lang) if s.section == "external"]
     text = " ".join(s.text for s in segments)
@@ -271,14 +271,14 @@ def test_the_voice_reads_python_and_npm(lang):
 
 
 def test_the_voice_says_nothing_when_pip_and_npm_have_nothing():
-    from ganki import narration
+    from gankhi import narration
     from test_web import make_result
 
     assert not [s for s in narration.build(make_result(), "en") if s.section == "external"]
 
 
 def test_the_report_has_a_python_and_npm_section():
-    from ganki import report
+    from gankhi import report
 
     data = report.build_report(with_external(["npm"]), "es", "now")
     assert b"evilpkg" in data and b"oldlib" in data
@@ -320,7 +320,7 @@ def test_reading_in_another_process_gives_the_same_answer(tmp_path):
 
 
 def test_snap_list_skips_runtimes_and_keeps_apps():
-    from ganki.collectors.sandboxed import parse_snap
+    from gankhi.collectors.sandboxed import parse_snap
 
     output = (
         "Name     Version  Rev   Tracking       Publisher  Notes\n"
@@ -333,7 +333,7 @@ def test_snap_list_skips_runtimes_and_keeps_apps():
 
 
 def test_flatpak_list_reads_tab_separated_columns():
-    from ganki.collectors.sandboxed import parse_flatpak
+    from gankhi.collectors.sandboxed import parse_flatpak
 
     output = "org.gimp.GIMP\tGIMP\t2.10.38\tflathub\t245.1 MB\n\nbroken line\n"
     apps = parse_flatpak(output)
@@ -345,7 +345,7 @@ def test_flatpak_list_reads_tab_separated_columns():
 def test_sandboxed_commands_are_allowlisted_with_exact_arguments():
     import pytest
 
-    from ganki import runner
+    from gankhi import runner
 
     with pytest.raises(Exception):  # noqa: B017, PT011
         runner.run([runner.SNAP, "remove", "firefox"])
@@ -354,7 +354,7 @@ def test_sandboxed_commands_are_allowlisted_with_exact_arguments():
 
 
 def test_snap_and_flatpak_sizes_are_read_in_the_same_unit(tmp_path):
-    from ganki.collectors.sandboxed import parse_flatpak, parse_snap
+    from gankhi.collectors.sandboxed import parse_flatpak, parse_snap
 
     (tmp_path / "firefox_5187.snap").write_bytes(b"x" * 3 * 1024 * 1024)
     snap = parse_snap(
@@ -373,14 +373,14 @@ def test_snap_and_flatpak_sizes_are_read_in_the_same_unit(tmp_path):
 @pytest.fixture(autouse=True)
 def plain_python(monkeypatch):
     """The commands depend on the machine's Python: tests start from one pip accepts."""
-    monkeypatch.setattr("ganki.external_tools.externally_managed", lambda: False)
+    monkeypatch.setattr("gankhi.external_tools.externally_managed", lambda: False)
 
 
 def test_a_protected_python_gets_the_flag_pip_asks_for(monkeypatch, tmp_path):
-    from ganki import external_tools
-    from ganki.external_tools import ExternalTool, remove_command, update_command
+    from gankhi import external_tools
+    from gankhi.external_tools import ExternalTool, remove_command, update_command
 
-    monkeypatch.setattr("ganki.external_tools.externally_managed", lambda: True)
+    monkeypatch.setattr("gankhi.external_tools.externally_managed", lambda: True)
     pip = ExternalTool("oldlib", "1.0", "pip", "PyPI", True, "high", 2, "2.1")
     npm = ExternalTool("lib", "1.0", "npm", "npm", True, "high", 1, "3.0.1")
     assert update_command(pip) == (
@@ -397,7 +397,7 @@ def test_a_protected_python_gets_the_flag_pip_asks_for(monkeypatch, tmp_path):
 
 
 def test_the_update_and_remove_commands_are_exact_and_safe():
-    from ganki.external_tools import ExternalTool, remove_command, update_command
+    from gankhi.external_tools import ExternalTool, remove_command, update_command
 
     pip = ExternalTool("oldlib", "1.0", "pip", "PyPI", True, "high", 2, "2.1")
     npm = ExternalTool("@scope/lib", "1.0", "npm", "npm", True, "high", 1, "3.0.1")
@@ -426,7 +426,7 @@ def test_the_python_and_npm_rows_show_the_command_to_copy():
 
 
 def test_snap_and_flatpak_commands_are_exact_and_safe():
-    from ganki.collectors.sandboxed import (
+    from gankhi.collectors.sandboxed import (
         SandboxedApp,
         is_shared_runtime,
         parse_flatpak,
@@ -469,7 +469,7 @@ def test_the_rows_explain_the_flag_only_when_the_python_is_protected(monkeypatch
         return client.get("/", base_url=BASE).get_data(as_text=True)
 
     assert "--break-system-packages" not in page()
-    monkeypatch.setattr("ganki.external_tools.externally_managed", lambda: True)
+    monkeypatch.setattr("gankhi.external_tools.externally_managed", lambda: True)
     html = page()
     assert "pip install --upgrade --break-system-packages" in html
     assert "Ubuntu protects its own Python" in html

@@ -1,8 +1,8 @@
 # ruff: noqa: S101
 """Previews are parsed from apt simulations; nothing here touches the real system."""
 
-from ganki import actions
-from ganki.actions import (
+from gankhi import actions
+from gankhi.actions import (
     AUTOREMOVE,
     CLEAN,
     REMOVE,

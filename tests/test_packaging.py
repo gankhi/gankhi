@@ -23,7 +23,7 @@ def test_scripts_have_valid_bash_syntax(script):
 
 @needs_bash
 def test_uninstall_refuses_to_touch_anything_outside_the_home_folder(tmp_path):
-    victim = tmp_path / "outside" / "ganki"
+    victim = tmp_path / "outside" / "gankhi"
     victim.mkdir(parents=True)
     home = tmp_path / "home"
     home.mkdir()
@@ -45,7 +45,7 @@ def test_uninstall_refuses_to_touch_anything_outside_the_home_folder(tmp_path):
 
 @needs_bash
 def test_uninstall_without_confirmation_changes_nothing(tmp_path):
-    app = tmp_path / ".local" / "share" / "ganki"
+    app = tmp_path / ".local" / "share" / "gankhi"
     app.mkdir(parents=True)
     result = subprocess.run(
         ["bash", str(UNINSTALL)],
@@ -61,15 +61,15 @@ def test_uninstall_without_confirmation_changes_nothing(tmp_path):
 
 
 def test_launcher_template_has_the_required_entries():
-    text = (ROOT / "packaging" / "ganki.desktop.in").read_text()
+    text = (ROOT / "packaging" / "gankhi.desktop.in").read_text()
     assert "Exec=@EXEC@ --pause-on-error" in text
     assert "Terminal=true" in text  # a terminal window is how the user stops it (Ctrl+C)
     assert "Icon=@ICON@" in text
-    assert (ROOT / "packaging" / "ganki.svg").read_text().lstrip().startswith("<svg")
+    assert (ROOT / "packaging" / "gankhi.svg").read_text().lstrip().startswith("<svg")
 
 
 def test_the_installed_command_points_at_a_real_function():
-    from ganki.web import server
+    from gankhi.web import server
 
     assert callable(server.run)
-    assert 'ganki = "ganki.web.server:run"' in (ROOT / "pyproject.toml").read_text()
+    assert 'gankhi = "gankhi.web.server:run"' in (ROOT / "pyproject.toml").read_text()

@@ -2,7 +2,7 @@
 # (pytest tests rely on bare asserts)
 """Tests for reading facts about the machine."""
 
-from ganki.system import SystemInfo, parse_meminfo, parse_uptime, read_system
+from gankhi.system import SystemInfo, parse_meminfo, parse_uptime, read_system
 
 
 def test_parse_meminfo_uses_available_memory():
@@ -49,7 +49,7 @@ def test_disk_percent_matches_df_when_the_system_keeps_a_reserve(monkeypatch):
 
     usage = namedtuple("usage", "total used free")
     # 1000 blocks: 720 used, 230 available to users, 50 reserved for root
-    monkeypatch.setattr("ganki.system.shutil.disk_usage", lambda _path: usage(1000, 720, 230))
+    monkeypatch.setattr("gankhi.system.shutil.disk_usage", lambda _path: usage(1000, 720, 230))
     info = read_system()
     assert info.disk_percent == 76  # 720 / 950 = 75.8 -> 76, not 72
     assert info.disk_free == 230

@@ -5,8 +5,8 @@ import re
 
 import pytest
 
-from ganki import narration
-from ganki.service import ScanResult
+from gankhi import narration
+from gankhi.service import ScanResult
 from test_web import BASE, build, login, make_result, wait_until_done
 
 
@@ -192,7 +192,7 @@ def test_the_pieces_of_one_kernel_are_one_entry_and_a_restart_is_advised():
 def test_with_a_full_disk_the_advice_is_to_clean_before_updating():
     from dataclasses import replace
 
-    from ganki import cleanup
+    from gankhi import cleanup
 
     result = make_result()
     roomy = replace(result.system, disk_used=10, disk_total=1010)
@@ -205,7 +205,7 @@ def test_with_a_full_disk_the_advice_is_to_clean_before_updating():
 
 @pytest.mark.parametrize("lang", ["en", "es"])
 def test_end_of_support_wording_does_not_overstate(lang):
-    from ganki.web import i18n
+    from gankhi.web import i18n
 
     for key in ("say_advice_expired", "hint_eol", "report_act_eol"):
         assert "Ubuntu Pro" in i18n.translate(lang, key, names="x")
@@ -214,7 +214,7 @@ def test_end_of_support_wording_does_not_overstate(lang):
 def test_snap_and_flatpak_apps_are_counted_and_said_not_to_be_checked():
     import dataclasses
 
-    from ganki.collectors.sandboxed import SandboxedApp
+    from gankhi.collectors.sandboxed import SandboxedApp
 
     result = dataclasses.replace(
         make_result(),
@@ -226,13 +226,13 @@ def test_snap_and_flatpak_apps_are_counted_and_said_not_to_be_checked():
     )
     text = " ".join(s.text for s in narration.build(result, "es"))
     assert "1 apps snap y 2 flatpak" in text and "no las reviso" in text
-    data = __import__("ganki.report", fromlist=["x"]).build_report(result, "es", "now")
+    data = __import__("gankhi.report", fromlist=["x"]).build_report(result, "es", "now")
     assert data.startswith(b"%PDF")
 
 
 def test_moving_the_mouse_never_scrolls_the_page_and_nothing_is_spoken():
     from pathlib import Path
 
-    script = (Path(__file__).parent.parent / "src/ganki/web/static/assistant.js").read_text()
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/assistant.js").read_text()
     assert "scrollIntoView" not in script
     assert "speechSynthesis" not in script and "/api/speak" not in script and "Audio(" not in script

@@ -1,10 +1,10 @@
 # Changelog
 
-All notable changes to Ganki. Dates are written year-month-day.
+All notable changes to Gankhi. Dates are written year-month-day.
 
 ## 0.1.0 (2026-10-18)
 
-First public version.
+First public version. (During development the project was called Ganki; the installer moves an old copy to the new name and keeps its settings.)
 
 ### What it does
 - Lists the programs installed with apt and checks them against Ubuntu's public security
@@ -17,10 +17,10 @@ First public version.
 - Writes a PDF report, coloured by priority and grouped by family.
 - Updates or removes a program, empties apt's download cache and removes unused packages
   (old kernels, orphans) only after a preview and your explicit confirmation. The password
-  is asked by the system's own window, never by Ganki. Ganki refuses a change that would
+  is asked by the system's own window, never by Gankhi. Gankhi refuses a change that would
   remove software the system depends on.
 - Opens the folder of a large download so you can look at the file and delete it yourself.
-  Ganki never deletes your files.
+  Gankhi never deletes your files.
 - Puts what matters first: updates that fix critical or high notices, and security updates
   from Ubuntu, come before the rest.
 
@@ -36,7 +36,7 @@ First public version.
   as a record; going back means reinstalling by hand.
 - The update and remove commands shown for snap and flatpak apps are meant to be copied
   and run by you; they have not been exercised in the automated tests.
-- Closing the terminal window that opens with Ganki stops it.
+- Closing the terminal window that opens with Gankhi stops it.
 
 ### Install
-- `scripts/install.sh` installs Ganki without sudo.
+- `scripts/install.sh` installs Gankhi without sudo.

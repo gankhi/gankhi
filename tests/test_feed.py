@@ -7,7 +7,7 @@ import urllib.error
 
 import pytest
 
-import ganki.feed as feed
+import gankhi.feed as feed
 
 URL = "https://example.test/osv-all.tar.xz"
 

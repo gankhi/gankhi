@@ -8,18 +8,18 @@ from pathlib import Path
 
 import pytest
 
-from ganki.cleanup import Reclaimable
-from ganki.collectors.apt import Package
-from ganki.collectors.updates import Update
-from ganki.downloads import DownloadGroup
-from ganki.osv import Finding
-from ganki.release import UnsupportedReleaseError
-from ganki.service import ScanResult
-from ganki.summary import summarize
-from ganki.system import SystemInfo
-from ganki.tools import build_tools
-from ganki.web.app import SESSION_COOKIE, create_app, uptime_text
-from ganki.web.i18n import pick_language, translate
+from gankhi.cleanup import Reclaimable
+from gankhi.collectors.apt import Package
+from gankhi.collectors.updates import Update
+from gankhi.downloads import DownloadGroup
+from gankhi.osv import Finding
+from gankhi.release import UnsupportedReleaseError
+from gankhi.service import ScanResult
+from gankhi.summary import summarize
+from gankhi.system import SystemInfo
+from gankhi.tools import build_tools
+from gankhi.web.app import SESSION_COOKIE, create_app, uptime_text
+from gankhi.web.i18n import pick_language, translate
 
 PORT = 8589
 SECRET = "s3cret-token-for-tests"  # noqa: S105 - test value
@@ -154,7 +154,7 @@ def test_rescan_rejects_a_foreign_origin():
     response = client.post(
         "/api/rescan",
         base_url=BASE,
-        headers={"X-Ganki": "1", "Origin": "http://evil.example"},
+        headers={"X-Gankhi": "1", "Origin": "http://evil.example"},
     )
     assert response.status_code == 403
 
@@ -164,7 +164,7 @@ def test_rescan_accepts_same_origin_with_header():
     response = client.post(
         "/api/rescan",
         base_url=BASE,
-        headers={"X-Ganki": "1", "Origin": BASE},
+        headers={"X-Gankhi": "1", "Origin": BASE},
     )
     assert response.status_code in (200, 202)
 
@@ -298,7 +298,7 @@ def test_every_key_exists_in_both_languages(key):
 
 
 def test_both_languages_have_the_same_keys():
-    from ganki.web.i18n import TEXTS
+    from gankhi.web.i18n import TEXTS
 
     assert set(TEXTS["es"]) == set(TEXTS["en"])
 
@@ -308,7 +308,7 @@ def test_both_languages_have_the_same_keys():
 
 def run_opening_inline(monkeypatch, listening=True):
     """Make the browser-opening thread run at once and say whether the port is listening."""
-    from ganki.web import server
+    from gankhi.web import server
 
     class Inline:
         def __init__(self, target, args=(), daemon=None):
@@ -324,7 +324,7 @@ def run_opening_inline(monkeypatch, listening=True):
 def test_access_url_is_saved_privately_and_not_printed(tmp_path, monkeypatch, capsys):
     import stat
 
-    from ganki.web import server
+    from gankhi.web import server
 
     opened = []
 
@@ -348,7 +348,7 @@ def test_access_url_is_saved_privately_and_not_printed(tmp_path, monkeypatch, ca
 
 
 def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, monkeypatch, capsys):
-    from ganki.web import server
+    from gankhi.web import server
 
     class FakeApp:
         def run(self, **_kwargs):
@@ -373,7 +373,7 @@ def test_when_the_browser_does_not_open_only_the_file_path_is_shown(tmp_path, mo
 def test_second_launch_on_a_busy_port_leaves_the_saved_address_alone(tmp_path, monkeypatch):
     import socket
 
-    from ganki.web import server
+    from gankhi.web import server
 
     saved = tmp_path / server.ACCESS_FILE
     saved.write_text("original-address\n")
@@ -391,7 +391,7 @@ def test_second_launch_on_a_busy_port_leaves_the_saved_address_alone(tmp_path, m
 def test_request_log_lines_never_show_the_access_key():
     import logging
 
-    from ganki.web.server import HideAccessKey
+    from gankhi.web.server import HideAccessKey
 
     record = logging.LogRecord(
         "werkzeug",
@@ -422,7 +422,7 @@ def test_page_draws_the_ring_charts_and_folds_extra_rows():
 def test_pause_on_error_waits_for_enter_only_when_it_fails(monkeypatch):
     import socket
 
-    from ganki.web import server
+    from gankhi.web import server
 
     asked = []
     monkeypatch.setattr("builtins.input", lambda prompt="": asked.append(prompt) or "")
@@ -574,7 +574,7 @@ def post_run(client, body, headers=None):
         "/api/run",
         json=body,
         base_url=BASE,
-        headers={"X-Ganki": "1"} if headers is None else headers,
+        headers={"X-Gankhi": "1"} if headers is None else headers,
     )
 
 
@@ -662,13 +662,13 @@ def test_logging_in_always_redirects_to_the_home_page():
 
 
 def test_page_width_grows_with_the_screen_instead_of_a_fixed_column():
-    css = (Path(__file__).parent.parent / "src/ganki/web/static/style.css").read_text()
+    css = (Path(__file__).parent.parent / "src/gankhi/web/static/style.css").read_text()
     main_rule = next(line for line in css.splitlines() if line.startswith("main {"))
     assert "min(2200px" in main_rule and "100%" in main_rule
 
 
 def test_times_over_a_minute_are_written_in_minutes_and_dates_in_local_form():
-    from ganki.web.app import duration_text, feed_date_text
+    from gankhi.web.app import duration_text, feed_date_text
 
     assert duration_text(14.3) == "14.3 s"
     assert duration_text(149.5) == "2m 30s"
@@ -698,16 +698,16 @@ def test_the_fix_labels_open_an_explanation_with_what_to_keep_in_mind():
 
 
 def test_every_explanation_exists_in_both_languages():
-    from ganki.web.i18n import TEXTS as STRINGS
+    from gankhi.web.i18n import TEXTS as STRINGS
 
     keys = [k for k in STRINGS["en"] if k.startswith("more_")]
     assert keys and all(STRINGS["es"].get(k) for k in keys)
 
 
-def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
+def test_each_snap_or_flatpak_app_explains_how_gankhi_treats_it():
     from dataclasses import replace
 
-    from ganki.collectors.sandboxed import SandboxedApp
+    from gankhi.collectors.sandboxed import SandboxedApp
 
     def scan():
         return replace(
@@ -723,7 +723,7 @@ def test_each_snap_or_flatpak_app_explains_how_ganki_treats_it():
     client.get("/", base_url=BASE)  # starts the scan
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
-    assert "How Ganki checks it" in html
+    assert "How Gankhi checks it" in html
     assert "cannot tell you whether it has known flaws" in html
     # every table lines up on the same columns: name, origin, version, size
     assert html.count('<table class="aligned">') == 2
@@ -745,7 +745,7 @@ def test_the_assistant_is_text_only():
 def test_a_second_click_opens_the_running_copy_instead_of_failing(tmp_path, monkeypatch):
     import threading
 
-    from ganki.web import server
+    from gankhi.web import server
 
     app = build()
     started = threading.Thread(
@@ -762,14 +762,14 @@ def test_a_second_click_opens_the_running_copy_instead_of_failing(tmp_path, monk
     monkeypatch.setattr(
         server, "open_in_browser", lambda address, *_: opened.append(address) or True
     )
-    assert server.looks_like_ganki(url)
-    assert not server.looks_like_ganki(f"http://127.0.0.1:{PORT}/?access=wrong")
+    assert server.looks_like_gankhi(url)
+    assert not server.looks_like_gankhi(f"http://127.0.0.1:{PORT}/?access=wrong")
     assert server.main(["--port", str(PORT)]) == 0
     assert opened == [url]
 
 
 def test_the_desktop_opener_is_the_fallback_when_no_browser_is_found(monkeypatch):
-    from ganki.web import server
+    from gankhi.web import server
 
     calls = []
     monkeypatch.setattr(server.webbrowser, "open", lambda address: False)
@@ -782,7 +782,7 @@ def test_the_desktop_opener_is_the_fallback_when_no_browser_is_found(monkeypatch
 
 
 def test_any_installed_browser_is_used_when_there_is_no_default(monkeypatch):
-    from ganki.web import server
+    from gankhi.web import server
 
     calls = []
     monkeypatch.setattr(server.webbrowser, "open", lambda address: False)
@@ -794,7 +794,7 @@ def test_any_installed_browser_is_used_when_there_is_no_default(monkeypatch):
 
 
 def test_the_browser_is_not_opened_before_the_server_listens(tmp_path, monkeypatch, capsys):
-    from ganki.web import server
+    from gankhi.web import server
 
     class FakeApp:
         def run(self, **_kwargs):
@@ -813,7 +813,7 @@ def test_the_browser_is_not_opened_before_the_server_listens(tmp_path, monkeypat
 def test_wait_until_listening_sees_a_real_listener():
     import socket
 
-    from ganki.web import server
+    from gankhi.web import server
 
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
@@ -829,7 +829,7 @@ def test_opening_without_the_key_explains_how_to_get_in():
         reply = client.get(path, base_url=BASE)
         html = reply.get_data(as_text=True)
         assert reply.status_code == 403
-        assert "ganki --no-open" in html and "dashboard-url" in html
+        assert "gankhi --no-open" in html and "dashboard-url" in html
         assert SECRET not in html and "style=" not in html and "<script" not in html
     # with the key it still works, and a POST without the session is still a plain refusal
     assert login(app.test_client()).get("/", base_url=BASE).status_code == 200
@@ -838,7 +838,7 @@ def test_opening_without_the_key_explains_how_to_get_in():
 
 def _browsers_found(monkeypatch, tmp_path, found, dialog=None, folders=()):
     """Pretend these commands exist; `dialog` is what the choice window answers."""
-    from ganki.web import browsers
+    from gankhi.web import browsers
 
     monkeypatch.delenv("BROWSER", raising=False)
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
@@ -932,7 +932,7 @@ def test_a_program_picked_from_the_files_is_accepted(monkeypatch, tmp_path):
 
 
 def browsers_other():
-    from ganki.web import browsers
+    from gankhi.web import browsers
 
     return browsers.OTHER
 
@@ -968,10 +968,10 @@ def test_an_unknown_answer_cannot_launch_an_arbitrary_program(monkeypatch, tmp_p
 
 
 def test_open_in_browser_starts_the_chosen_one(monkeypatch):
-    from ganki.web import server
+    from gankhi.web import server
 
     started = []
-    from ganki.web import browsers
+    from gankhi.web import browsers
 
     monkeypatch.setattr(browsers, "command_for", lambda key: ["/usr/bin/librewolf"])
     monkeypatch.setattr(server, "_start", lambda command: started.append(command) or True)
@@ -999,7 +999,7 @@ def test_asking_again_and_choosing_always_ask_undoes_a_remembered_choice(monkeyp
 def test_a_row_with_fixed_and_unfixed_notices_counts_each_kind():
     from dataclasses import replace
 
-    from ganki.web.i18n import TEXTS as STRINGS
+    from gankhi.web.i18n import TEXTS as STRINGS
 
     for lang in ("en", "es"):
         text = STRINGS[lang]["hint_fixed_part"].format(n=39, m=3, version="1.2")
@@ -1107,7 +1107,7 @@ def test_autoremove_accepts_a_leftover_library_but_still_refuses_core_packages()
 
 
 def test_a_folder_of_downloads_can_be_opened_but_nothing_else(tmp_path, monkeypatch):
-    from ganki import downloads
+    from gankhi import downloads
 
     base = tmp_path / "Descargas"
     (base / "fotos").mkdir(parents=True)
@@ -1124,7 +1124,7 @@ def test_a_folder_of_downloads_can_be_opened_but_nothing_else(tmp_path, monkeypa
             "/api/open-folder",
             json={"path": path},
             base_url=BASE,
-            headers={"X-Ganki": "1"} if headers is None else headers,
+            headers={"X-Gankhi": "1"} if headers is None else headers,
         )
 
     assert ask("fotos/a.jpg").status_code == 200
@@ -1132,7 +1132,7 @@ def test_a_folder_of_downloads_can_be_opened_but_nothing_else(tmp_path, monkeypa
     assert ask("../etc").status_code == 400 and ask("/etc").status_code == 400
     assert (
         client.post(
-            "/api/open-folder", json=None, base_url=BASE, headers={"X-Ganki": "1"}
+            "/api/open-folder", json=None, base_url=BASE, headers={"X-Gankhi": "1"}
         ).status_code
         == 400
     )
@@ -1149,7 +1149,7 @@ def test_oversized_request_is_refused() -> None:
         "/api/run",
         data=b"x" * (200 * 1024),
         base_url=BASE,
-        headers={"X-Ganki": "1", "Content-Type": "application/json"},
+        headers={"X-Gankhi": "1", "Content-Type": "application/json"},
     )
     assert response.status_code == 413
 
@@ -1176,5 +1176,5 @@ def test_back_links_return_to_the_same_place_in_the_page():
     assert 'href="/#downloads" data-back' in detail
     home = client.get("/", base_url=BASE).get_data(as_text=True)
     assert 'id="downloads"' in home
-    script = (Path(__file__).parent.parent / "src/ganki/web/static/app.js").read_text()
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
     assert "a[data-back]" in script and "history.back()" in script
