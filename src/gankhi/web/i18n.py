@@ -243,6 +243,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "say_tools_summary": (
             "System programs with security problems: {vulnerable}. Out of date: {outdated}."
         ),
+        "say_tools_summary_plus": (
+            "System programs with security problems: {vulnerable}, plus {outside} more in Python "
+            "or npm: {total} in all. Out of date: {outdated}."
+        ),
         "say_tools_programs_ok": (
             "None of your programs has a known security problem. Programs out of date: {outdated}."
         ),
@@ -314,6 +318,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "ext_title": "Python and npm packages",
         "ext_sub": "{n} installed with pip or npm; {bad} with security notices.",
         "ext_none": "None of them has a known security notice.",
+        "ext_others_summary": "Show the other {n} packages (no known security notice)",
+        "ext_others_state": "No known notices",
+        "ext_others_more": "…and {n} more that are not listed here.",
         "ext_failed": (
             "Could not check {tools}: no connection, or the list could not be read. "
             "Try again later."
@@ -767,6 +774,10 @@ TEXTS: dict[str, dict[str, str]] = {
             "Programas del sistema con problemas de seguridad: {vulnerable}. "
             "Desactualizados: {outdated}."
         ),
+        "say_tools_summary_plus": (
+            "Programas del sistema con problemas de seguridad: {vulnerable}, más {outside} en "
+            "Python o npm: {total} en total. Desactualizados: {outdated}."
+        ),
         "say_tools_programs_ok": (
             "Ninguno de tus programas tiene un problema de seguridad conocido. "
             "Programas desactualizados: {outdated}."
@@ -841,6 +852,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "ext_title": "Paquetes de Python y npm",
         "ext_sub": "{n} instalados con pip o npm; {bad} con avisos de seguridad.",
         "ext_none": "Ninguno tiene avisos de seguridad conocidos.",
+        "ext_others_summary": "Mostrar los otros {n} paquetes (sin avisos de seguridad conocidos)",
+        "ext_others_state": "Sin avisos conocidos",
+        "ext_others_more": "…y {n} más que no se listan acá.",
         "ext_failed": (
             "No pude revisar {tools}: no hubo conexión o no se pudo leer la lista. "
             "Probá de nuevo más tarde."

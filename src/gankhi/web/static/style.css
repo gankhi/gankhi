@@ -295,3 +295,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .kpi[data-tone="warn"] meter::-moz-meter-bar { background: var(--amber); }
 .kpi[data-tone="bad"] meter::-webkit-meter-optimum-value { background: var(--red); }
 .kpi[data-tone="bad"] meter::-moz-meter-bar { background: var(--red); }
+
+details.ext-others { margin-top: 12px; }
+details.ext-others > summary { cursor: pointer; color: var(--muted); }
+details.ext-others[open] > summary { margin-bottom: 8px; }

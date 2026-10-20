@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% set TOP_ROWS = 5 %}
+{% set EXT_OTHERS_MAX = 500 %}
 {% macro badge(priority) %}<span class="badge p-{{ priority or 'unknown' }}">{{ t(priority or 'unknown') }}</span>{% endmacro %}
 {# the three tables share these columns, so name, origin, version and size line up #}
 {% macro cols() %}<colgroup><col class="c-name"><col class="c-origin"><col class="c-version"><col class="c-size"><col class="c-state"><col class="c-last"></colgroup>{% endmacro %}
@@ -289,6 +290,20 @@
     </tbody>
   </table></div>
   {% elif result.external %}<p class="muted">{{ t('ext_none') }}</p>{% endif %}
+  {% set ext_ok = result.external|rejectattr('vulnerable')|list %}
+  {% if ext_ok %}
+  <details class="ext-others"><summary>{{ t('ext_others_summary', n=ext_ok|length) }}</summary>
+    <div class="scroll"><table class="aligned">{{ cols() }}
+      <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th colspan="3">{{ t('col_state') }}</th></tr></thead>
+      <tbody>
+      {% for tool in ext_ok[:EXT_OTHERS_MAX] %}
+        <tr><td class="wrap"><strong>{{ tool.name }}</strong></td><td class="mono">{{ tool.tool }}</td><td class="mono">{{ tool.version }}</td><td colspan="3"><span class="state good">{{ t('ext_others_state') }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% if ext_ok|length > EXT_OTHERS_MAX %}<p class="small muted">{{ t('ext_others_more', n=ext_ok|length - EXT_OTHERS_MAX) }}</p>{% endif %}
+  </details>
+  {% endif %}
 </section>
 {% endif %}
 

@@ -112,7 +112,16 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
     outdated = [t for t in programs if t.state == "outdated"]
     libraries, old_kernels = vulnerable_libraries(result)
     everything = vulnerable + libraries
-    if vulnerable:
+    outside_bad = sum(1 for t in result.external if t.vulnerable)
+    if vulnerable and outside_bad:
+        summary = say(
+            "say_tools_summary_plus",
+            vulnerable=len(vulnerable),
+            outside=outside_bad,
+            total=len(vulnerable) + outside_bad,
+            outdated=len(outdated),
+        )
+    elif vulnerable:
         summary = say("say_tools_summary", vulnerable=len(vulnerable), outdated=len(outdated))
     elif libraries:
         summary = say("say_tools_programs_ok", outdated=len(outdated))
