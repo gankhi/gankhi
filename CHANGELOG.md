@@ -32,7 +32,7 @@ First public version. (During development the project was called Ganki; the inst
 - No account, no analytics, no outside resources in the page.
 
 ### Known limits
-- Linux only (Debian/Ubuntu-based). Tested on an Ubuntu 24.04 base.
+- Linux only (Ubuntu and derivatives; plain Debian has no vulnerability check). Tested on an Ubuntu 24.04 base.
 - There is no undo button. A temporary copy of the package list is saved before a change,
   as a record; going back means reinstalling by hand.
 - The update and remove commands shown for snap and flatpak apps are meant to be copied

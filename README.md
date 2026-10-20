@@ -2,7 +2,7 @@
 
 **Gankhi** brings together in one screen what you would normally look at separately: the inventory of installed programs, pending updates, known vulnerabilities (checked on your computer against Ubuntu's public list) and the space you can reclaim. From there you can also update, remove and clean up, always with a preview and your confirmation. It sends no data from your computer anywhere.
 
-A local, private dashboard for Debian/Ubuntu-based Linux.
+A local, private dashboard for Ubuntu-based Linux.
 
 > **Status: first public version (0.1.0).** Gankhi can change your system: it can update or remove programs, empty apt's download cache and remove unused packages. Every change shows a preview first and needs your confirmation, and there is no undo button. It has been tested on Ubuntu 24.04-based Linux only.
 
@@ -56,6 +56,8 @@ scripts/install.sh
 
 Then open **Gankhi** from your applications menu, or run `gankhi` in a terminal. It opens in your browser and only accepts connections from your own computer. Close it with `Ctrl+C` in its terminal. If you have more than one browser installed, a small window asks which one to use and can remember the choice. Use the second icon **Gankhi (choose browser)** to be asked again. To remove it: `scripts/uninstall.sh`.
 
+**First time:** your desktop may ask whether you want to run the Gankhi icon. Choose "Run" or "Trust this launcher". It asks only once; after that it opens directly. (If it does not open, right-click the icon and choose "Allow launching".)
+
 Each start creates a new secret key that is kept out of the terminal: the browser opens with it, and a copy is saved in `~/.cache/gankhi/dashboard-url`, readable only by you.
 
 ### Ways to open Gankhi
@@ -72,7 +74,7 @@ Typing `127.0.0.1:PORT` alone does not work, and that is on purpose: the address
 
 ## Requirements
 
-Debian/Ubuntu-based Linux and Python 3.10 or newer. Developed and tested on an Ubuntu 24.04 base. Windows and macOS are not supported.
+Linux with apt and Python 3.10 or newer. Developed and tested on an Ubuntu 24.04 base. Ubuntu and its derivatives (Linux Mint, Linux Lite and similar) are the intended systems. On plain Debian the inventory, updates and cleanup use apt and should work, but the vulnerability check does not: it uses Ubuntu's list, which only covers Ubuntu releases, so Gankhi turns it off there. Windows and macOS are not supported.
 
 ## Development notes
 
