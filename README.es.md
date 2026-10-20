@@ -8,6 +8,16 @@ Un panel local y privado para Linux basado en Ubuntu.
 
 [Read in English](README.md)
 
+## Capturas
+
+Las capturas usan datos de ejemplo y la interfaz en inglés.
+
+![Inicio: resumen del sistema, disco y memoria, espacio recuperable y programas instalados](docs/screenshots/home.png)
+
+![Programas con vulnerabilidades conocidas y la corrección disponible para cada uno](docs/screenshots/vulnerabilities.png)
+
+![Vista previa que se muestra antes de cualquier cambio, con el comando exacto que se ejecutaría](docs/screenshots/preview.png)
+
 ## Objetivos
 
 - Inventario del software instalado (apt, snap, flatpak, pip y npm; Docker más adelante) con versión, tamaño y fecha de instalación.
