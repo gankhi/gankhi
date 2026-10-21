@@ -537,6 +537,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "x_of_y_ok": "{ok} of {all} up to date",
         "pill_vuln": "{n} with vulnerabilities",
         "pill_vuln_open": "See the list of what has vulnerabilities",
+        "leg_open": "See the list",
+        "ok_outside_note": (
+            "This list shows the system programs. {n} more Python or npm packages have no "
+            "known notices, in the section below."
+        ),
         "vuln_outside_note": (
             "This list shows the system programs. {n} more with vulnerabilities are "
             "Python or npm packages, in the section below."
@@ -1106,6 +1111,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "x_of_y_ok": "{ok} de {all} al día",
         "pill_vuln": "{n} con vulnerabilidades",
         "pill_vuln_open": "Ver la lista de lo que tiene vulnerabilidades",
+        "leg_open": "Ver la lista",
+        "ok_outside_note": (
+            "Esta lista muestra los programas del sistema. {n} paquetes más de Python o npm "
+            "no tienen avisos conocidos, en la sección de abajo."
+        ),
         "vuln_outside_note": (
             "Esta lista muestra los programas del sistema. {n} más con vulnerabilidades son "
             "paquetes de Python o npm, en la sección de abajo."
