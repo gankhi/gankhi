@@ -10,6 +10,8 @@ All notable changes to Gankhi. Dates are written year-month-day.
 - The Python and npm section lists every package (the ones without notices fold away), in the page and in the PDF report.
 - The assistant and the header count the same: system programs plus Python and npm packages.
 - The preview and the Downloads detail pages have an ES/EN switch.
+- Each part of the programs ring (up to date, outdated, with vulnerabilities, not checked) opens its own list.
+- Column titles stay in view while you scroll the page (on screens wide enough for the tables to fit).
 - While a change runs, a clear "working" notice; when it ends, a "finished" notice and the output folded away.
 
 ### Changed
