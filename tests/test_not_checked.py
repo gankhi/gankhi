@@ -175,3 +175,16 @@ def test_the_text_for_an_ai_names_the_ubuntu_a_derivative_is_built_on():
     ubuntu = ask_ai.build_prompt(one, "Ubuntu 24.04.3 LTS", "en", "Ubuntu:24.04:LTS")
     assert "I use Ubuntu 24.04.3 LTS." in ubuntu  # already says it: not repeated
     assert "I use Linux." in ask_ai.build_prompt(one, "", "en", "")
+
+
+def test_the_header_only_mentions_the_vulnerability_data_when_it_was_just_downloaded():
+    def scan(downloaded):
+        return lambda: replace(make_result(), feed_downloaded=downloaded)
+
+    for downloaded in (False, True):
+        client = login(build(scan(downloaded)).test_client())
+        client.get("/", base_url=BASE)
+        wait_until_done(client)
+        html = client.get("/", base_url=BASE).get_data(as_text=True)
+        assert ("Vulnerability data: downloaded just now" in html) is downloaded
+        assert "already up to date" not in html
