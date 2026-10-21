@@ -131,3 +131,30 @@ def test_the_assistant_and_the_report_say_what_was_not_checked():
     data = report.build_report(_result(), "en", "now")
     assert b"Not checked" in data and b"gcloud" in data and b"cloud-sdk" in data
     assert b"snap, publisher mozilla" in data
+
+
+def test_each_part_of_the_programs_ring_opens_its_own_list():
+    client = login(build(_result).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    for filter_name in ("ok", "outdated", "unchecked"):
+        assert f'href="/?f={filter_name}#tools"' in html
+    only = client.get("/?f=unchecked", base_url=BASE).get_data(as_text=True)
+    assert "<strong>gcloud</strong>" in only and "<strong>vim</strong>" not in only
+
+
+def test_the_up_to_date_list_says_when_python_or_npm_packages_make_up_the_difference():
+    from gankhi.external_tools import ExternalTool
+
+    def with_packages():
+        fine = [ExternalTool(f"p{i}", "1", "pip", "PyPI", vulnerable=False) for i in range(3)]
+        return replace(make_result(), external=fine)
+
+    client = login(build(with_packages).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    listed = client.get("/?f=ok", base_url=BASE).get_data(as_text=True)
+    assert "3 more Python or npm packages have no known notices" in listed
+    other = client.get("/?f=outdated", base_url=BASE).get_data(as_text=True)
+    assert "Python or npm packages have no known notices" not in other

@@ -114,10 +114,10 @@
     <div class="ringrow">
       {{ ring([(100 * totals.ok / total, 'good'), (100 * totals.outdated / total, 'warn'), (100 * totals.vulnerable / total, 'bad'), (100 * totals.unchecked / total, 'dim')], totals.ok ~ '/' ~ totals.all, t('ring_ok'), t('programs')) }}
       <ul class="legend">
-        <li><i class="sw good"></i>{{ t('leg_ok', n=totals.ok) }}</li>
-        <li><i class="sw warn"></i>{{ t('leg_old', n=totals.outdated) }}</li>
-        {% if totals.vulnerable %}<li><i class="sw bad"></i>{{ t('leg_vuln', n=totals.vulnerable) }}</li>{% endif %}
-        {% if totals.unchecked %}<li><i class="sw dim"></i>{{ t('leg_unchecked', n=totals.unchecked) }}</li>{% endif %}
+        <li><a href="{{ url_for('index', f='ok') }}#tools" title="{{ t('leg_open') }}"><i class="sw good"></i>{{ t('leg_ok', n=totals.ok) }}</a></li>
+        <li><a href="{{ url_for('index', f='outdated') }}#tools" title="{{ t('leg_open') }}"><i class="sw warn"></i>{{ t('leg_old', n=totals.outdated) }}</a></li>
+        {% if totals.vulnerable %}<li><a href="{{ url_for('index', f='vulnerable') }}#tools" title="{{ t('leg_open') }}"><i class="sw bad"></i>{{ t('leg_vuln', n=totals.vulnerable) }}</a></li>{% endif %}
+        {% if totals.unchecked %}<li><a href="{{ url_for('index', f='unchecked') }}#tools" title="{{ t('leg_open') }}"><i class="sw dim"></i>{{ t('leg_unchecked', n=totals.unchecked) }}</a></li>{% endif %}
       </ul>
     </div>
     {% if totals.outside %}<p class="small muted">{{ t('totals_note', n=totals.outside) }}</p>{% endif %}
@@ -154,6 +154,7 @@
     {% endfor %}
   </nav>
   {% if filter == 'vulnerable' and totals.vulnerable > counts.vulnerable %}<p class="muted small">{{ t('vuln_outside_note', n=totals.vulnerable - counts.vulnerable) }}</p>{% endif %}
+  {% if filter == 'ok' and totals.ok > counts.ok %}<p class="muted small">{{ t('ok_outside_note', n=totals.ok - counts.ok) }}</p>{% endif %}
 
   <input type="checkbox" id="more-tools" class="toggle">
   <div class="scroll"><table class="aligned">{{ cols() }}
