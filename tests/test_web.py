@@ -1283,3 +1283,15 @@ def test_the_report_matches_the_page_for_python_packages_and_the_total():
     assert b"No known notices" in english
     spanish = report.build_report(result, "es", "now")
     assert b"Sin avisos conocidos" in spanish
+
+
+def test_the_preview_explains_that_the_xs_in_the_command_are_filled_in_by_the_system():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    page = "/preview?action=update&pkg=vim"
+    english = client.get(page, base_url=BASE).get_data(as_text=True)
+    assert "fills in the XXXXXX" in english and "nothing to replace" in english
+    client.get("/lang/es", base_url=BASE)
+    spanish = client.get(page, base_url=BASE).get_data(as_text=True)
+    assert "las XXXXXX las completa el sistema" in spanish
