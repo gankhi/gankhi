@@ -188,12 +188,18 @@ TEXTS: dict[str, dict[str, str]] = {
         "cancel": "Cancel",
         "run_waiting": "Waiting for you to type your password in the system window...",
         "run_ok": "Finished successfully. Scanning again to refresh the numbers.",
-        "run_working": "Working… this can take a few minutes. Keep this page open until it says it finished.",
+        "run_working": (
+            "Working… this can take a few minutes. Keep this page open until it says it finished."
+        ),
         "run_show_output": "Show what ran",
         "run_hide_output": "Hide what ran",
         "run_home": "Back to start",
         "run_failed": "It did not finish. Read the output above; nothing else was changed.",
         "run_refused": "Gankhi refused to run this. Reload the preview and try again.",
+        "run_busy": (
+            "Another change is still running. Gankhi does one at a time: wait for it to "
+            "finish and press the button again."
+        ),
         "run_saved": "List of programs saved in",
         "say_scanning": ("We are analysing your system. This can take a few minutes, please wait."),
         "say_intro": "I have just analysed your system.",
@@ -718,12 +724,19 @@ TEXTS: dict[str, dict[str, str]] = {
         "cancel": "Cancelar",
         "run_waiting": "Esperando que escribas tu contraseña en la ventana del sistema...",
         "run_ok": "Terminó bien. Escaneando de nuevo para actualizar las cifras.",
-        "run_working": "Trabajando… puede tardar unos minutos. Dejá esta página abierta hasta que diga que terminó.",
+        "run_working": (
+            "Trabajando… puede tardar unos minutos. "
+            "Dejá esta página abierta hasta que diga que terminó."
+        ),
         "run_show_output": "Ver lo que se ejecutó",
         "run_hide_output": "Ocultar lo que se ejecutó",
         "run_home": "Volver al inicio",
         "run_failed": "No terminó. Leé la salida de arriba; no se cambió nada más.",
         "run_refused": "Gankhi se negó a ejecutarlo. Recargá la vista previa y probá de nuevo.",
+        "run_busy": (
+            "Todavía hay otro cambio en curso. Gankhi hace uno por vez: esperá a que termine "
+            "y volvé a apretar el botón."
+        ),
         "run_saved": "Lista de programas guardada en",
         "say_scanning": (
             "Estamos analizando tu sistema. Puede tardar unos minutos, esperá un momento."

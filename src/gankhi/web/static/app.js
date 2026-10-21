@@ -170,7 +170,12 @@
       fetch("/api/run", { method: "POST", headers: { "X-Gankhi": "1", "Content-Type": "application/json" },
                           credentials: "same-origin", body: JSON.stringify(body) })
         .then(function (r) {
-          if (r.status === 202) { follow(); } else { result.textContent = run.dataset.refused; }
+          if (r.status === 202) { follow(); return; }
+          // Only one change runs at a time: say so, and let the person try again later.
+          return r.json().catch(function () { return {}; }).then(function (data) {
+            status("fail", data.error === "busy" ? run.dataset.busy : run.dataset.refused);
+            if (data.error === "busy") { run.disabled = false; terminal.hidden = true; }
+          });
         })
         .catch(function () { status("fail", run.dataset.refused); });
     });

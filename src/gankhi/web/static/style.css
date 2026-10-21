@@ -306,3 +306,4 @@ details.ext-others[open] > summary { margin-bottom: 8px; }
 .run-status.ok { color: var(--green); border-color: var(--green); }
 .run-status.ok::before { content: "✓ "; }
 .run-status.fail { color: var(--red); border-color: var(--red); }
+#toggle-output[hidden] { display: none; }
