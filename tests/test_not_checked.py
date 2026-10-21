@@ -158,3 +158,9 @@ def test_the_up_to_date_list_says_when_python_or_npm_packages_make_up_the_differ
     assert "3 more Python or npm packages have no known notices" in listed
     other = client.get("/?f=outdated", base_url=BASE).get_data(as_text=True)
     assert "Python or npm packages have no known notices" not in other
+
+
+def test_column_titles_stay_in_view_while_the_page_scrolls():
+    css = (Path(__file__).parent.parent / "src/gankhi/web/static/style.css").read_text()
+    assert "thead th { position: sticky; top: 0;" in css
+    assert "@media (min-width: 1040px) { .scroll { overflow-x: clip; } }" in css

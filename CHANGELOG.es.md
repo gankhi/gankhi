@@ -10,6 +10,8 @@ Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 - La sección de Python y npm lista todos los paquetes (los que no tienen avisos quedan plegados), en la página y en el informe PDF.
 - El asistente y el encabezado cuentan lo mismo: programas del sistema más paquetes de Python y npm.
 - La vista previa y las páginas de detalle de descargas tienen selector ES/EN.
+- Cada parte del anillo de programas (al día, desactualizados, con vulnerabilidades, sin revisar) abre su propia lista.
+- Los títulos de las columnas quedan a la vista mientras bajás por la página (en pantallas lo bastante anchas para que las tablas entren).
 - Mientras corre un cambio, un aviso claro de «trabajando»; al terminar, un aviso de «terminó» y la salida plegada.
 
 ### Cambiado
