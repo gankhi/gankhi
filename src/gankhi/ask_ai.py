@@ -106,11 +106,29 @@ def how_text(item: Unchecked, lang: str) -> str:
     return texts[item.how].format(source=item.source or "?").replace(" ?", "").replace(", ?", "")
 
 
-def build_prompt(items: list[Unchecked], os_name: str, lang: str) -> str:
+def system_phrase(os_name: str, ecosystem: str, lang: str) -> str:
+    """The system as the AI needs to know it: its own name and the Ubuntu it is built on.
+
+    A derivative reports its own name and version ("Linux Lite 7.4"), which says nothing about
+    the Ubuntu release the packages come from: that is what a command or a fixed version depends on.
+    """
+    base = (
+        ecosystem.removeprefix("Ubuntu:").replace(":", " ")
+        if ecosystem.startswith("Ubuntu:")
+        else ""
+    )
+    name = os_name or "Linux"
+    if not base or name.startswith("Ubuntu"):
+        return name
+    joiner = {"es": "basado en Ubuntu"}.get(lang, "based on Ubuntu")
+    return f"{name} ({joiner} {base})"
+
+
+def build_prompt(items: list[Unchecked], os_name: str, lang: str, ecosystem: str = "") -> str:
     """The text to copy: the question, the list and how to answer."""
     texts = _TEXT.get(lang, _TEXT["en"])
     lines = [f"- {i.name} {i.version} ({how_text(i, lang)})" for i in items[:MAX_LISTED]]
     if len(items) > MAX_LISTED:
         lines.append(texts["more"].format(n=len(items) - MAX_LISTED))
-    intro = texts["intro"].format(os=os_name or "Linux")
+    intro = texts["intro"].format(os=system_phrase(os_name, ecosystem, lang))
     return intro + "\n\n" + "\n".join(lines) + "\n\n" + texts["ask"]

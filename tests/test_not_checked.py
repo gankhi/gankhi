@@ -180,3 +180,27 @@ def test_the_not_checked_card_lists_only_what_gankhi_cannot_update_for_you():
     assert "The text below includes them too" in card
     # the text to copy still has everything that was not checked
     assert "- gcloud 548.0.0" in card and "- handmade 1.0" in card
+
+
+def test_the_text_for_an_ai_names_the_ubuntu_a_derivative_is_built_on():
+    one = [ask_ai.Unchecked("gcloud", "1", "apt", "x")]
+    text = ask_ai.build_prompt(one, "Linux Lite 7.4", "en", "Ubuntu:24.04:LTS")
+    assert "I use Linux Lite 7.4 (based on Ubuntu 24.04 LTS)." in text
+    spanish = ask_ai.build_prompt(one, "Linux Lite 7.4", "es", "Ubuntu:24.04:LTS")
+    assert "Uso Linux Lite 7.4 (basado en Ubuntu 24.04 LTS)." in spanish
+    ubuntu = ask_ai.build_prompt(one, "Ubuntu 24.04.3 LTS", "en", "Ubuntu:24.04:LTS")
+    assert "I use Ubuntu 24.04.3 LTS." in ubuntu  # already says it: not repeated
+    assert "I use Linux." in ask_ai.build_prompt(one, "", "en", "")
+
+
+def test_the_header_only_mentions_the_vulnerability_data_when_it_was_just_downloaded():
+    def scan(downloaded):
+        return lambda: replace(make_result(), feed_downloaded=downloaded)
+
+    for downloaded in (False, True):
+        client = login(build(scan(downloaded)).test_client())
+        client.get("/", base_url=BASE)
+        wait_until_done(client)
+        html = client.get("/", base_url=BASE).get_data(as_text=True)
+        assert ("Vulnerability data: downloaded just now" in html) is downloaded
+        assert "already up to date" not in html

@@ -300,7 +300,8 @@ def create_app(
         items = context["unchecked"]
         if items:
             os_name = result.system.os_name if result is not None and result.system else ""
-            context["ai_prompt"] = ask_ai.build_prompt(items, os_name, lang)  # type: ignore[arg-type]
+            ecosystem = result.ecosystem if result is not None else ""
+            context["ai_prompt"] = ask_ai.build_prompt(items, os_name, lang, ecosystem)  # type: ignore[arg-type]
         return render_template("index.html", **context)
 
     def build_preview(result: ScanResult, action: str, package: str) -> actions.Preview:
