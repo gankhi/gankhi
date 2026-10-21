@@ -1270,3 +1270,16 @@ def test_the_assistant_says_how_many_python_or_npm_packages_add_to_the_total():
     assert (
         "System programs with security problems: 2, plus 1 more in Python or npm: 3 in all" in text
     )
+
+
+def test_the_report_matches_the_page_for_python_packages_and_the_total():
+    from gankhi import report
+
+    result = _with_python_packages()
+    english = report.build_report(result, "en", "now")
+    assert b"requests" in english
+    assert all(f"pkg{i}".encode() in english for i in range(3))
+    assert b"3 in all" in english  # same total sentence as the assistant on the page
+    assert b"No known notices" in english
+    spanish = report.build_report(result, "es", "now")
+    assert b"Sin avisos conocidos" in spanish

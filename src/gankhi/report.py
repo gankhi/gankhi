@@ -7,6 +7,7 @@ the same sentences the assistant shows, then adds the details in tables.
 from __future__ import annotations
 
 from gankhi import families, narration, paging
+from gankhi.external_tools import MAX_LISTED_OTHERS
 from gankhi.pdfwriter import Pdf
 from gankhi.service import ScanResult
 from gankhi.tools import Tool
@@ -105,15 +106,18 @@ def _label(item: families.Group, kernel: str, components: str) -> str:
 
 
 def _external_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
-    """Python and npm packages that have notices (the rest are only counted in the summary)."""
+    """Python and npm packages: the ones with notices first, then the rest (as on the page)."""
 
     def say(key: str, **values: object) -> str:
         return i18n.translate(lang, key, **values)
 
     bad = [t for t in result.external if t.vulnerable]
-    if not (bad or result.external_failed):
+    fine = [t for t in result.external if not t.vulnerable]
+    if not (result.external or result.external_failed):
         return
     pdf.heading(say("report_external"))
+    if result.external and not bad:
+        pdf.paragraph(say("ext_none"))
     if bad:
         rows, tones = [], []
         for tool in bad[:MAX_ROWS]:
@@ -139,6 +143,18 @@ def _external_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
         )
         if len(bad) > MAX_ROWS:
             pdf.paragraph(say("report_more", n=len(bad) - MAX_ROWS))
+    if fine:
+        pdf.paragraph(say("report_ext_others", n=len(fine)))
+        pdf.table(
+            [say("ext_col_package"), say("ext_col_tool"), say("report_version"), say("col_state")],
+            [
+                [t.name, t.tool, t.version, say("ext_others_state")]
+                for t in fine[:MAX_LISTED_OTHERS]
+            ],
+            [0.34, 0.16, 0.2, 0.3],
+        )
+        if len(fine) > MAX_LISTED_OTHERS:
+            pdf.paragraph(say("ext_others_more", n=len(fine) - MAX_LISTED_OTHERS))
     if result.external_failed:
         pdf.paragraph(say("ext_failed", tools=", ".join(result.external_failed)), tone="warn")
 

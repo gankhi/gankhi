@@ -17,6 +17,10 @@ PRIORITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "": 4}
 MAX_CVE_LINES = 12
 
 
+# How many packages without notices the page and the PDF report list (the rest are counted).
+MAX_LISTED_OTHERS = 500
+
+
 @dataclass(frozen=True)
 class ExternalTool:
     name: str

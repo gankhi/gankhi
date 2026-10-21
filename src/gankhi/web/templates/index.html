@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% set TOP_ROWS = 5 %}
-{% set EXT_OTHERS_MAX = 500 %}
 {% macro badge(priority) %}<span class="badge p-{{ priority or 'unknown' }}">{{ t(priority or 'unknown') }}</span>{% endmacro %}
 {# the three tables share these columns, so name, origin, version and size line up #}
 {% macro cols() %}<colgroup><col class="c-name"><col class="c-origin"><col class="c-version"><col class="c-size"><col class="c-state"><col class="c-last"></colgroup>{% endmacro %}
