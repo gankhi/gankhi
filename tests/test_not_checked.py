@@ -164,3 +164,14 @@ def test_column_titles_stay_in_view_while_the_page_scrolls():
     css = (Path(__file__).parent.parent / "src/gankhi/web/static/style.css").read_text()
     assert "thead th { position: sticky; top: 0;" in css
     assert "@media (min-width: 1040px) { .scroll { overflow-x: clip; } }" in css
+
+
+def test_the_text_for_an_ai_names_the_ubuntu_a_derivative_is_built_on():
+    one = [ask_ai.Unchecked("gcloud", "1", "apt", "x")]
+    text = ask_ai.build_prompt(one, "Linux Lite 7.4", "en", "Ubuntu:24.04:LTS")
+    assert "I use Linux Lite 7.4 (based on Ubuntu 24.04 LTS)." in text
+    spanish = ask_ai.build_prompt(one, "Linux Lite 7.4", "es", "Ubuntu:24.04:LTS")
+    assert "Uso Linux Lite 7.4 (basado en Ubuntu 24.04 LTS)." in spanish
+    ubuntu = ask_ai.build_prompt(one, "Ubuntu 24.04.3 LTS", "en", "Ubuntu:24.04:LTS")
+    assert "I use Ubuntu 24.04.3 LTS." in ubuntu  # already says it: not repeated
+    assert "I use Linux." in ask_ai.build_prompt(one, "", "en", "")
