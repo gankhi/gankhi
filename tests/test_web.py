@@ -1330,3 +1330,12 @@ def test_the_run_panel_has_a_clear_working_and_finished_status():
     script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
     assert 'status("working"' in script and 'status(ok ? "ok" : "fail"' in script
     assert "terminal.hidden = true" in script  # on success the long output is folded away
+
+
+def test_the_vulnerability_list_date_says_it_is_when_ubuntu_last_updated_it():
+    from gankhi.web.i18n import translate
+
+    assert "last updated by Ubuntu" in translate("en", "fact_feed", date="21 Oct 2026, 03:17")
+    assert "última actualización de Ubuntu" in translate(
+        "es", "fact_feed", date="21 oct 2026, 03:17"
+    )
