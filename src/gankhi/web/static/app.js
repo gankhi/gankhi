@@ -123,15 +123,40 @@
     if (understood) { understood.addEventListener("change", sync); }
     sync();
 
+    var toggle = document.getElementById("toggle-output");
+    var leave = document.getElementById("leave");
+    function status(kind, text) {
+      result.hidden = false;
+      result.className = "run-status " + kind;
+      result.textContent = text;
+    }
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        terminal.hidden = !terminal.hidden;
+        toggle.textContent = terminal.hidden ? run.dataset.show : run.dataset.hide;
+      });
+    }
+
     function follow() {
       fetch("/api/run/status", { credentials: "same-origin" })
         .then(function (r) { return r.json(); })
         .then(function (s) {
           terminal.textContent = "$ " + s.command + "\n" + s.lines.join("\n");
           terminal.scrollTop = terminal.scrollHeight;
-          if (s.state === "running") { setTimeout(follow, 1000); return; }
-          result.textContent = (s.state === "done" ? run.dataset.ok : run.dataset.failed) +
-            (s.snapshot ? " " + run.dataset.saved + " " + s.snapshot : "");
+          if (s.state === "running") {
+            status("working", run.dataset.working);
+            setTimeout(follow, 1000);
+            return;
+          }
+          var ok = s.state === "done";
+          status(ok ? "ok" : "fail", (ok ? run.dataset.ok : run.dataset.failed) +
+            (s.snapshot ? " " + run.dataset.saved + " " + s.snapshot : ""));
+          if (leave) { leave.textContent = run.dataset.home; }
+          if (ok && toggle) {  // success: fold the long output away, it stays one click away
+            terminal.hidden = true;
+            toggle.hidden = false;
+            toggle.textContent = run.dataset.show;
+          }
         })
         .catch(function () { setTimeout(follow, 2000); });
     }
@@ -147,7 +172,7 @@
         .then(function (r) {
           if (r.status === 202) { follow(); } else { result.textContent = run.dataset.refused; }
         })
-        .catch(function () { result.textContent = run.dataset.refused; });
+        .catch(function () { status("fail", run.dataset.refused); });
     });
   }
 
