@@ -190,6 +190,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "run_ok": "Done. Scanning again to refresh the numbers.",
         "run_failed": "It did not finish. Read the output above; nothing else was changed.",
         "run_refused": "Gankhi refused to run this. Reload the preview and try again.",
+        "run_busy": (
+            "Another change is still running. Gankhi does one at a time: wait for it to "
+            "finish and press the button again."
+        ),
         "run_saved": "List of programs saved in",
         "say_scanning": ("We are analysing your system. This can take a few minutes, please wait."),
         "say_intro": "I have just analysed your system.",
@@ -716,6 +720,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "run_ok": "Listo. Escaneando de nuevo para actualizar las cifras.",
         "run_failed": "No terminó. Leé la salida de arriba; no se cambió nada más.",
         "run_refused": "Gankhi se negó a ejecutarlo. Recargá la vista previa y probá de nuevo.",
+        "run_busy": (
+            "Todavía hay otro cambio en curso. Gankhi hace uno por vez: esperá a que termine "
+            "y volvé a apretar el botón."
+        ),
         "run_saved": "Lista de programas guardada en",
         "say_scanning": (
             "Estamos analizando tu sistema. Puede tardar unos minutos, esperá un momento."

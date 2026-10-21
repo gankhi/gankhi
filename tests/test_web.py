@@ -1295,3 +1295,19 @@ def test_the_preview_explains_that_the_xs_in_the_command_are_filled_in_by_the_sy
     client.get("/lang/es", base_url=BASE)
     spanish = client.get(page, base_url=BASE).get_data(as_text=True)
     assert "las XXXXXX las completa el sistema" in spanish
+
+
+def test_a_second_change_while_one_is_running_is_refused_with_a_clear_message():
+    from pathlib import Path
+
+    executor = FakeExecutor(busy=True)
+    client = run_client(executor, lambda a, n, u=False: "Inst vim [9.1] (9.2 noble-updates)\n")
+    response = post_run(
+        client, {"action": "update", "pkg": "vim", "confirm": True, "understood": True}
+    )
+    assert response.status_code == 409 and response.get_json() == {"error": "busy"}
+    assert executor.started == []
+    page = client.get("/preview?action=update&pkg=vim", base_url=BASE).get_data(as_text=True)
+    assert "Another change is still running" in page
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
+    assert 'data.error === "busy"' in script
