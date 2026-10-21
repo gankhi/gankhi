@@ -299,3 +299,11 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 details.ext-others { margin-top: 12px; }
 details.ext-others > summary { cursor: pointer; color: var(--muted); }
 details.ext-others[open] > summary { margin-bottom: 8px; }
+
+.run-status { font-weight: 600; padding: 10px 12px; border-radius: 8px; margin: 12px 0 4px; border: 1px solid var(--line); }
+.run-status[hidden] { display: none; }
+.run-status.working { color: var(--amber); border-color: var(--amber); }
+.run-status.ok { color: var(--green); border-color: var(--green); }
+.run-status.ok::before { content: "✓ "; }
+.run-status.fail { color: var(--red); border-color: var(--red); }
+#toggle-output[hidden] { display: none; }

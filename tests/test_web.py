@@ -1311,3 +1311,22 @@ def test_a_second_change_while_one_is_running_is_refused_with_a_clear_message():
     assert "Another change is still running" in page
     script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
     assert 'data.error === "busy"' in script
+
+
+def test_the_run_panel_has_a_clear_working_and_finished_status():
+    from pathlib import Path
+
+    client = run_client(FakeExecutor())
+    page = client.get("/preview?action=update&pkg=vim", base_url=BASE).get_data(as_text=True)
+    for marker in (
+        'id="run-result"',
+        'id="toggle-output"',
+        'id="leave"',
+        "data-working=",
+        "data-home=",
+    ):
+        assert marker in page
+    assert "Finished successfully" in page and "Working…" in page
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
+    assert 'status("working"' in script and 'status(ok ? "ok" : "fail"' in script
+    assert "terminal.hidden = true" in script  # on success the long output is folded away
