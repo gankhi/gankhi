@@ -154,7 +154,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "prev_run_note": (
             "To do it from a terminal instead, copy these two lines: "
             "the first saves a temporary copy of your list of programs, as a record of what was "
-            "installed (the system deletes it when the computer restarts), the second does it."
+            "installed (the system deletes it when the computer restarts), the second does it. "
+            "Copy them exactly as they are: the system fills in the XXXXXX with random letters "
+            "and numbers to give that file a unique name, so there is nothing to replace."
         ),
         "prev_reboot": "If a new kernel is installed, restart the computer afterwards.",
         "blocked_unknown": "That program is not in the list, so there is nothing to preview.",
@@ -675,7 +677,9 @@ TEXTS: dict[str, dict[str, str]] = {
             "Para hacerlo desde una terminal, copiá estas dos líneas: "
             "la primera guarda una copia temporal de tu lista de programas, como registro de lo "
             "que había instalado (el sistema la borra al reiniciar la computadora), "
-            "la segunda lo hace."
+            "la segunda lo hace. Copialas tal cual: las XXXXXX las completa el sistema solo con "
+            "letras y números al azar para darle un nombre único a ese archivo, así que no hay "
+            "nada que reemplazar."
         ),
         "prev_reboot": "Si se instala un kernel nuevo, reiniciá la computadora después.",
         "blocked_unknown": "Ese programa no está en la lista, no hay nada que previsualizar.",
