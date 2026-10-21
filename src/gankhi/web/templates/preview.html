@@ -54,7 +54,7 @@
       <button type="button" id="run" class="{{ 'danger-solid' if view.action in ('remove', 'autoremove') else '' }}"
         data-action="{{ view.action }}" data-pkg="{{ view.package }}" data-ack="{{ 1 if needs_ack else 0 }}"
         data-waiting="{{ t('run_waiting') }}" data-ok="{{ t('run_ok') }}" data-failed="{{ t('run_failed') }}"
-        data-refused="{{ t('run_refused') }}" data-saved="{{ t('run_saved') }}">{{ t('confirm_' ~ view.action, name=view.package) }}</button>
+        data-refused="{{ t('run_refused') }}" data-busy="{{ t('run_busy') }}" data-saved="{{ t('run_saved') }}">{{ t('confirm_' ~ view.action, name=view.package) }}</button>
       <a class="btn" href="{{ url_for('index') }}">{{ t('cancel') }}</a>
       <pre class="terminal mono" id="terminal" hidden></pre>
       <p class="small" id="run-result" role="status"></p>
