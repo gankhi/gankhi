@@ -164,3 +164,16 @@ def test_column_titles_stay_in_view_while_the_page_scrolls():
     css = (Path(__file__).parent.parent / "src/gankhi/web/static/style.css").read_text()
     assert "thead th { position: sticky; top: 0;" in css
     assert "@media (min-width: 1040px) { .scroll { overflow-x: clip; } }" in css
+
+
+def test_the_header_only_mentions_the_vulnerability_data_when_it_was_just_downloaded():
+    def scan(downloaded):
+        return lambda: replace(make_result(), feed_downloaded=downloaded)
+
+    for downloaded in (False, True):
+        client = login(build(scan(downloaded)).test_client())
+        client.get("/", base_url=BASE)
+        wait_until_done(client)
+        html = client.get("/", base_url=BASE).get_data(as_text=True)
+        assert ("Vulnerability data: downloaded just now" in html) is downloaded
+        assert "already up to date" not in html
