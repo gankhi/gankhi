@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from gankhi import cleanup
 from gankhi import downloads as downloads_mod
 from gankhi.collectors.apt import collect
+from gankhi.collectors.origins import collect_third_party
 from gankhi.collectors.sandboxed import SandboxedApp, collect_sandboxed
 from gankhi.collectors.updates import collect_updates
 from gankhi.external_scan import scan_external
@@ -24,7 +25,7 @@ from gankhi.external_tools import ExternalTool
 from gankhi.feed import refresh
 from gankhi.osv import Finding, find_findings, is_snap_stub, load_advisories
 from gankhi.progress import Progress
-from gankhi.release import detect_ecosystem
+from gankhi.release import codename_for, detect_ecosystem
 from gankhi.summary import PackageRisk, summarize
 from gankhi.system import SystemInfo, read_system
 from gankhi.tools import Tool, build_tools
@@ -103,6 +104,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
             lambda r: {"external_packages": len(r[0])},
         )
         sandboxed_job = pool.submit(collect_sandboxed)
+        origins_job = pool.submit(collect_third_party, codename_for(ecosystem))
         status = step(
             "feed",
             refresh,
@@ -120,8 +122,11 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
         download_groups = downloads_job.result()
         external, external_failed = external_job.result()
         sandboxed = sandboxed_job.result()
+        outside = origins_job.result()
     progress.begin("analysis")
-    findings = find_findings(packages, index)
+    # Ubuntu's notices are about Ubuntu's own builds: they do not apply to a package that comes
+    # from another repository, even if the name is the same.
+    findings = find_findings([p for p in packages if p.name.split(":")[0] not in outside], index)
     log.info("scan finished in %.1f s", time.monotonic() - started)
     result = ScanResult(
         ecosystem=ecosystem,
@@ -138,7 +143,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
         reclaimable=cleanup.estimate(packages, system.kernel),
         download_groups=download_groups,
         downloads_folder="~/" + folder.name,
-        tools=build_tools(packages, findings, updates, system.kernel),
+        tools=build_tools(packages, findings, updates, system.kernel, outside),
         external=external,
         external_failed=external_failed,
         sandboxed=sandboxed,

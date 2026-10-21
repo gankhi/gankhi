@@ -41,6 +41,26 @@ TEXTS: dict[str, dict[str, str]] = {
         "f_all": "All",
         "f_ok": "Up to date",
         "f_outdated": "Outdated",
+        "f_unchecked": "Not checked",
+        "state_unchecked": "Not checked",
+        "unchecked_from": "Not from Ubuntu: {origin}",
+        "leg_unchecked": "{n} not checked",
+        "unchk_title": "Not checked",
+        "unchk_sub": (
+            "{n} from outside Ubuntu. Gankhi has no list of notices to compare them with, "
+            "so it cannot say whether they are safe."
+        ),
+        "unchk_copy": "Copy list and question for an AI",
+        "unchk_privacy": (
+            "Gankhi sends nothing. Pasting this into an AI shares your list of programs with "
+            "that service: do it only with one you trust. An AI can be wrong or out of date, "
+            "so check what it answers."
+        ),
+        "unchk_what": "What gets copied",
+        "say_unchecked": (
+            "{n} programs come from outside Ubuntu, so I cannot check them for vulnerabilities. "
+            "That is not the same as safe. See the Not checked section."
+        ),
         "f_vulnerable": "With vulnerabilities",
         "show_all": "Include libraries and dependencies",
         "apply": "Apply",
@@ -570,6 +590,26 @@ TEXTS: dict[str, dict[str, str]] = {
         "f_all": "Todas",
         "f_ok": "Al día",
         "f_outdated": "Desactualizadas",
+        "f_unchecked": "Sin revisar",
+        "state_unchecked": "Sin revisar",
+        "unchecked_from": "No es de Ubuntu: {origin}",
+        "leg_unchecked": "{n} sin revisar",
+        "unchk_title": "Sin revisar",
+        "unchk_sub": (
+            "{n} vienen de afuera de Ubuntu. Gankhi no tiene una lista de avisos para "
+            "compararlos, así que no puede decir si son seguros."
+        ),
+        "unchk_copy": "Copiar lista y consulta para una IA",
+        "unchk_privacy": (
+            "Gankhi no envía nada. Pegar esto en una IA comparte tu lista de programas con ese "
+            "servicio: hacelo solo con una de confianza. Una IA puede equivocarse o estar "
+            "desactualizada, así que verificá lo que responda."
+        ),
+        "unchk_what": "Qué se copia",
+        "say_unchecked": (
+            "{n} programas vienen de afuera de Ubuntu, así que no puedo revisarlos por "
+            "vulnerabilidades. Eso no es lo mismo que estar seguros. Mirá la sección Sin revisar."
+        ),
         "f_vulnerable": "Con vulnerabilidades",
         "show_all": "Incluir bibliotecas y dependencias",
         "apply": "Aplicar",

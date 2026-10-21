@@ -25,6 +25,7 @@ from werkzeug.wrappers import Response
 from gankhi import (
     actions,
     advice,
+    ask_ai,
     downloads,
     external_tools,
     folders,
@@ -39,7 +40,7 @@ from gankhi.progress import Progress
 from gankhi.runner import CommandNotAllowedError
 from gankhi.service import ScanResult
 from gankhi.summary import RUNNING_KERNEL
-from gankhi.tools import OK, OUTDATED, VULNERABLE
+from gankhi.tools import OK, OUTDATED, UNCHECKED, VULNERABLE
 from gankhi.web import i18n
 from gankhi.web.jobs import DONE, IDLE, RUNNING, ScanJob
 
@@ -84,7 +85,7 @@ STEP_WEIGHTS = {
     "external": 4,
     "analysis": 10,
 }
-FILTERS = ("all", "ok", "outdated", "vulnerable")
+FILTERS = ("all", "ok", "outdated", "vulnerable", "unchecked")
 MAX_QUERY_CHARS = 100
 MAX_REQUEST_BYTES = 64 * 1024  # the page only ever sends tiny JSON bodies
 CSP = (
@@ -217,7 +218,12 @@ def create_app(
         chosen = chosen if chosen in FILTERS else "all"
         query = request.args.get("q", "")[:MAX_QUERY_CHARS]
         universe = [t for t in result.tools if t.is_program or show_all]
-        wanted = {"ok": OK, "outdated": OUTDATED, "vulnerable": VULNERABLE}.get(chosen)
+        wanted = {
+            "ok": OK,
+            "outdated": OUTDATED,
+            "vulnerable": VULNERABLE,
+            "unchecked": UNCHECKED,
+        }.get(chosen)
         text = query.strip().lower()
         shown = [
             t
@@ -234,12 +240,14 @@ def create_app(
         total_all = len(universe) + outside
         total_bad = sum(1 for t in universe if t.state == VULNERABLE) + outside_bad
         total_old = sum(1 for t in universe if t.state == OUTDATED)
+        total_unchecked = sum(1 for t in universe if t.state == UNCHECKED)
         return {
             "totals": {
                 "all": total_all,
                 "outdated": total_old,
                 "vulnerable": total_bad,
-                "ok": total_all - total_old - total_bad,
+                "ok": total_all - total_old - total_bad - total_unchecked,
+                "unchecked": total_unchecked,
                 "outside": outside,
             },
             "page": paging.paginate(shown, request.args.get("page", 1, type=int)),
@@ -248,6 +256,7 @@ def create_app(
                 "outdated": sum(1 for t in universe if t.state == OUTDATED),
                 "vulnerable": sum(1 for t in universe if t.state == VULNERABLE),
                 "ok": sum(1 for t in universe if t.state == OK),
+                "unchecked": sum(1 for t in universe if t.state == UNCHECKED),
             },
             "filter": chosen,
             "filters": FILTERS,
@@ -283,10 +292,15 @@ def create_app(
             "EXT_OTHERS_MAX": external_tools.MAX_LISTED_OTHERS,
             "state": job.state,
             "result": result,
+            "unchecked": ask_ai.unchecked_items(result) if result is not None else [],
             "now": datetime.now(),
         }
         if result is not None and job.state in (DONE, RUNNING):
             context.update(tool_view(result))
+        items = context["unchecked"]
+        if items:
+            os_name = result.system.os_name if result is not None and result.system else ""
+            context["ai_prompt"] = ask_ai.build_prompt(items, os_name, lang)  # type: ignore[arg-type]
         return render_template("index.html", **context)
 
     def build_preview(result: ScanResult, action: str, package: str) -> actions.Preview:

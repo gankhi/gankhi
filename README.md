@@ -47,6 +47,12 @@ The screenshots use sample data.
 - [ ] Docker images
 - [x] Guarded update, removal and cleanup actions (apt)
 
+## What Gankhi does not check
+
+Ubuntu's list only covers what Ubuntu publishes. A program that comes from another source (another apt repository such as Google's, a `.deb` file installed by hand, a snap or a flatpak) is shown as **Not checked**, never as up to date: "nothing found" there would only mean "nothing was looked at". The **Not checked** section lists them and has a button that copies the list with a short question to paste into an AI you trust. Gankhi sends nothing itself, and an AI can be wrong, so check its answer.
+
+Known limit: a repository that uses the same release name as Ubuntu (for example `noble`), such as Docker's or a PPA, cannot be told apart from Ubuntu's own, so its packages are still compared with Ubuntu's list as before.
+
 ## What Gankhi downloads
 
 Two kinds of public files, only when they changed, and never anything about your computer:

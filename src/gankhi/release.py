@@ -23,6 +23,11 @@ ECOSYSTEMS = {
 }
 
 
+def codename_for(ecosystem: str) -> str:
+    """The Ubuntu codename of an ecosystem: ``Ubuntu:24.04:LTS`` -> ``noble`` ("" if unknown)."""
+    return next((name for name, value in ECOSYSTEMS.items() if value == ecosystem), "")
+
+
 def pro_ecosystem(ecosystem: str) -> str:
     """The Ubuntu Pro variant of an ecosystem: ``Ubuntu:24.04:LTS`` -> ``Ubuntu:Pro:24.04:LTS``."""
     return ecosystem.replace("Ubuntu:", "Ubuntu:Pro:", 1)

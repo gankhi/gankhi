@@ -2,6 +2,20 @@
 
 All notable changes to Gankhi. Dates are written year-month-day.
 
+## Unreleased
+
+### Added
+- Programs that come from outside Ubuntu (another apt repository, a `.deb` file, snap, flatpak) are shown as "Not checked" instead of "up to date", with their own filter, a segment in the summary ring, a section in the page and in the PDF report, and a sentence from the assistant.
+- A button in the "Not checked" section copies the list with a short question to paste into an AI of your choice. It asks for a table with the known vulnerabilities, links to official sources, the fixed version and the command for the way each program was installed. Gankhi sends nothing.
+- The Python and npm section lists every package (the ones without notices fold away), in the page and in the PDF report.
+- The assistant and the header count the same: system programs plus Python and npm packages.
+- The preview and the Downloads detail pages have an ES/EN switch.
+- While a change runs, a clear "working" notice; when it ends, a "finished" notice and the output folded away.
+
+### Changed
+- A package that comes from another repository is no longer compared with Ubuntu's notices, which are about Ubuntu's own builds.
+- Known limit: repositories that reuse Ubuntu's release name (Docker, PPAs) are not told apart.
+
 ## 0.1.0 (2026-10-20)
 
 First public version. (During development the project was called Ganki; the installer moves an old copy to the new name and keeps its settings.)
