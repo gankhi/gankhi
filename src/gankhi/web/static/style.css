@@ -307,3 +307,9 @@ details.ext-others[open] > summary { margin-bottom: 8px; }
 .run-status.ok::before { content: "✓ "; }
 .run-status.fail { color: var(--red); border-color: var(--red); }
 #toggle-output[hidden] { display: none; }
+
+.ring .seg.dim { stroke: #6b7080; }
+.sw.dim { background: #6b7080; }
+.state.dim { color: var(--muted); font-weight: 600; }
+
+.commands.wrapped { white-space: pre-wrap; overflow-wrap: anywhere; }

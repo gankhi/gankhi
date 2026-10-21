@@ -47,6 +47,12 @@ Las capturas usan datos de ejemplo y la interfaz en inglés.
 - [ ] Imágenes de Docker
 - [x] Acciones de actualización, borrado y limpieza con protecciones (apt)
 
+## Qué no revisa Gankhi
+
+La lista de Ubuntu solo cubre lo que Ubuntu publica. Un programa que viene de otro lado (otro repositorio de apt, como el de Google, un archivo `.deb` instalado a mano, un snap o un flatpak) se muestra como **Sin revisar**, nunca como al día: ahí «no encontré nada» solo significaría «no se miró nada». La sección **Sin revisar** los lista y tiene un botón que copia la lista con una consulta breve para pegar en una IA de tu confianza. Gankhi no envía nada por sí mismo, y una IA puede equivocarse, así que verificá lo que responda.
+
+Límite conocido: un repositorio que usa el mismo nombre de versión que Ubuntu (por ejemplo `noble`), como el de Docker o un PPA, no se puede distinguir del propio de Ubuntu, así que sus paquetes se siguen comparando con la lista de Ubuntu como antes.
+
 ## Qué descarga Gankhi
 
 Dos tipos de archivos públicos, solo cuando cambiaron y nunca algo sobre tu computadora: la lista

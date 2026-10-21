@@ -2,6 +2,20 @@
 
 Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 
+## Sin publicar
+
+### Agregado
+- Los programas que vienen de afuera de Ubuntu (otro repositorio de apt, un archivo `.deb`, snap, flatpak) se muestran como «Sin revisar» en vez de «al día», con su propio filtro, un tramo en el anillo del resumen, una sección en la página y en el informe PDF, y una frase del asistente.
+- Un botón en la sección «Sin revisar» copia la lista con una consulta breve para pegar en la IA que elijas. Pide una tabla con las vulnerabilidades conocidas, enlaces a fuentes oficiales, la versión que lo arregla y el comando para la forma en que se instaló cada programa. Gankhi no envía nada.
+- La sección de Python y npm lista todos los paquetes (los que no tienen avisos quedan plegados), en la página y en el informe PDF.
+- El asistente y el encabezado cuentan lo mismo: programas del sistema más paquetes de Python y npm.
+- La vista previa y las páginas de detalle de descargas tienen selector ES/EN.
+- Mientras corre un cambio, un aviso claro de «trabajando»; al terminar, un aviso de «terminó» y la salida plegada.
+
+### Cambiado
+- Un paquete que viene de otro repositorio ya no se compara con los avisos de Ubuntu, que son sobre las compilaciones propias de Ubuntu.
+- Límite conocido: los repositorios que reutilizan el nombre de versión de Ubuntu (Docker, PPA) no se distinguen.
+
 ## 0.1.0 (2026-10-20)
 
 Primera versión pública. (Durante el desarrollo el proyecto se llamaba Ganki; el instalador pasa una copia vieja al nombre nuevo y conserva sus ajustes.)

@@ -6,7 +6,7 @@ the same sentences the assistant shows, then adds the details in tables.
 
 from __future__ import annotations
 
-from gankhi import families, narration, paging
+from gankhi import ask_ai, families, narration, paging
 from gankhi.external_tools import MAX_LISTED_OTHERS
 from gankhi.pdfwriter import Pdf
 from gankhi.service import ScanResult
@@ -159,6 +159,26 @@ def _external_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
         pdf.paragraph(say("ext_failed", tools=", ".join(result.external_failed)), tone="warn")
 
 
+def _unchecked_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
+    """What Gankhi could not compare with any list: from outside Ubuntu, snap and flatpak."""
+    items = ask_ai.unchecked_items(result)
+    if not items:
+        return
+
+    def say(key: str, **values: object) -> str:
+        return i18n.translate(lang, key, **values)
+
+    pdf.heading(say("unchk_title"))
+    pdf.paragraph(say("unchk_sub", n=len(items)))
+    pdf.table(
+        [say("ext_col_package"), say("report_version"), say("col_origin")],
+        [[i.name, i.version, ask_ai.how_text(i, lang)] for i in items[:MAX_LISTED_OTHERS]],
+        [0.36, 0.2, 0.44],
+    )
+    if len(items) > MAX_LISTED_OTHERS:
+        pdf.paragraph(say("ext_others_more", n=len(items) - MAX_LISTED_OTHERS))
+
+
 def _sandboxed_section(pdf: Pdf, result: ScanResult, lang: str) -> None:
     """Snap and flatpak apps: listed, and said plainly that they are not checked."""
     if not result.sandboxed:
@@ -272,6 +292,7 @@ def build_report(result: ScanResult, lang: str, generated: str) -> bytes:
 
     _external_section(pdf, result, lang)
     _sandboxed_section(pdf, result, lang)
+    _unchecked_section(pdf, result, lang)
 
     reclaim = result.reclaimable
     if reclaim.total_kib:

@@ -13,6 +13,7 @@ from gankhi.collectors.updates import Update
 from gankhi.osv import PRIORITY_ORDER, Finding
 
 VULNERABLE, OUTDATED, OK = "vulnerable", "outdated", "ok"
+UNCHECKED = "unchecked"  # comes from outside Ubuntu: no list of notices to compare it with
 _UNKNOWN = len(PRIORITY_ORDER)
 MAX_CVE_LINES = 5  # most urgent CVEs shown per tool
 URGENT_PRIORITIES = ("critical", "high")  # notices that cannot wait
@@ -81,7 +82,7 @@ class Tool:
     size_kib: int
     description: str
     is_program: bool  # a program or tool (True) or a library/system dependency (False)
-    state: str  # VULNERABLE, OUTDATED or OK
+    state: str  # VULNERABLE, OUTDATED, UNCHECKED or OK
     update_to: str | None = None  # newer version available from the repositories
     cve_count: int = 0
     top_priority: str = ""
@@ -99,6 +100,7 @@ class Tool:
     update_origin: str = ""  # where the newer version comes from, as apt reports it
     fixable_priority: str = ""  # most urgent priority among the notices an update fixes
     urgent: bool = False  # worth updating before anything else
+    origin: str = ""  # where it comes from when that is not Ubuntu ("cloud-sdk", "local")
 
 
 def _rank(priority: str) -> int:
@@ -112,6 +114,7 @@ def _tier(tool: Tool) -> int:
     publishes no notices for but is the most exposed kind of program. 2: updating fixes all of
     its notices. 3: updating fixes some, others stay open. 4: only outdated. 5: it has notices
     that no update fixes (no patch yet, or the project is no longer supported). 6: up to date.
+    7: not checked (it comes from outside Ubuntu).
     """
     if tool.urgent:
         return 0
@@ -121,6 +124,8 @@ def _tier(tool: Tool) -> int:
         return 5
     if tool.state == OUTDATED:
         return 1 if _is_browser(tool) else 4
+    if tool.state == UNCHECKED:
+        return 7
     return 6
 
 
@@ -159,8 +164,15 @@ def build_tools(
     findings: list[Finding],
     updates: list[Update],
     kernel_release: str = "",
+    third_party: dict[str, str] | None = None,
 ) -> list[Tool]:
-    """One ``Tool`` per installed package, most urgent first."""
+    """One ``Tool`` per installed package, most urgent first.
+
+    ``third_party`` maps the packages that do not come from Ubuntu to where they come from.
+    Ubuntu's list says nothing about them, so with no pending update they are "not checked",
+    never "up to date".
+    """
+    outside = third_party or {}
     by_name: dict[str, list[Finding]] = defaultdict(list)
     for finding in findings:
         for name in finding.packages:
@@ -172,10 +184,13 @@ def build_tools(
         found = by_name.get(pkg.name, [])
         update = pending.get(pkg.name.split(":")[0])
         candidate = update.candidate_version if update else None
+        origin = outside.get(pkg.name.split(":")[0], "")
         if found:
             state = VULNERABLE
         elif candidate:
             state = OUTDATED
+        elif origin:
+            state = UNCHECKED
         else:
             state = OK
         unique: dict[str, Finding] = {}
@@ -214,6 +229,7 @@ def build_tools(
                 core=is_core(pkg, kernel_release),
                 end_of_support=end_of_support(pkg.name, pkg.version),
                 cves=_sample(unique),
+                origin=origin,
             )
         )
     tools = [replace(t, urgent=_is_urgent(t)) for t in tools]

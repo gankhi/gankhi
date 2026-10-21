@@ -112,11 +112,12 @@
   <div class="card ringcard" data-explain="programs" tabindex="0">
     <h3>{{ t('programs') }}</h3>
     <div class="ringrow">
-      {{ ring([(100 * totals.ok / total, 'good'), (100 * totals.outdated / total, 'warn'), (100 * totals.vulnerable / total, 'bad')], totals.ok ~ '/' ~ totals.all, t('ring_ok'), t('programs')) }}
+      {{ ring([(100 * totals.ok / total, 'good'), (100 * totals.outdated / total, 'warn'), (100 * totals.vulnerable / total, 'bad'), (100 * totals.unchecked / total, 'dim')], totals.ok ~ '/' ~ totals.all, t('ring_ok'), t('programs')) }}
       <ul class="legend">
         <li><i class="sw good"></i>{{ t('leg_ok', n=totals.ok) }}</li>
         <li><i class="sw warn"></i>{{ t('leg_old', n=totals.outdated) }}</li>
         {% if totals.vulnerable %}<li><i class="sw bad"></i>{{ t('leg_vuln', n=totals.vulnerable) }}</li>{% endif %}
+        {% if totals.unchecked %}<li><i class="sw dim"></i>{{ t('leg_unchecked', n=totals.unchecked) }}</li>{% endif %}
       </ul>
     </div>
     {% if totals.outside %}<p class="small muted">{{ t('totals_note', n=totals.outside) }}</p>{% endif %}
@@ -194,7 +195,9 @@
         <td>
           {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
           {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
+          {% elif tool.state == 'unchecked' %}<span class="state dim">◌ {{ t('state_unchecked') }}</span>
           {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
+          {% if tool.origin %}<br><span class="small muted">{{ t('unchecked_from', origin=tool.origin) }}</span>{% endif %}
           {% if tool.end_of_support %}<br><span class="state warn">{{ t('chip_eol') }}</span>{% endif %}
         </td>
         <td class="actions">
@@ -241,6 +244,23 @@
     {% endfor %}
     </tbody>
   </table></div>
+</section>
+{% endif %}
+{% if unchecked %}
+<section class="card" data-explain="unchecked" tabindex="0" id="unchecked">
+  <div class="toolshead"><div><h2>{{ t('unchk_title') }}</h2><p class="muted">{{ t('unchk_sub', n=unchecked|length) }}</p></div></div>
+  <div class="scroll"><table class="aligned">{{ cols() }}
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th colspan="4">{{ t('col_origin') }}</th></tr></thead>
+    <tbody>
+    {% for item in unchecked[:200] %}
+      <tr><td class="wrap"><strong>{{ item.name }}</strong></td><td class="mono">{{ item.version }}</td><td colspan="4" class="mono">{{ item.how }}{% if item.source %} · {{ item.source }}{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% if unchecked|length > 200 %}<p class="small muted">{{ t('ext_others_more', n=unchecked|length - 200) }}</p>{% endif %}
+  <p><button type="button" id="copy" data-target="ai-text" data-done="{{ t('copied') }}">{{ t('unchk_copy') }}</button></p>
+  <p class="small muted">{{ t('unchk_privacy') }}</p>
+  <details><summary class="small">{{ t('unchk_what') }}</summary><pre class="commands mono wrapped" id="ai-text">{{ ai_prompt }}</pre></details>
 </section>
 {% endif %}
 {% if result.external or result.external_failed %}

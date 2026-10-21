@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass
 
 from gankhi import families, paging
+from gankhi.ask_ai import unchecked_items
 from gankhi.service import ScanResult
 from gankhi.web import i18n
 
@@ -132,6 +133,9 @@ def build(result: ScanResult, lang: str) -> list[Segment]:
     serious_any = any(t.top_priority in SERIOUS for t in everything)
     tone = "bad" if serious_any else "warn" if everything else "ok"
     segments.append(Segment("tools", summary, tone))
+    unchecked = unchecked_items(result)
+    if unchecked:  # "nothing found" would read as "safe": say what was not looked at
+        segments.append(Segment("unchecked", say("say_unchecked", n=len(unchecked)), "warn"))
     if libraries:
         serious = sum(1 for t in libraries if t.top_priority in SERIOUS)
         key = "say_tools_libs_serious" if serious else "say_tools_libs_mild"
