@@ -282,7 +282,8 @@ def test_the_report_has_a_python_and_npm_section():
 
     data = report.build_report(with_external(["npm"]), "es", "now")
     assert b"evilpkg" in data and b"oldlib" in data
-    assert b"calm" not in data  # only the affected ones are listed
+    assert b"calm" in data  # the report lists the packages without notices too, like the page
+    assert data.index(b"evilpkg") < data.index(b"calm")  # the affected ones come first
 
 
 def test_the_page_lists_the_affected_packages_and_a_failed_check():

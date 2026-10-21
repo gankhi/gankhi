@@ -371,7 +371,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "You also have {snaps} snap and {flatpaks} flatpak apps. They carry their own "
             "libraries, so I only list them; I do not check them for vulnerabilities."
         ),
-        "report_external": "Python and npm packages with security notices",
+        "report_external": "Python and npm packages",
+        "report_ext_others": "The other {n} packages (no known security notice):",
         "say_external_ok": (
             "In Python and npm you have {n} packages and none has a known security notice."
         ),
@@ -904,7 +905,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "También tenés {snaps} apps snap y {flatpaks} flatpak. Traen sus propias "
             "librerías, así que solo las listo; no las reviso por vulnerabilidades."
         ),
-        "report_external": "Paquetes de Python y npm con avisos de seguridad",
+        "report_external": "Paquetes de Python y npm",
+        "report_ext_others": "Los otros {n} paquetes (sin avisos de seguridad conocidos):",
         "say_external_ok": (
             "En Python y npm tenés {n} paquetes y ninguno tiene avisos de seguridad conocidos."
         ),

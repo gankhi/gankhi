@@ -280,6 +280,7 @@ def create_app(
             "update_command": external_tools.update_command,
             "remove_command": external_tools.remove_command,
             "pip_managed": external_tools.externally_managed(),
+            "EXT_OTHERS_MAX": external_tools.MAX_LISTED_OTHERS,
             "state": job.state,
             "result": result,
             "now": datetime.now(),
