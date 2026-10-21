@@ -166,6 +166,22 @@ def test_column_titles_stay_in_view_while_the_page_scrolls():
     assert "@media (min-width: 1040px) { .scroll { overflow-x: clip; } }" in css
 
 
+def test_the_not_checked_card_lists_only_what_gankhi_cannot_update_for_you():
+    client = login(build(_result).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    card = html[html.index('id="unchecked"') :]
+    card = card[: card.index("</section>")]
+    assert "<strong>firefox</strong>" in card  # a snap: Gankhi only shows the command
+    assert "<strong>gcloud</strong>" not in card and "<strong>handmade</strong>" not in card
+    assert "2 programs from other apt repositories or .deb files are in the tools list" in card
+    assert 'href="/?f=unchecked#tools"' in card
+    assert "The text below includes them too" in card
+    # the text to copy still has everything that was not checked
+    assert "- gcloud 548.0.0" in card and "- handmade 1.0" in card
+
+
 def test_the_text_for_an_ai_names_the_ubuntu_a_derivative_is_built_on():
     one = [ask_ai.Unchecked("gcloud", "1", "apt", "x")]
     text = ask_ai.build_prompt(one, "Linux Lite 7.4", "en", "Ubuntu:24.04:LTS")
