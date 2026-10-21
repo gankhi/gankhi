@@ -1240,3 +1240,33 @@ def test_the_vulnerable_list_says_when_python_or_npm_packages_make_up_the_differ
     assert "Python or npm packages, in the section" not in plain.get(
         "/?f=vulnerable", base_url=BASE
     ).get_data(as_text=True)
+
+
+def _with_python_packages():
+    from dataclasses import replace
+
+    from gankhi.external_tools import ExternalTool
+
+    bad = ExternalTool("requests", "2.0", "pip", "PyPI", vulnerable=True, cve_count=1)
+    fine = [ExternalTool(f"pkg{i}", "1.0", "pip", "PyPI", vulnerable=False) for i in range(3)]
+    return replace(make_result(), external=[bad, *fine])
+
+
+def test_the_page_lists_the_python_packages_that_have_no_notices():
+    client = login(build(_with_python_packages).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert "Show the other 3 packages" in html
+    assert all(f"<strong>pkg{i}</strong>" in html for i in range(3))
+    spanish = client.get("/lang/es", base_url=BASE) and client.get("/", base_url=BASE)
+    assert "Mostrar los otros 3 paquetes" in spanish.get_data(as_text=True)
+
+
+def test_the_assistant_says_how_many_python_or_npm_packages_add_to_the_total():
+    from gankhi import narration
+
+    text = " ".join(s.text for s in narration.build(_with_python_packages(), "en"))
+    assert (
+        "System programs with security problems: 2, plus 1 more in Python or npm: 3 in all" in text
+    )

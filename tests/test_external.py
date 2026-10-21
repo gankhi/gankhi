@@ -293,7 +293,10 @@ def test_the_page_lists_the_affected_packages_and_a_failed_check():
     page = client.get("/", base_url=BASE).get_data(as_text=True)
     assert "evilpkg" in page and "oldlib" in page
     assert "Python and npm packages" in page
-    assert "calm" not in page.split('data-explain="external"')[1].split("</section>")[0]
+    section = page.split('data-explain="external"')[1].split("</section>")[0]
+    before_others, _, others = section.partition('class="ext-others"')
+    assert "calm" not in before_others  # the affected table lists only affected packages
+    assert "calm" in others  # the rest is available, folded away
     assert "npm" in page
 
 
