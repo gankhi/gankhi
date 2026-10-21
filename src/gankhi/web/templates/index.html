@@ -248,17 +248,23 @@
 </section>
 {% endif %}
 {% if unchecked %}
+{% set apart = unchecked|selectattr('how', 'in', ('snap', 'flatpak'))|list %}
+{% set in_list = unchecked|length - apart|length %}
 <section class="card" data-explain="unchecked" tabindex="0" id="unchecked">
   <div class="toolshead"><div><h2>{{ t('unchk_title') }}</h2><p class="muted">{{ t('unchk_sub', n=unchecked|length) }}</p></div></div>
+  {% if in_list %}<p class="small">{{ t('unchk_in_list', n=in_list) }} <a href="{{ url_for('index', f='unchecked') }}#tools">{{ t('unchk_see_list') }}</a></p>{% endif %}
+  {% if apart %}
+  <p class="small muted">{{ t('unchk_apart', n=apart|length) }}</p>
   <div class="scroll"><table class="aligned">{{ cols() }}
     <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th colspan="4">{{ t('col_origin') }}</th></tr></thead>
     <tbody>
-    {% for item in unchecked[:200] %}
+    {% for item in apart[:200] %}
       <tr><td class="wrap"><strong>{{ item.name }}</strong></td><td class="mono">{{ item.version }}</td><td colspan="4" class="mono">{{ item.how }}{% if item.source %} · {{ item.source }}{% endif %}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>
-  {% if unchecked|length > 200 %}<p class="small muted">{{ t('ext_others_more', n=unchecked|length - 200) }}</p>{% endif %}
+  {% if apart|length > 200 %}<p class="small muted">{{ t('ext_others_more', n=apart|length - 200) }}</p>{% endif %}
+  {% endif %}
   <p><button type="button" id="copy" data-target="ai-text" data-done="{{ t('copied') }}">{{ t('unchk_copy') }}</button></p>
   <p class="small muted">{{ t('unchk_privacy') }}</p>
   <details><summary class="small">{{ t('unchk_what') }}</summary><pre class="commands mono wrapped" id="ai-text">{{ ai_prompt }}</pre></details>

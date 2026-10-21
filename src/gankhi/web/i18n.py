@@ -50,6 +50,12 @@ TEXTS: dict[str, dict[str, str]] = {
             "{n} from outside Ubuntu. Gankhi has no list of notices to compare them with, "
             "so it cannot say whether they are safe."
         ),
+        "unchk_in_list": (
+            "{n} programs from other apt repositories or .deb files are in the tools list above, "
+            "where you can update them. The text below includes them too."
+        ),
+        "unchk_see_list": "See them",
+        "unchk_apart": "{n} that Gankhi cannot update for you (snap and flatpak):",
         "unchk_copy": "Copy list and question for an AI",
         "unchk_privacy": (
             "Gankhi sends nothing. Pasting this into an AI shares your list of programs with "
@@ -604,6 +610,13 @@ TEXTS: dict[str, dict[str, str]] = {
             "{n} vienen de afuera de Ubuntu. Gankhi no tiene una lista de avisos para "
             "compararlos, así que no puede decir si son seguros."
         ),
+        "unchk_in_list": (
+            "{n} programas de otros repositorios de apt o archivos .deb están en la lista de "
+            "herramientas de arriba, donde los podés actualizar. El texto de abajo los incluye "
+            "también."
+        ),
+        "unchk_see_list": "Verlos",
+        "unchk_apart": "{n} que Gankhi no puede actualizar por vos (snap y flatpak):",
         "unchk_copy": "Copiar lista y consulta para una IA",
         "unchk_privacy": (
             "Gankhi no envía nada. Pegar esto en una IA comparte tu lista de programas con ese "
