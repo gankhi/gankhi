@@ -252,7 +252,7 @@
 {% set in_list = unchecked|length - apart|length %}
 <section class="card" data-explain="unchecked" tabindex="0" id="unchecked">
   <div class="toolshead"><div><h2>{{ t('unchk_title') }}</h2><p class="muted">{{ t('unchk_sub', n=unchecked|length) }}</p></div></div>
-  {% if in_list %}<p class="small">{{ t('unchk_in_list', n=in_list) }} <a href="{{ url_for('index', f='unchecked') }}#tools">{{ t('unchk_see_list') }}</a></p>{% endif %}
+  {% if in_list %}<p class="small">{{ t('unchk_in_list', n=in_list, total=unchecked|length) }} <a href="{{ url_for('index', f='unchecked') }}#tools">{{ t('unchk_see_list') }}</a></p>{% endif %}
   {% if apart %}
   <p class="small muted">{{ t('unchk_apart', n=apart|length) }}</p>
   <div class="scroll"><table class="aligned">{{ cols() }}
