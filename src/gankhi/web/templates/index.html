@@ -265,11 +265,9 @@
   </table></div>
   {% if apart|length > 200 %}<p class="small muted">{{ t('ext_others_more', n=apart|length - 200) }}</p>{% endif %}
   {% endif %}
-  {% if apart %}
   <p><button type="button" id="copy" data-target="ai-text" data-done="{{ t('copied') }}">{{ t('unchk_copy') }}</button></p>
   <p class="small muted">{{ t('unchk_privacy') }}</p>
   <details><summary class="small">{{ t('unchk_what') }}</summary><pre class="commands mono wrapped" id="ai-text">{{ ai_prompt }}</pre></details>
-  {% endif %}
 </section>
 {% endif %}
 {% if result.external or result.external_failed %}

@@ -65,10 +65,12 @@ _TEXT = {
         "ask": (
             "Answer with a table, one row per program, with these columns: Program | Version | "
             "Known vulnerabilities (CVE numbers, each with a link to the official source: "
-            "vendor advisory, OSV.dev or NVD) | Fixed in | Command to update.\n"
-            '- In "Command to update", give the exact command for the way I installed it '
-            "(shown in brackets: apt repository, snap, flatpak or .deb file) and tell me to read "
-            "it before running it.\n"
+            "vendor advisory, OSV.dev or NVD) | Fixed in | Command to update | Command to "
+            "remove.\n"
+            '- In "Command to update" and "Command to remove", give the exact command for the '
+            "way I installed it (shown in brackets: apt repository, snap, flatpak or .deb file) "
+            "and tell me to read it before running it.\n"
+            "- Say if a newer version than mine exists.\n"
             '- If you cannot verify something, write "not verified". Do not make anything up '
             "and do not guess version numbers."
         ),
@@ -90,10 +92,11 @@ _TEXT = {
             "Respondé con una tabla, una fila por programa, con estas columnas: Programa | "
             "Versión | Vulnerabilidades conocidas (números CVE, cada uno con un enlace a la "
             "fuente oficial: aviso del fabricante, OSV.dev o NVD) | Se arregla en | Comando "
-            "para actualizar.\n"
-            '- En "Comando para actualizar", dame el comando exacto para la forma en que lo '
-            "instalé (figura entre paréntesis: repositorio de apt, snap, flatpak o archivo .deb) "
-            "y decime que lo lea antes de ejecutarlo.\n"
+            "para actualizar | Comando para eliminar.\n"
+            '- En "Comando para actualizar" y "Comando para eliminar", dame el comando exacto '
+            "para la forma en que lo instalé (figura entre paréntesis: repositorio de apt, snap, "
+            "flatpak o archivo .deb) y decime que lo lea antes de ejecutarlo.\n"
+            "- Decime si existe una versión más nueva que la mía.\n"
             '- Si no podés verificar algo, escribí "no verificado". No inventes nada y no '
             "adivines números de versión."
         ),
