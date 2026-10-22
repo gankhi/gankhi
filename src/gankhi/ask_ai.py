@@ -63,16 +63,20 @@ _TEXT = {
         ),
         "more": "...and {n} more that are not listed here.",
         "ask": (
-            "Answer with a table, one row per program, with these columns: Program | Version | "
-            "Known vulnerabilities (CVE numbers, each with a link to the official source: "
-            "vendor advisory, OSV.dev or NVD) | Fixed in | Command to update | Command to "
-            "remove.\n"
-            '- In "Command to update" and "Command to remove", give the exact command for the '
-            "way I installed it (shown in brackets: apt repository, snap, flatpak or .deb file) "
-            "and tell me to read it before running it.\n"
-            "- Say if a newer version than mine exists.\n"
-            '- If you cannot verify something, write "not verified". Do not make anything up '
-            "and do not guess version numbers."
+            "Answer ONLY with a table of exactly 3 columns, one row per program, in the same "
+            "order as my list, and nothing else:\n"
+            "| Program | Vulnerable in my version? | Command to update |\n"
+            '- "Vulnerable in my version?": write only "Yes", "No" or "Not verified". If "Yes", '
+            "add the CVE numbers, each with a link to the official source.\n"
+            '- "Command to update": the exact command for the way I installed it (shown in '
+            "brackets).\n"
+            "- After the table, add the command to remove the program ONLY for the ones marked "
+            '"Yes", one line each.\n'
+            "- No introduction, no explanations, no notes, no advice, no headings, no "
+            "paragraphs. Keep every cell short.\n"
+            '- If you cannot verify something, write "Not verified". Do not make anything up '
+            "and do not guess version numbers.\n"
+            "- Last line, exactly: Read each command before running it."
         ),
     },
     "es": {
@@ -89,16 +93,20 @@ _TEXT = {
         ),
         "more": "...y {n} más que no se listan acá.",
         "ask": (
-            "Respondé con una tabla, una fila por programa, con estas columnas: Programa | "
-            "Versión | Vulnerabilidades conocidas (números CVE, cada uno con un enlace a la "
-            "fuente oficial: aviso del fabricante, OSV.dev o NVD) | Se arregla en | Comando "
-            "para actualizar | Comando para eliminar.\n"
-            '- En "Comando para actualizar" y "Comando para eliminar", dame el comando exacto '
-            "para la forma en que lo instalé (figura entre paréntesis: repositorio de apt, snap, "
-            "flatpak o archivo .deb) y decime que lo lea antes de ejecutarlo.\n"
-            "- Decime si existe una versión más nueva que la mía.\n"
-            '- Si no podés verificar algo, escribí "no verificado". No inventes nada y no '
-            "adivines números de versión."
+            "Respondé SOLO con una tabla de exactamente 3 columnas, una fila por programa, en "
+            "el mismo orden que mi lista, y nada más:\n"
+            "| Programa | ¿Vulnerable en mi versión? | Comando para actualizar |\n"
+            '- "¿Vulnerable en mi versión?": escribí solo "Sí", "No" o "No verificado". Si es '
+            '"Sí", sumá los números CVE, cada uno con un enlace a la fuente oficial.\n'
+            '- "Comando para actualizar": el comando exacto para la forma en que lo instalé '
+            "(figura entre paréntesis).\n"
+            "- Debajo de la tabla, poné el comando para eliminar el programa SOLO de los que "
+            'marcaste "Sí", una línea cada uno.\n'
+            "- Sin introducción, sin explicaciones, sin notas, sin consejos, sin títulos, sin "
+            "párrafos. Cada celda, corta.\n"
+            '- Si no podés verificar algo, escribí "No verificado". No inventes nada y no '
+            "adivines números de versión.\n"
+            "- Última línea, exactamente: Leé cada comando antes de ejecutarlo."
         ),
     },
 }
