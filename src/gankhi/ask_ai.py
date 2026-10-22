@@ -73,8 +73,10 @@ _TEXT = {
             'write "Not reported yet".\n'
             '- "Command to update": the exact command for the way I installed it (shown in '
             "brackets).\n"
-            "- After the table, add the command to remove the program ONLY for the ones marked "
-            '"Yes", one line each.\n'
+            "- Do not suggest removing, uninstalling or disabling anything: many of these are "
+            "components other programs depend on. Do not add advice of any kind.\n"
+            "- Write every link as the full plain URL (https://...), never shortened and never "
+            "wrapped in a search or redirect address.\n"
             "- Search the web for each program by name and exact version, in: OSV.dev, NVD, GitHub "
             "Security Advisories, CISA's known exploited list, the Ubuntu and Debian security "
             "trackers and the vendor's own security page. Do not answer from memory.\n"
@@ -114,8 +116,11 @@ _TEXT = {
             'escribí "Aún no reportado".\n'
             '- "Comando para actualizar": el comando exacto para la forma en que lo instalé '
             "(figura entre paréntesis).\n"
-            "- Debajo de la tabla, poné el comando para eliminar el programa SOLO de los que "
-            'marcaste "Sí", una línea cada uno.\n'
+            "- No sugieras quitar, desinstalar ni desactivar nada: muchos de estos son "
+            "componentes de los que dependen otros programas. No agregues consejos de ningún "
+            "tipo.\n"
+            "- Escribí cada enlace como la URL completa y sin adornos (https://...), nunca "
+            "acortada ni envuelta en una dirección de búsqueda o de redirección.\n"
             "- Buscá en la web cada programa por nombre y versión exacta, en: OSV.dev, NVD, GitHub "
             "Security Advisories, la lista de vulnerabilidades explotadas de CISA, los "
             "seguimientos de seguridad de Ubuntu y Debian y la página de seguridad del "
