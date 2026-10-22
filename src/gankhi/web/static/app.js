@@ -211,19 +211,24 @@
     });
   });
 
-  var copy = document.getElementById("copy");
-  if (copy) {
-    var original = copy.textContent;
+  // A copy button: after copying it says "done" for a moment, then goes back to its label.
+  function copyButton(button, getText) {
+    var original = button.textContent;
     var restore = null;
-    copy.addEventListener("click", function () {
-      var text = document.getElementById(copy.dataset.target).textContent;
-      navigator.clipboard.writeText(text).then(function () {
-        copy.textContent = copy.dataset.done;
-        // after a moment the button goes back to what it said, ready for another copy
+    button.addEventListener("click", function () {
+      navigator.clipboard.writeText(getText()).then(function () {
+        button.textContent = button.dataset.done;
         window.clearTimeout(restore);
-        restore = window.setTimeout(function () { copy.textContent = original; }, 2500);
+        restore = window.setTimeout(function () { button.textContent = original; }, 2500);
       });
     });
   }
+  var copy = document.getElementById("copy");
+  if (copy) {
+    copyButton(copy, function () { return document.getElementById(copy.dataset.target).textContent; });
+  }
+  document.querySelectorAll(".ask-row").forEach(function (button) {
+    copyButton(button, function () { return button.dataset.prompt; });
+  });
   if (document.body.dataset.state === "running") { poll(); }
 })();

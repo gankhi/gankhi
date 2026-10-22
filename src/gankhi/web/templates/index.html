@@ -205,6 +205,7 @@
         <td class="actions">
           {% if tool.update_to %}<a class="btn{% if tool.fixed_in or not tool.unfixable %} primary{% endif %}" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
           {% endif %}
+          {% if ai_prompts and ai_prompts.get(tool.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[tool.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}
           {% if tool.protected %}<span class="btn off" title="{{ t('protected_hint') }}">🔒 {{ t('protected') }}</span>
           {% else %}<a class="btn danger" href="{{ url_for('preview_page', action='remove', pkg=tool.name) }}">{{ t('btn_remove') }}</a>{% endif %}
         </td>
@@ -257,10 +258,10 @@
   {% if apart %}
   <p class="small muted">{{ t('unchk_apart', n=apart|length) }}</p>
   <div class="scroll"><table class="aligned">{{ cols() }}
-    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th colspan="4">{{ t('col_origin') }}</th></tr></thead>
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th colspan="3">{{ t('col_origin') }}</th><th>{{ t('col_actions') }}</th></tr></thead>
     <tbody>
     {% for item in apart[:200] %}
-      <tr><td class="wrap"><strong>{{ item.name }}</strong></td><td class="mono">{{ item.version }}</td><td colspan="4" class="mono">{{ item.how }}{% if item.source %} · {{ item.source }}{% endif %}</td></tr>
+      <tr><td class="wrap"><strong>{{ item.name }}</strong></td><td class="mono">{{ item.version }}</td><td colspan="3" class="mono">{{ item.how }}{% if item.source %} · {{ item.source }}{% endif %}</td><td class="actions"><button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[item.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button></td></tr>
     {% endfor %}
     </tbody>
   </table></div>
