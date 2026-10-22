@@ -273,3 +273,9 @@ def test_a_newer_version_that_does_not_fix_the_notices_is_not_offered_as_the_fix
     assert 'class="btn primary"' in row(page(with_update("openssl")), "openssl")
     # with nothing to update there is no Update button at all, not a disabled one
     assert "Update</a>" not in plain and 'btn off">Update' not in plain
+
+
+def test_the_copy_button_goes_back_to_its_label_after_copying():
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
+    assert "var original = copy.textContent;" in script
+    assert "copy.textContent = original;" in script and "clearTimeout(restore)" in script
