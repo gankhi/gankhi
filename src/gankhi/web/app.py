@@ -34,6 +34,7 @@ from gankhi import (
     report,
 )
 from gankhi.collectors import sandboxed
+from gankhi.executor import RUNNING as CHANGE_RUNNING
 from gankhi.executor import ActionJob
 from gankhi.progress import RUNNING as STEP_RUNNING
 from gankhi.progress import Progress
@@ -271,6 +272,7 @@ def create_app(
             job.start()
         lang = current_language()
         result = job.result
+        change = runner_job.status()
         context: dict[str, object] = {
             "lang": lang,
             "t": lambda key, **values: i18n.translate(lang, key, **values),
@@ -293,6 +295,8 @@ def create_app(
             "state": job.state,
             "result": result,
             "unchecked": ask_ai.unchecked_items(result) if result is not None else [],
+            "change_running": change.get("state") == CHANGE_RUNNING,
+            "change_command": change.get("command", ""),
             "now": datetime.now(),
         }
         if result is not None and job.state in (DONE, RUNNING):
