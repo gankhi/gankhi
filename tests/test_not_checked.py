@@ -290,10 +290,11 @@ def test_every_program_gankhi_could_not_check_has_its_own_button_to_ask_an_ai():
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     buttons = html.count('class="btn ask-row"')
-    assert buttons == 3  # gcloud and handmade in the tools list, firefox (snap) in the card
+    # gcloud and handmade in the tools list, firefox (snap) in its app card and in the card
+    assert buttons == 4
     row = html[html.index("<strong>gcloud</strong>") :]
     row = row[: row.index("</tr>")]
-    assert "Ask an AI" in row and "- gcloud 548.0.0" in row
+    assert "Copy question for an AI" in row and "- gcloud 548.0.0" in row
     assert "- handmade" not in row  # each button carries only its own program
     # a program Gankhi did check has no such button
     vim = html[html.index("<strong>vim</strong>") :]

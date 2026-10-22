@@ -57,9 +57,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "unchk_see_list": "See them",
         "unchk_apart": "{n} that Gankhi cannot update for you (snap and flatpak):",
         "unchk_copy": "Copy list and question for an AI",
-        "unchk_row_copy": "Ask an AI",
+        "unchk_row_copy": "Copy question for an AI",
         "unchk_row_title": (
-            "Copies a question about this program only, to paste into an AI you trust"
+            "Copies a question about this program only. Nothing is sent: "
+            "paste it into an AI you trust"
         ),
         "unchk_privacy": (
             "Gankhi sends nothing. Pasting this into an AI shares your list of programs with "
@@ -628,9 +629,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "unchk_see_list": "Verlos",
         "unchk_apart": "{n} que Gankhi no puede actualizar por vos (snap y flatpak):",
         "unchk_copy": "Copiar lista y consulta para una IA",
-        "unchk_row_copy": "Consultar IA",
+        "unchk_row_copy": "Copiar consulta para IA",
         "unchk_row_title": (
-            "Copia una consulta solo sobre este programa, para pegar en una IA de tu confianza"
+            "Copia una consulta solo sobre este programa. No se envía nada: "
+            "pegala en una IA de tu confianza"
         ),
         "unchk_privacy": (
             "Gankhi no envía nada. Pegar esto en una IA comparte tu lista de programas con ese "

@@ -233,7 +233,7 @@
 <section class="card" data-explain="external" tabindex="0">
   <div class="toolshead"><div><h2>{{ t('sbx_title') }}</h2><p class="muted">{{ t('sbx_sub', n=result.sandboxed|length) }}</p></div></div>
   <div class="scroll"><table class="aligned">{{ cols() }}
-    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th class="num">{{ t('col_size') }}</th><th colspan="2">{{ t('sbx_col_source') }}</th></tr></thead>
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th class="num">{{ t('col_size') }}</th><th>{{ t('sbx_col_source') }}</th><th>{{ t('col_actions') }}</th></tr></thead>
     <tbody>
     {% for app in result.sandboxed[:200] %}
       <tr><td class="wrap"><strong>{{ app.name }}</strong>
@@ -243,7 +243,7 @@
           {% if sup %}<p class="small">{{ t('sbx_cmd_update') }}</p><code class="cmd">{{ sup }}</code>{% endif %}
           {% if srm %}<p class="small">{{ t('sbx_cmd_remove') }}</p><code class="cmd">{{ srm }}</code>{% endif %}
           {% if sandboxed_shared(app) %}<p class="small muted">{{ t('sbx_cmd_shared') }}</p>{% endif %}
-        </div>{% endif %}</td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td colspan="2">{{ app.source }}</td></tr>
+        </div>{% endif %}</td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td>{{ app.source }}</td><td class="actions">{% if ai_prompts and ai_prompts.get(app.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[app.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>
