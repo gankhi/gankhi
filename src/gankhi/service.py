@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from gankhi import cleanup
 from gankhi import downloads as downloads_mod
 from gankhi.collectors.apt import collect
-from gankhi.collectors.origins import collect_third_party
+from gankhi.collectors.origins import collect_third_party, resolve_superseded
 from gankhi.collectors.sandboxed import SandboxedApp, collect_sandboxed
 from gankhi.collectors.updates import collect_updates
 from gankhi.external_scan import scan_external
@@ -122,7 +122,7 @@ def run_scan(progress: Progress | None = None) -> ScanResult:
         download_groups = downloads_job.result()
         external, external_failed = external_job.result()
         sandboxed = sandboxed_job.result()
-        outside = origins_job.result()
+        outside = resolve_superseded(origins_job.result(), updates, codename_for(ecosystem))
     progress.begin("analysis")
     # Ubuntu's notices are about Ubuntu's own builds: they do not apply to a package that comes
     # from another repository, even if the name is the same.
