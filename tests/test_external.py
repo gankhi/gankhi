@@ -460,7 +460,7 @@ def test_the_rows_offer_to_remove_as_well_as_update():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     update = html.index("pip install --upgrade")
     assert "python3 -m pip uninstall oldlib" in html[update:]  # both for the same package
-    assert "python3 -m pip show NAME" in html  # check what needs it before removing
+    assert "python3 -m pip show oldlib" in html  # the ready command, with the real name
 
 
 def test_the_rows_explain_the_flag_only_when_the_python_is_protected(monkeypatch):

@@ -69,6 +69,16 @@
 {% endfor %}</pre>
     <button type="button" id="copy" data-target="commands" data-done="{{ t('copied') }}">{{ t('copy') }}</button>
     {% if view.action in ('update', 'all') %}<p class="small">{{ t('prev_reboot') }}</p>{% endif %}
+    {% if view.action in ('update', 'remove') and view.package %}
+    <h3>{{ t('prev_uses_title') }}</h3>
+    <p class="small">{{ t('prev_uses_rdepends') }}</p>
+    <pre class="commands mono" id="uses-rdepends">apt-cache rdepends --installed {{ view.package }}</pre>
+    <button type="button" class="ghost copy-target" data-target="uses-rdepends" data-done="{{ t('copied') }}">{{ t('copy') }}</button>
+    <p class="small">{{ t('prev_uses_depends') }}</p>
+    <pre class="commands mono" id="uses-depends">apt-cache depends {{ view.package }}</pre>
+    <button type="button" class="ghost copy-target" data-target="uses-depends" data-done="{{ t('copied') }}">{{ t('copy') }}</button>
+    <p class="small muted">{{ t('prev_uses_note') }}</p>
+    {% endif %}
   {% endif %}
 </section>
 {% endblock %}

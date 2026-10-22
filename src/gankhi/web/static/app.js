@@ -227,6 +227,9 @@
   if (copy) {
     copyButton(copy, function () { return document.getElementById(copy.dataset.target).textContent; });
   }
+  document.querySelectorAll(".copy-target").forEach(function (button) {
+    copyButton(button, function () { return document.getElementById(button.dataset.target).textContent; });
+  });
   document.querySelectorAll(".ask-row").forEach(function (button) {
     copyButton(button, function () { return button.dataset.prompt; });
   });

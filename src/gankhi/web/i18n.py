@@ -57,6 +57,14 @@ TEXTS: dict[str, dict[str, str]] = {
         "unchk_see_list": "See them",
         "unchk_apart": "{n} that Gankhi cannot update for you (snap and flatpak):",
         "unchk_copy": "Copy list and question for an AI",
+        "prev_uses_title": "Before deciding: what uses this tool",
+        "prev_uses_rdepends": (
+            "Installed programs that depend on it (what could stop working if you remove it):"
+        ),
+        "prev_uses_depends": "What it needs in order to work:",
+        "prev_uses_note": (
+            "Gankhi does not run these commands: copy them into a terminal if you want to look."
+        ),
         "unchk_row_copy": "Copy question for an AI",
         "unchk_row_title": (
             "Copies a question about this program only. Nothing is sent: "
@@ -401,8 +409,8 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "ext_cmd_note": "Gankhi does not run it for you and never touches your projects.",
         "ext_cmd_before_pip": (
-            "Before removing it, check that nothing needs it: run python3 -m pip show NAME and "
-            "read the Required-by line (replace NAME with the package)."
+            "Before removing it, check that nothing needs it: run this command and read the "
+            "Required-by line."
         ),
         "ext_cmd_before_npm": "Before removing it, check that none of your projects uses it.",
         "sbx_cmd_update": "To update it, copy this command and paste it into a terminal:",
@@ -629,6 +637,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "unchk_see_list": "Verlos",
         "unchk_apart": "{n} que Gankhi no puede actualizar por vos (snap y flatpak):",
         "unchk_copy": "Copiar lista y consulta para una IA",
+        "prev_uses_title": "Antes de decidir: qué usa esta herramienta",
+        "prev_uses_rdepends": (
+            "Programas instalados que dependen de ella (lo que podría dejar de funcionar si la "
+            "quitás):"
+        ),
+        "prev_uses_depends": "Qué necesita ella para funcionar:",
+        "prev_uses_note": (
+            "Gankhi no ejecuta estos comandos: copialos en una terminal si querés mirar."
+        ),
         "unchk_row_copy": "Copiar consulta para IA",
         "unchk_row_title": (
             "Copia una consulta solo sobre este programa. No se envía nada: "
@@ -993,8 +1010,8 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "ext_cmd_note": "Gankhi no lo ejecuta por vos y nunca toca tus proyectos.",
         "ext_cmd_before_pip": (
-            "Antes de quitarlo, fijate que nada lo necesite: corré python3 -m pip show NOMBRE y "
-            "leé la línea Required-by (cambiá NOMBRE por el paquete)."
+            "Antes de quitarlo, fijate que nada lo necesite: corré este comando y leé la línea "
+            "Required-by."
         ),
         "ext_cmd_before_npm": "Antes de quitarlo, fijate que ninguno de tus proyectos lo use.",
         "sbx_cmd_update": "Para actualizarla, copiá este comando y pegalo en una consola:",
