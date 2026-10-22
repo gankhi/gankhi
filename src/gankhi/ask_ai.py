@@ -72,6 +72,10 @@ _TEXT = {
             "brackets).\n"
             "- After the table, add the command to remove the program ONLY for the ones marked "
             '"Yes", one line each.\n'
+            "- Search the web for each program (OSV.dev, NVD and the vendor's security page) "
+            "before answering. Do not answer from memory.\n"
+            '- If I installed it from a .deb file, in "Command to update" write the link to the '
+            "vendor's download page instead of an apt command.\n"
             "- No introduction, no explanations, no notes, no advice, no headings, no "
             "paragraphs. Keep every cell short.\n"
             '- If you cannot verify something, write "Not verified". Do not make anything up '
@@ -102,6 +106,10 @@ _TEXT = {
             "(figura entre paréntesis).\n"
             "- Debajo de la tabla, poné el comando para eliminar el programa SOLO de los que "
             'marcaste "Sí", una línea cada uno.\n'
+            "- Buscá en la web cada programa (OSV.dev, NVD y la página de seguridad del "
+            "fabricante) antes de responder. No respondas de memoria.\n"
+            '- Si lo instalé desde un archivo .deb, en "Comando para actualizar" poné el enlace '
+            "a la página de descarga del fabricante en lugar de un comando de apt.\n"
             "- Sin introducción, sin explicaciones, sin notas, sin consejos, sin títulos, sin "
             "párrafos. Cada celda, corta.\n"
             '- Si no podés verificar algo, escribí "No verificado". No inventes nada y no '
