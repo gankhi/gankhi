@@ -161,10 +161,38 @@
         .catch(function () { setTimeout(follow, 2000); });
     }
 
+    // Another change is running: show what it is doing and say when this button can be used again.
+    function followOther() {
+      fetch("/api/run/status", { credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (s) {
+          terminal.hidden = false;
+          terminal.textContent = "$ " + s.command + "\n" + s.lines.join("\n");
+          terminal.scrollTop = terminal.scrollHeight;
+          if (s.state === "running") {
+            status("working", run.dataset.busy);
+            setTimeout(followOther, 1000);
+            return;
+          }
+          status("ok", run.dataset.busyDone);
+          run.disabled = false;
+        })
+        .catch(function () { setTimeout(followOther, 2000); });
+    }
+
     run.addEventListener("click", function () {
       run.disabled = true;
       terminal.hidden = false;
       terminal.textContent = run.dataset.waiting;
+      // Ask first whether a change is already running: that way the browser does not log a
+      // "409 conflict" for something that is expected. The 409 below stays as the safety net.
+      fetch("/api/run/status", { credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (s) { if (s.state === "running") { followOther(); } else { start(); } })
+        .catch(start);
+    });
+
+    function start() {
       var body = { action: run.dataset.action, pkg: run.dataset.pkg, confirm: true,
                    understood: !!(understood && understood.checked) };
       fetch("/api/run", { method: "POST", headers: { "X-Gankhi": "1", "Content-Type": "application/json" },
@@ -173,12 +201,12 @@
           if (r.status === 202) { follow(); return; }
           // Only one change runs at a time: say so, and let the person try again later.
           return r.json().catch(function () { return {}; }).then(function (data) {
-            status("fail", data.error === "busy" ? run.dataset.busy : run.dataset.refused);
-            if (data.error === "busy") { run.disabled = false; terminal.hidden = true; }
+            if (data.error === "busy") { followOther(); return; }
+            status("fail", run.dataset.refused);
           });
         })
         .catch(function () { status("fail", run.dataset.refused); });
-    });
+    }
   }
 
   // Downloads detail: show the folder that holds a file, so it can be looked at and deleted by hand.
@@ -233,5 +261,26 @@
   document.querySelectorAll(".ask-row").forEach(function (button) {
     copyButton(button, function () { return button.dataset.prompt; });
   });
+  // A change started from a preview is still running: show what it does, then reload when it ends.
+  var banner = document.getElementById("change-banner");
+  if (banner) {
+    var bannerStatus = document.getElementById("change-status");
+    var bannerOutput = document.getElementById("change-output");
+    var bannerCommand = document.getElementById("change-command");
+    (function watch() {
+      fetch("/api/run/status", { credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (s) {
+          bannerCommand.textContent = s.command;
+          bannerOutput.textContent = s.lines.join("\n");
+          bannerOutput.scrollTop = bannerOutput.scrollHeight;
+          if (s.state === "running") { setTimeout(watch, 1000); return; }
+          bannerStatus.className = "run-status ok";
+          bannerStatus.textContent = banner.dataset.done;
+          setTimeout(function () { location.reload(); }, 2000);
+        })
+        .catch(function () { setTimeout(watch, 2000); });
+    })();
+  }
   if (document.body.dataset.state === "running") { poll(); }
 })();

@@ -243,9 +243,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "run_failed": "It did not finish. Read the output above; nothing else was changed.",
         "run_refused": "Gankhi refused to run this. Reload the preview and try again.",
         "run_busy": (
-            "Another change is still running. Gankhi does one at a time: wait for it to "
-            "finish and press the button again."
+            "Another change is still running (you can see it below). Gankhi does one at a time: "
+            "this button works again when it finishes."
         ),
+        "run_busy_done": (
+            "That other change finished. Gankhi is scanning again; once it is done you can "
+            "press the button."
+        ),
+        "change_banner_working": "A change is running on your system:",
+        "change_banner_done": "That change finished. Reloading to show the new numbers…",
         "run_saved": "List of programs saved in",
         "say_scanning": ("We are analysing your system. This can take a few minutes, please wait."),
         "say_intro": "I have just analysed your system.",
@@ -834,9 +840,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "run_failed": "No terminó. Leé la salida de arriba; no se cambió nada más.",
         "run_refused": "Gankhi se negó a ejecutarlo. Recargá la vista previa y probá de nuevo.",
         "run_busy": (
-            "Todavía hay otro cambio en curso. Gankhi hace uno por vez: esperá a que termine "
-            "y volvé a apretar el botón."
+            "Todavía hay otro cambio en curso (lo ves abajo). Gankhi hace uno por vez: este "
+            "botón vuelve a funcionar cuando termine."
         ),
+        "run_busy_done": (
+            "Ese otro cambio terminó. Gankhi vuelve a analizar; cuando termine, podés apretar "
+            "el botón."
+        ),
+        "change_banner_working": "Hay un cambio en curso en tu sistema:",
+        "change_banner_done": "Ese cambio terminó. Recargando para mostrar las cifras nuevas…",
         "run_saved": "Lista de programas guardada en",
         "say_scanning": (
             "Estamos analizando tu sistema. Puede tardar unos minutos, esperá un momento."

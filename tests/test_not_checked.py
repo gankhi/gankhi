@@ -299,3 +299,30 @@ def test_every_program_gankhi_could_not_check_has_its_own_button_to_ask_an_ai():
     # a program Gankhi did check has no such button
     vim = html[html.index("<strong>vim</strong>") :]
     assert "ask-row" not in vim[: vim.index("</tr>")]
+
+
+def test_a_change_that_is_running_is_shown_on_the_main_page_with_what_it_does():
+    from test_web import FakeExecutor
+
+    class Running(FakeExecutor):
+        def status(self):
+            return {
+                "state": "running",
+                "lines": ["Setting up tool (1.0) ..."],
+                "command": "apt-get install --only-upgrade tool",
+                "returncode": None,
+            }
+
+    def main_page(executor):
+        client = login(build(_result, executor=executor).test_client())
+        client.get("/", base_url=BASE)
+        wait_until_done(client)
+        return client.get("/", base_url=BASE).get_data(as_text=True)
+
+    html = main_page(Running())
+    assert 'id="change-banner"' in html
+    assert "A change is running on your system:" in html
+    assert "apt-get install --only-upgrade tool" in html
+    assert 'id="change-banner"' not in main_page(FakeExecutor())  # nothing running: no banner
+    script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
+    assert "function followOther()" in script and 'getElementById("change-banner")' in script

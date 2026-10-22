@@ -22,6 +22,12 @@
 
 {% block content %}
 {% if not (result and state in ('done', 'running')) %}<nav class="lang solo" aria-label="Language"><a href="/lang/es">ES</a><a href="/lang/en">EN</a></nav>{% endif %}
+{% if change_running %}
+<section class="card" id="change-banner" data-done="{{ t('change_banner_done') }}">
+  <p class="run-status working" id="change-status" role="status">{{ t('change_banner_working') }} <span class="mono" id="change-command">{{ change_command }}</span></p>
+  <pre class="terminal mono" id="change-output"></pre>
+</section>
+{% endif %}
 {% if state == 'running' %}
 <section class="card scan" id="progress" aria-live="polite">
   <svg class="radar" viewBox="0 0 140 140" width="120" height="120" aria-hidden="true">
