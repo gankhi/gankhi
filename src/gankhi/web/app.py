@@ -302,6 +302,11 @@ def create_app(
             os_name = result.system.os_name if result is not None and result.system else ""
             ecosystem = result.ecosystem if result is not None else ""
             context["ai_prompt"] = ask_ai.build_prompt(items, os_name, lang, ecosystem)  # type: ignore[arg-type]
+            # one question per program, for the button in its own row
+            context["ai_prompts"] = {
+                i.name: ask_ai.build_prompt([i], os_name, lang, ecosystem)
+                for i in items  # type: ignore[attr-defined]
+            }
         return render_template("index.html", **context)
 
     def build_preview(result: ScanResult, action: str, package: str) -> actions.Preview:

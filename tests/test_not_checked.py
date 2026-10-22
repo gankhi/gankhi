@@ -277,5 +277,22 @@ def test_a_newer_version_that_does_not_fix_the_notices_is_not_offered_as_the_fix
 
 def test_the_copy_button_goes_back_to_its_label_after_copying():
     script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
-    assert "var original = copy.textContent;" in script
-    assert "copy.textContent = original;" in script and "clearTimeout(restore)" in script
+    assert "var original = button.textContent;" in script
+    assert "button.textContent = original;" in script and "clearTimeout(restore)" in script
+    assert 'querySelectorAll(".ask-row")' in script  # the same behaviour for every row button
+
+
+def test_every_program_gankhi_could_not_check_has_its_own_button_to_ask_an_ai():
+    client = login(build(_result).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    buttons = html.count('class="btn ask-row"')
+    assert buttons == 3  # gcloud and handmade in the tools list, firefox (snap) in the card
+    row = html[html.index("<strong>gcloud</strong>") :]
+    row = row[: row.index("</tr>")]
+    assert "Ask an AI" in row and "- gcloud 548.0.0" in row
+    assert "- handmade" not in row  # each button carries only its own program
+    # a program Gankhi did check has no such button
+    vim = html[html.index("<strong>vim</strong>") :]
+    assert "ask-row" not in vim[: vim.index("</tr>")]
