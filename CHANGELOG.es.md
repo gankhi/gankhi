@@ -7,7 +7,7 @@ Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 ### Agregado
 - Los programas que vienen de afuera de Ubuntu (otro repositorio de apt, un archivo `.deb`, snap, flatpak) se muestran como «Sin revisar» en vez de «al día», con su propio filtro, un tramo en el anillo del resumen, una sección en la página y en el informe PDF, y una frase del asistente.
 - Un botón en la sección «Sin revisar» copia la lista con una consulta breve para pegar en la IA que elijas. Pide una tabla con las vulnerabilidades conocidas, enlaces a fuentes oficiales, la versión que lo arregla y el comando para la forma en que se instaló cada programa. Gankhi no envía nada.
-- La sección «Sin revisar» lista solo lo que Gankhi no puede actualizar por vos (snap y flatpak). Los programas de otros repositorios de apt o archivos `.deb` ya están en la lista de herramientas con la opción de actualizar, así que la sección solo remite a ellos. El texto para copiar sigue incluyéndolos a todos.
+- La sección «Sin revisar» lista solo lo que Gankhi no puede actualizar por vos (snap y flatpak). Los programas de otros repositorios de apt o archivos `.deb` ya están en la lista de herramientas con la opción de actualizar, así que la sección solo remite a ellos y el texto para copiar a una IA tampoco los incluye.
 - La sección de Python y npm lista todos los paquetes (los que no tienen avisos quedan plegados), en la página y en el informe PDF.
 - El asistente y el encabezado cuentan lo mismo: programas del sistema más paquetes de Python y npm.
 - La vista previa y las páginas de detalle de descargas tienen selector ES/EN.
