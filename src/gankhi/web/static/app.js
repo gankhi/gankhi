@@ -213,9 +213,16 @@
 
   var copy = document.getElementById("copy");
   if (copy) {
+    var original = copy.textContent;
+    var restore = null;
     copy.addEventListener("click", function () {
       var text = document.getElementById(copy.dataset.target).textContent;
-      navigator.clipboard.writeText(text).then(function () { copy.textContent = copy.dataset.done; });
+      navigator.clipboard.writeText(text).then(function () {
+        copy.textContent = copy.dataset.done;
+        // after a moment the button goes back to what it said, ready for another copy
+        window.clearTimeout(restore);
+        restore = window.setTimeout(function () { copy.textContent = original; }, 2500);
+      });
     });
   }
   if (document.body.dataset.state === "running") { poll(); }
