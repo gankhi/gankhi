@@ -10,7 +10,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from gankhi import ask_ai, narration, report  # noqa: E402
 from gankhi.collectors.apt import Package  # noqa: E402
-from gankhi.collectors.origins import is_ubuntu_origin, parse_origins, third_party  # noqa: E402
+from gankhi.collectors.origins import (  # noqa: E402
+    is_ubuntu_origin,
+    parse_origins,
+    resolve_superseded,
+    third_party,
+)
 from gankhi.collectors.sandboxed import SandboxedApp  # noqa: E402
 from gankhi.collectors.updates import Update  # noqa: E402
 from gankhi.release import codename_for  # noqa: E402
@@ -217,3 +222,24 @@ def test_the_header_only_mentions_the_vulnerability_data_when_it_was_just_downlo
         html = client.get("/", base_url=BASE).get_data(as_text=True)
         assert ("Vulnerability data: downloaded just now" in html) is downloaded
         assert "already up to date" not in html
+
+
+def test_an_ubuntu_package_with_a_newer_version_out_is_not_taken_for_a_loose_file():
+    # apt no longer lists the installed version in any repository once a newer one is out, so it
+    # reports it as "local"; the newer version tells where the package really comes from
+    listing = (
+        "Listing...\n"
+        "tool/now 2.1 all [installed,upgradable to: 2.2]\n"
+        "other/now 1.0 all [installed,upgradable to: 1.1]\n"
+        "byhand/now 3.0 all [installed,local]\n"
+    )
+    outside = third_party(listing, "noble")
+    assert set(outside) == {"tool", "other", "byhand"}
+    updates = [
+        Update("tool", "all", "2.1", "2.2", "noble-updates", False),
+        Update("other", "all", "1.0", "1.1", "vendor-repo", False),
+    ]
+    resolved = resolve_superseded(outside, updates, "noble")
+    assert "tool" not in resolved  # Ubuntu's own: its notices apply again
+    assert resolved["other"] == "vendor-repo"  # from that repository, not a loose file
+    assert resolved["byhand"] == "local"  # nothing newer: really installed by hand

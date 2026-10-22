@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 
+from gankhi.collectors.updates import Update
 from gankhi.runner import APT, run
 
 # Example lines (C locale):
@@ -46,6 +47,27 @@ def third_party(output: str, codename: str) -> dict[str, str]:
         for name, origins in parse_origins(output).items()
         if not is_ubuntu_origin(origins, codename)
     }
+
+
+def resolve_superseded(
+    outside: dict[str, str], updates: list[Update], codename: str
+) -> dict[str, str]:
+    """Settle the packages whose installed version is no longer in any repository.
+
+    When a newer version is out, apt no longer lists the one installed in any repository and
+    reports it as "local". Where the newer version comes from tells what the package really is:
+    if it is one of Ubuntu's own pockets it is an Ubuntu package that is only out of date (and
+    Ubuntu's notices apply to it); otherwise it comes from that other repository.
+    """
+    newer = {u.name.split(":")[0]: u.origin for u in updates}
+    resolved: dict[str, str] = {}
+    for name, origins in outside.items():
+        source = newer.get(name)
+        if origins != LOCAL or source is None:
+            resolved[name] = origins
+        elif not is_ubuntu_origin(source, codename):
+            resolved[name] = source
+    return resolved
 
 
 def collect_third_party(codename: str) -> dict[str, str]:
