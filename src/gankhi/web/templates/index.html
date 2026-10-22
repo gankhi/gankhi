@@ -172,6 +172,7 @@
             {% if tool.fixed_in and tool.unfixable %}{{ note('ok', t('tag_fixed') ~ ': ' ~ tool.fixable, t('hint_fixed_part', n=tool.fixable, m=tool.unfixable, version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}
             {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('hint_fixed', version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}{% endif %}
             {% if tool.unfixable and tool.fixed_in %}{{ note('bad', t('tag_no_fix') ~ ': ' ~ tool.unfixable, t('hint_some_no_fix', n=tool.unfixable), advise(tool, 'no_fix', 'more_no_fix')) }}
+            {% elif tool.unfixable and tool.update_to %}{{ note('bad', t('tag_newer_no_fix'), t('hint_newer_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}
             {% elif tool.unfixable %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}{% endif %}
             {% if tool.end_of_support %}{{ note('old', t('tag_eol'), t('hint_eol'), advise(tool, 'eol', 'more_eol')) }}{% endif %}
           </div>
@@ -202,8 +203,8 @@
           {% if tool.end_of_support %}<br><span class="state warn">{{ t('chip_eol') }}</span>{% endif %}
         </td>
         <td class="actions">
-          {% if tool.update_to %}<a class="btn primary" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
-          {% else %}<span class="btn off">{{ t('btn_update') }}</span>{% endif %}
+          {% if tool.update_to %}<a class="btn{% if tool.fixed_in or not tool.unfixable %} primary{% endif %}" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
+          {% endif %}
           {% if tool.protected %}<span class="btn off" title="{{ t('protected_hint') }}">🔒 {{ t('protected') }}</span>
           {% else %}<a class="btn danger" href="{{ url_for('preview_page', action='remove', pkg=tool.name) }}">{{ t('btn_remove') }}</a>{% endif %}
         </td>

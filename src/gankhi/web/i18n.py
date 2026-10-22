@@ -120,6 +120,11 @@ TEXTS: dict[str, dict[str, str]] = {
             "Gankhi shows the command; it does not change your projects."
         ),
         "hint_no_fix": "There is no patch published for this yet.",
+        "tag_newer_no_fix": "A newer version exists, but it does not fix these vulnerabilities yet",
+        "hint_newer_no_fix": (
+            "Ubuntu has not published a patch for these notices. Updating brings other changes, "
+            "but these stay open."
+        ),
         "hint_some_no_fix": "{n} notices have no patch yet, even after updating.",
         "hint_fixed_part": (
             "Updating to {version} fixes {n} notices. The other {m} stay open because no patch "
@@ -685,6 +690,13 @@ TEXTS: dict[str, dict[str, str]] = {
             "pruebas de tu proyecto. Gankhi te muestra el comando; no modifica tus proyectos."
         ),
         "hint_no_fix": "Todavía no hay un parche publicado.",
+        "tag_newer_no_fix": (
+            "Hay una versión más nueva, pero todavía no corrige estas vulnerabilidades"
+        ),
+        "hint_newer_no_fix": (
+            "Ubuntu todavía no publicó un parche para estos avisos. Actualizar trae otros "
+            "cambios, pero estos siguen abiertos."
+        ),
         "hint_some_no_fix": "{n} avisos todavía no tienen parche, ni siquiera al actualizar.",
         "hint_fixed_part": (
             "Al actualizar a {version} se corrigen {n} avisos. Los otros {m} siguen abiertos "
