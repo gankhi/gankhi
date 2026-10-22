@@ -83,9 +83,14 @@ def test_the_text_for_an_ai_lists_what_was_not_checked_and_asks_for_a_table():
     text = ask_ai.build_prompt(items, "Ubuntu 24.04 LTS", "en")
     assert "Ubuntu 24.04 LTS" in text and "- gcloud 548.0.0 (apt, repository cloud-sdk)" in text
     assert "installed from a .deb file" in text and "snap, publisher mozilla**" in text
-    assert "table" in text and "Command to update" in text and "Do not make anything up" in text
+    assert (
+        "exactly 3 columns" in text
+        and "Command to update" in text
+        and "Do not make anything up" in text
+    )
+    assert "no explanations" in text and "Read each command before running it." in text
     spanish = ask_ai.build_prompt(items, "Ubuntu 24.04 LTS", "es")
-    assert "Respondé con una tabla" in spanish and "No inventes nada" in spanish
+    assert "Respondé SOLO con una tabla" in spanish and "No inventes nada" in spanish
     assert "someone" not in text  # the user name of the sample system never goes in
 
 
@@ -180,7 +185,7 @@ def test_the_not_checked_card_lists_only_what_gankhi_cannot_update_for_you():
     # the text to copy has everything Gankhi could not check: being updatable says nothing
     # about whether the program has known vulnerabilities
     assert "- firefox" in card and "- gcloud" in card and "- handmade" in card
-    assert "Command to remove" in card and "lists all 3 programs that were not checked" in card
+    assert "exactly 3 columns" in card and "lists all 3 programs that were not checked" in card
 
 
 def test_the_text_for_an_ai_names_the_ubuntu_a_derivative_is_built_on():

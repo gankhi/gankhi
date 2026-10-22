@@ -6,7 +6,7 @@ All notable changes to Gankhi. Dates are written year-month-day.
 
 ### Added
 - Programs that come from outside Ubuntu (another apt repository, a `.deb` file, snap, flatpak) are shown as "Not checked" instead of "up to date", with their own filter, a segment in the summary ring, a section in the page and in the PDF report, and a sentence from the assistant.
-- A button in the "Not checked" section copies the list with a short question to paste into an AI of your choice. It asks for a table with the known vulnerabilities, links to official sources, the fixed version and the command for the way each program was installed. Gankhi sends nothing.
+- A button in the "Not checked" section copies the list with a strict question to paste into an AI of your choice. It asks only for a 3-column table (program, whether your version is vulnerable with CVE links, command to update) and, below it, the removal command for the vulnerable ones, with no extra explanations. Gankhi sends nothing.
 - The "Not checked" section lists only what Gankhi cannot update for you (snap and flatpak). Programs from other apt repositories or `.deb` files already appear in the tools list with an Update option, so the section only points to them. The text to copy for an AI still lists them, since whether a program can be updated says nothing about its vulnerabilities, and now also asks for the removal command.
 - The Python and npm section lists every package (the ones without notices fold away), in the page and in the PDF report.
 - The assistant and the header count the same: system programs plus Python and npm packages.
