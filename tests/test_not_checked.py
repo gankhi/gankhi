@@ -243,3 +243,33 @@ def test_an_ubuntu_package_with_a_newer_version_out_is_not_taken_for_a_loose_fil
     assert "tool" not in resolved  # Ubuntu's own: its notices apply again
     assert resolved["other"] == "vendor-repo"  # from that repository, not a loose file
     assert resolved["byhand"] == "local"  # nothing newer: really installed by hand
+
+
+def test_a_newer_version_that_does_not_fix_the_notices_is_not_offered_as_the_fix():
+    def with_update(*names):
+        base = make_result()
+        tools = [replace(t, update_to="9.9") if t.name in names else t for t in base.tools]
+        return replace(base, tools=tools)
+
+    def page(result):
+        client = login(build(lambda: result).test_client())
+        client.get("/", base_url=BASE)
+        wait_until_done(client)
+        return client.get("/", base_url=BASE).get_data(as_text=True)
+
+    def row(html, name):
+        start = html.index(f"<strong>{name}</strong>")
+        return html[start : html.index("</tr>", start)]
+
+    # virtualbox has notices with no patch; a newer version exists but fixes none of them
+    html = page(with_update("virtualbox"))
+    box = row(html, "virtualbox")
+    assert "A newer version exists, but it does not fix these vulnerabilities yet" in box
+    assert 'class="btn primary"' not in box and 'class="btn"' in box
+    # with no newer version the plain "no fix" tag stays
+    plain = row(page(with_update()), "virtualbox")
+    assert "No fix yet" in plain and "A newer version exists" not in plain
+    # an update that does fix something keeps the highlighted button
+    assert 'class="btn primary"' in row(page(with_update("openssl")), "openssl")
+    # with nothing to update there is no Update button at all, not a disabled one
+    assert "Update</a>" not in plain and 'btn off">Update' not in plain
