@@ -177,8 +177,10 @@ def test_the_not_checked_card_lists_only_what_gankhi_cannot_update_for_you():
     assert "<strong>gcloud</strong>" not in card and "<strong>handmade</strong>" not in card
     assert "2 programs from other apt repositories or .deb files are in the tools list" in card
     assert 'href="/?f=unchecked#tools"' in card
-    # the text to copy has only what Gankhi cannot update, not what is already in the list
-    assert "- firefox" in card and "- gcloud" not in card and "- handmade" not in card
+    # the text to copy has everything Gankhi could not check: being updatable says nothing
+    # about whether the program has known vulnerabilities
+    assert "- firefox" in card and "- gcloud" in card and "- handmade" in card
+    assert "Command to remove" in card and "The text below includes them too" in card
 
 
 def test_the_text_for_an_ai_names_the_ubuntu_a_derivative_is_built_on():

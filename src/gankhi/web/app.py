@@ -297,9 +297,7 @@ def create_app(
         }
         if result is not None and job.state in (DONE, RUNNING):
             context.update(tool_view(result))
-        # Only what Gankhi cannot update for you goes into the text for an AI; the apt and
-        # .deb programs are already in the tools list.
-        items = [i for i in context["unchecked"] if i.how in ("snap", "flatpak")]  # type: ignore[attr-defined]
+        items = context["unchecked"]
         if items:
             os_name = result.system.os_name if result is not None and result.system else ""
             ecosystem = result.ecosystem if result is not None else ""

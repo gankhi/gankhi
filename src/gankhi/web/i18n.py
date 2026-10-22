@@ -51,7 +51,8 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "unchk_in_list": (
             "{n} programs from other apt repositories or .deb files are in the tools list above, "
-            "where you can update them."
+            "where you can update them. The text below includes them too, to ask about "
+            "vulnerabilities."
         ),
         "unchk_see_list": "See them",
         "unchk_apart": "{n} that Gankhi cannot update for you (snap and flatpak):",
@@ -610,7 +611,8 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "unchk_in_list": (
             "{n} programas de otros repositorios de apt o archivos .deb están en la lista de "
-            "herramientas de arriba, donde los podés actualizar."
+            "herramientas de arriba, donde los podés actualizar. El texto de abajo los incluye "
+            "también, para consultar si tienen vulnerabilidades."
         ),
         "unchk_see_list": "Verlos",
         "unchk_apart": "{n} que Gankhi no puede actualizar por vos (snap y flatpak):",
