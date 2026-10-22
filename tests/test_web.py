@@ -516,6 +516,8 @@ def test_preview_shows_what_an_update_would_do_and_the_commands_to_copy():
     assert "sudo apt-get install --only-upgrade vim" in html
     assert "dpkg --get-selections" in html  # the undo list comes first
     assert "style=" not in html
+    # what uses the tool, as commands to copy (Gankhi does not run them)
+    assert "apt-cache rdepends --installed vim" in html and "apt-cache depends vim" in html
 
 
 def test_protected_programs_cannot_be_previewed_for_removal():
@@ -1339,3 +1341,10 @@ def test_the_vulnerability_list_date_says_it_is_when_ubuntu_last_updated_it():
     assert "última actualización de Ubuntu" in translate(
         "es", "fact_feed", date="21 oct 2026, 03:17"
     )
+
+
+def test_what_uses_a_tool_is_not_offered_for_actions_that_are_not_about_one_tool():
+    client = preview_client()
+    for action in ("all", "clean"):
+        html = client.get(f"/preview?action={action}", base_url=BASE).get_data(as_text=True)
+        assert "apt-cache rdepends" not in html
