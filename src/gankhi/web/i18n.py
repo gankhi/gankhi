@@ -622,7 +622,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Gankhi no envía nada. Pegar esto en una IA comparte tu lista de programas con ese "
             "servicio: hacelo solo con una de confianza. Usá una que pueda buscar en la web: "
             "sin eso, casi todo va a salir «No verificado». Una IA puede equivocarse o estar "
-            "desactualizada, así que verificá lo que responda."
+            "desactualizada, y «No encontré avisos» no prueba que un programa sea seguro: abrí "
+            "cada enlace que te dé antes de creerle un «Sí»."
         ),
         "unchk_what": "Qué se copia",
         "say_unchecked": (
