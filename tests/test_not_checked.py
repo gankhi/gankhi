@@ -89,7 +89,11 @@ def test_the_text_for_an_ai_lists_what_was_not_checked_and_asks_for_a_table():
         and "Do not make anything up" in text
     )
     assert "Search the web for each program" in text and "download page" in text
-    assert "No advisories found" in text and "never a search-engine link" in text
+    assert (
+        "Not reported yet" in text
+        and "OSV.dev, NVD, GitHub" in text
+        and "never a search-engine link" in text
+    )
     assert "no explanations" in text and "Read each command before running it." in text
     spanish = ask_ai.build_prompt(items, "Ubuntu 24.04 LTS", "es")
     assert "Respondé SOLO con una tabla" in spanish and "No inventes nada" in spanish
