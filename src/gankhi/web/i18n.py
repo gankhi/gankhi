@@ -59,8 +59,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "unchk_copy": "Copy list and question for an AI",
         "unchk_privacy": (
             "Gankhi sends nothing. Pasting this into an AI shares your list of programs with "
-            "that service: do it only with one you trust. An AI can be wrong or out of date, "
-            "so check what it answers."
+            "that service: do it only with one you trust. Use one that can search the web: "
+            'without it, most answers will be "Not verified". An AI can be wrong or out of '
+            "date, so check what it answers."
         ),
         "unchk_what": "What gets copied",
         "say_unchecked": (
@@ -619,7 +620,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "unchk_copy": "Copiar lista y consulta para una IA",
         "unchk_privacy": (
             "Gankhi no envía nada. Pegar esto en una IA comparte tu lista de programas con ese "
-            "servicio: hacelo solo con una de confianza. Una IA puede equivocarse o estar "
+            "servicio: hacelo solo con una de confianza. Usá una que pueda buscar en la web: "
+            "sin eso, casi todo va a salir «No verificado». Una IA puede equivocarse o estar "
             "desactualizada, así que verificá lo que responda."
         ),
         "unchk_what": "Qué se copia",
