@@ -69,8 +69,8 @@ _TEXT = {
             '- "Vulnerable in my version?": write only "Yes", "No advisories found" or '
             '"Not verified". "Yes" only if an advisory says my exact version is affected; add '
             "the CVE numbers, each with a direct link to the advisory (OSV.dev, NVD or the "
-            "vendor), never a search-engine link. If you found nothing, do not write \"No\": "
-            'write "No advisories found".\n"
+            'vendor), never a search-engine link. If you found nothing, do not write "No": '
+            'write "No advisories found".\n'
             '- "Command to update": the exact command for the way I installed it (shown in '
             "brackets).\n"
             "- After the table, add the command to remove the program ONLY for the ones marked "

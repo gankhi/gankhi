@@ -61,7 +61,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Gankhi sends nothing. Pasting this into an AI shares your list of programs with "
             "that service: do it only with one you trust. Use one that can search the web: "
             'without it, most answers will be "Not verified". An AI can be wrong or out of '
-            "date, so check what it answers."
+            'date, and "No advisories found" is not proof that a program is safe: open every '
+            'link it gives before trusting a "Yes".'
         ),
         "unchk_what": "What gets copied",
         "say_unchecked": (
