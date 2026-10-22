@@ -65,15 +65,21 @@ _TEXT = {
         "ask": (
             "Answer ONLY with a table of exactly 3 columns, one row per program, in the same "
             "order as my list, and nothing else:\n"
-            "| Program | Vulnerable in my version? | Command to update |\n"
-            '- "Vulnerable in my version?": write only "Yes", "No" or "Not verified". If "Yes", '
-            "add the CVE numbers, each with a link to the official source.\n"
+            "| Program and version | Vulnerable in my version? | Command to update |\n"
+            '- "Vulnerable in my version?": write only "Yes", "Not reported yet" or '
+            '"Not verified". "Yes" only if an advisory says my exact version is affected; add '
+            "the CVE numbers, each with a direct link to the advisory (OSV.dev, NVD or the "
+            'vendor), never a search-engine link. If you found nothing, do not write "No": '
+            'write "Not reported yet".\n'
             '- "Command to update": the exact command for the way I installed it (shown in '
             "brackets).\n"
             "- After the table, add the command to remove the program ONLY for the ones marked "
             '"Yes", one line each.\n'
-            "- Search the web for each program (OSV.dev, NVD and the vendor's security page) "
-            "before answering. Do not answer from memory.\n"
+            "- Search the web for each program by name and exact version, in: OSV.dev, NVD, GitHub "
+            "Security Advisories, CISA's known exploited list, the Ubuntu and Debian security "
+            "trackers and the vendor's own security page. Do not answer from memory.\n"
+            '- "Not verified" only if you could not search the web at all; if you searched and '
+            'found nothing, write "Not reported yet".\n'
             '- If I installed it from a .deb file, in "Command to update" write the link to the '
             "vendor's download page instead of an apt command.\n"
             "- No introduction, no explanations, no notes, no advice, no headings, no "
@@ -99,15 +105,22 @@ _TEXT = {
         "ask": (
             "Respondé SOLO con una tabla de exactamente 3 columnas, una fila por programa, en "
             "el mismo orden que mi lista, y nada más:\n"
-            "| Programa | ¿Vulnerable en mi versión? | Comando para actualizar |\n"
-            '- "¿Vulnerable en mi versión?": escribí solo "Sí", "No" o "No verificado". Si es '
-            '"Sí", sumá los números CVE, cada uno con un enlace a la fuente oficial.\n'
+            "| Programa y versión | ¿Vulnerable en mi versión? | Comando para actualizar |\n"
+            '- "¿Vulnerable en mi versión?": escribí solo "Sí", "Aún no reportado" o '
+            '"No verificado". "Sí" solo si un aviso dice que mi versión exacta está afectada; '
+            "sumá los números CVE, cada uno con un enlace directo al aviso (OSV.dev, NVD o el "
+            'fabricante), nunca un enlace de buscador. Si no encontraste nada, no escribas "No": '
+            'escribí "Aún no reportado".\n'
             '- "Comando para actualizar": el comando exacto para la forma en que lo instalé '
             "(figura entre paréntesis).\n"
             "- Debajo de la tabla, poné el comando para eliminar el programa SOLO de los que "
             'marcaste "Sí", una línea cada uno.\n'
-            "- Buscá en la web cada programa (OSV.dev, NVD y la página de seguridad del "
-            "fabricante) antes de responder. No respondas de memoria.\n"
+            "- Buscá en la web cada programa por nombre y versión exacta, en: OSV.dev, NVD, GitHub "
+            "Security Advisories, la lista de vulnerabilidades explotadas de CISA, los "
+            "seguimientos de seguridad de Ubuntu y Debian y la página de seguridad del "
+            "fabricante. No respondas de memoria.\n"
+            '- "No verificado" solo si no pudiste buscar en la web; si buscaste y no '
+            'encontraste nada, escribí "Aún no reportado".\n'
             '- Si lo instalé desde un archivo .deb, en "Comando para actualizar" poné el enlace '
             "a la página de descarga del fabricante en lugar de un comando de apt.\n"
             "- Sin introducción, sin explicaciones, sin notas, sin consejos, sin títulos, sin "

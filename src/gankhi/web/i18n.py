@@ -61,7 +61,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Gankhi sends nothing. Pasting this into an AI shares your list of programs with "
             "that service: do it only with one you trust. Use one that can search the web: "
             'without it, most answers will be "Not verified". An AI can be wrong or out of '
-            "date, so check what it answers."
+            'date, and "Not reported yet" is not proof that a program is safe: open every '
+            'link it gives before trusting a "Yes".'
         ),
         "unchk_what": "What gets copied",
         "say_unchecked": (
@@ -622,7 +623,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Gankhi no envía nada. Pegar esto en una IA comparte tu lista de programas con ese "
             "servicio: hacelo solo con una de confianza. Usá una que pueda buscar en la web: "
             "sin eso, casi todo va a salir «No verificado». Una IA puede equivocarse o estar "
-            "desactualizada, así que verificá lo que responda."
+            "desactualizada, y «Aún no reportado» no prueba que un programa sea seguro: abrí "
+            "cada enlace que te dé antes de creerle un «Sí»."
         ),
         "unchk_what": "Qué se copia",
         "say_unchecked": (
