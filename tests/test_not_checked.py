@@ -100,6 +100,8 @@ def test_the_text_for_an_ai_lists_what_was_not_checked_and_asks_for_a_table():
         and "OSV.dev, NVD, GitHub" in text
         and "never a search-engine link" in text
     )
+    assert "Do not suggest removing" in text and "full plain URL" in text
+    assert "remove the program" not in text
     assert "no explanations" in text and "Read each command before running it." in text
     spanish = ask_ai.build_prompt(items, "Ubuntu 24.04 LTS", "es")
     assert "Respondé SOLO con una tabla" in spanish and "No inventes nada" in spanish
