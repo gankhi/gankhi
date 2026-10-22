@@ -180,7 +180,7 @@ def test_the_not_checked_card_lists_only_what_gankhi_cannot_update_for_you():
     # the text to copy has everything Gankhi could not check: being updatable says nothing
     # about whether the program has known vulnerabilities
     assert "- firefox" in card and "- gcloud" in card and "- handmade" in card
-    assert "Command to remove" in card and "The text below includes them too" in card
+    assert "Command to remove" in card and "lists all 3 programs that were not checked" in card
 
 
 def test_the_text_for_an_ai_names_the_ubuntu_a_derivative_is_built_on():
