@@ -90,7 +90,8 @@ def test_the_text_for_an_ai_lists_what_was_not_checked_and_asks_for_a_table():
     )
     assert "Search the web for each program" in text and "download page" in text
     assert (
-        "Not reported yet" in text
+        "Never fill the whole column" in text
+        and "Not reported yet" in text
         and "OSV.dev, NVD, GitHub" in text
         and "never a search-engine link" in text
     )

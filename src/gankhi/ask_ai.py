@@ -78,8 +78,9 @@ _TEXT = {
             "- Search the web for each program by name and exact version, in: OSV.dev, NVD, GitHub "
             "Security Advisories, CISA's known exploited list, the Ubuntu and Debian security "
             "trackers and the vendor's own security page. Do not answer from memory.\n"
-            '- "Not verified" only if you could not search the web at all; if you searched and '
-            'found nothing, write "Not reported yet".\n'
+            '- Search each program one by one. Write "Not reported yet" only for a program you '
+            'actually searched and found nothing for; for any you did not search, write "Not '
+            'verified". Never fill the whole column with the same answer.\n'
             '- If I installed it from a .deb file, in "Command to update" write the link to the '
             "vendor's download page instead of an apt command.\n"
             "- No introduction, no explanations, no notes, no advice, no headings, no "
@@ -119,8 +120,9 @@ _TEXT = {
             "Security Advisories, la lista de vulnerabilidades explotadas de CISA, los "
             "seguimientos de seguridad de Ubuntu y Debian y la página de seguridad del "
             "fabricante. No respondas de memoria.\n"
-            '- "No verificado" solo si no pudiste buscar en la web; si buscaste y no '
-            'encontraste nada, escribí "Aún no reportado".\n'
+            '- Buscá cada programa uno por uno. Escribí "Aún no reportado" solo si lo buscaste '
+            'de verdad y no encontraste nada; si no lo buscaste, escribí "No verificado". Nunca '
+            "llenes toda la columna con la misma respuesta.\n"
             '- Si lo instalé desde un archivo .deb, en "Comando para actualizar" poné el enlace '
             "a la página de descarga del fabricante en lugar de un comando de apt.\n"
             "- Sin introducción, sin explicaciones, sin notas, sin consejos, sin títulos, sin "
