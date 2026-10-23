@@ -236,7 +236,7 @@
 </section>
 
 {% if result.sandboxed %}
-<section class="card" data-explain="external" tabindex="0">
+<section class="card" data-explain="external" tabindex="0" id="sandboxed">
   <div class="toolshead"><div><h2>{{ t('sbx_title') }}</h2><p class="muted">{{ t('sbx_sub', n=result.sandboxed|length) }}</p></div></div>
   <div class="scroll"><table class="aligned">{{ cols() }}
     <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th class="num">{{ t('col_size') }}</th><th>{{ t('sbx_col_source') }}</th><th>{{ t('col_actions') }}</th></tr></thead>
@@ -261,18 +261,7 @@
 <section class="card" data-explain="unchecked" tabindex="0" id="unchecked">
   <div class="toolshead"><div><h2>{{ t('unchk_title') }}</h2><p class="muted">{{ t('unchk_sub', n=unchecked|length) }}</p></div></div>
   {% if in_list %}<p class="small">{{ t('unchk_in_list', n=in_list, total=unchecked|length) }} <a href="{{ url_for('index', f='unchecked') }}#tools">{{ t('unchk_see_list') }}</a></p>{% endif %}
-  {% if apart %}
-  <p class="small muted">{{ t('unchk_apart', n=apart|length) }}</p>
-  <div class="scroll"><table class="aligned">{{ cols() }}
-    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th colspan="3">{{ t('col_origin') }}</th><th>{{ t('col_actions') }}</th></tr></thead>
-    <tbody>
-    {% for item in apart[:200] %}
-      <tr><td class="wrap"><strong>{{ item.name }}</strong></td><td class="mono">{{ item.version }}</td><td colspan="3" class="mono">{{ item.how }}{% if item.source %} · {{ item.source }}{% endif %}</td><td class="actions"><button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[item.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button></td></tr>
-    {% endfor %}
-    </tbody>
-  </table></div>
-  {% if apart|length > 200 %}<p class="small muted">{{ t('ext_others_more', n=apart|length - 200) }}</p>{% endif %}
-  {% endif %}
+  {% if apart %}<p class="small">{{ t('unchk_apart', n=apart|length) }} <a href="#sandboxed">{{ t('unchk_see_apps') }}</a></p>{% endif %}
   <p><button type="button" id="copy" data-target="ai-text" data-done="{{ t('copied') }}">{{ t('unchk_copy') }}</button></p>
   <p class="small muted">{{ t('unchk_privacy') }}</p>
   <details><summary class="small">{{ t('unchk_what') }}</summary><pre class="commands mono wrapped" id="ai-text">{{ ai_prompt }}</pre></details>

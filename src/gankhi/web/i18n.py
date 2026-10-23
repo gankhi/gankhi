@@ -55,7 +55,11 @@ TEXTS: dict[str, dict[str, str]] = {
             "checked, so an AI can look for vulnerabilities in every one."
         ),
         "unchk_see_list": "See them",
-        "unchk_apart": "{n} that Gankhi cannot update for you (snap and flatpak):",
+        "unchk_apart": (
+            '{n} snap or flatpak apps are in the "Snap and Flatpak apps" section, each with '
+            "its own button to ask an AI."
+        ),
+        "unchk_see_apps": "See them",
         "unchk_copy": "Copy list and question for an AI",
         "prev_uses_title": "Before deciding: what uses this tool",
         "prev_uses_rdepends": (
@@ -641,7 +645,11 @@ TEXTS: dict[str, dict[str, str]] = {
             "los {total} programas sin revisar, para que una IA busque vulnerabilidades en todos."
         ),
         "unchk_see_list": "Verlos",
-        "unchk_apart": "{n} que Gankhi no puede actualizar por vos (snap y flatpak):",
+        "unchk_apart": (
+            "{n} apps de snap o flatpak están en la sección «Apps de Snap y Flatpak», cada una "
+            "con su propio botón para consultar a una IA."
+        ),
+        "unchk_see_apps": "Verlas",
         "unchk_copy": "Copiar lista y consulta para una IA",
         "prev_uses_title": "Antes de decidir: qué usa esta herramienta",
         "prev_uses_rdepends": (
