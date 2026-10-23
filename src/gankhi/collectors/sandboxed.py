@@ -110,6 +110,15 @@ def remove_command(app: SandboxedApp) -> str | None:
     return None
 
 
+def uses_command(app: SandboxedApp) -> str | None:
+    """A read-only command that shows what the app is connected to and what it needs."""
+    if app.tool == "snap" and _SNAP_NAME.match(app.app_id):
+        return f"snap connections {app.app_id}"
+    if app.tool == "flatpak" and _FLATPAK_ID.match(app.app_id):
+        return f"flatpak info {app.app_id}"
+    return None
+
+
 def is_shared_runtime(app: SandboxedApp) -> bool:
     return app.tool == "snap" and bool(_SHARED_SNAP.match(app.app_id))
 

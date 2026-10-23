@@ -287,6 +287,7 @@ def create_app(
             "update_info": lambda tool: advice.update_info(tool, lang),
             "sandboxed_update": sandboxed.update_command,
             "sandboxed_remove": sandboxed.remove_command,
+            "sandboxed_uses": sandboxed.uses_command,
             "sandboxed_shared": sandboxed.is_shared_runtime,
             "update_command": external_tools.update_command,
             "remove_command": external_tools.remove_command,

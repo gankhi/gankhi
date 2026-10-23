@@ -244,9 +244,10 @@
     {% for app in result.sandboxed[:200] %}
       <tr><td class="wrap"><strong>{{ app.name }}</strong>
         <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div>
-        {% set sup = sandboxed_update(app) %}{% set srm = sandboxed_remove(app) %}
+        {% set sup = sandboxed_update(app) %}{% set srm = sandboxed_remove(app) %}{% set suse = sandboxed_uses(app) %}
         {% if sup or srm %}<div class="howto">
           {% if sup %}<p class="small">{{ t('sbx_cmd_update') }}</p><code class="cmd">{{ sup }}</code>{% endif %}
+          {% if suse %}<p class="small">{{ t('sbx_cmd_uses') }}</p><code class="cmd">{{ suse }}</code>{% endif %}
           {% if srm %}<p class="small">{{ t('sbx_cmd_remove') }}</p><code class="cmd">{{ srm }}</code>{% endif %}
           {% if sandboxed_shared(app) %}<p class="small muted">{{ t('sbx_cmd_shared') }}</p>{% endif %}
         </div>{% endif %}</td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td>{{ app.source }}</td><td class="actions">{% if ai_prompts and ai_prompts.get(app.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[app.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}</td></tr>

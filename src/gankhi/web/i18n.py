@@ -424,6 +424,7 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "ext_cmd_before_npm": "Before removing it, check that none of your projects uses it.",
         "sbx_cmd_update": "To update it, copy this command and paste it into a terminal:",
+        "sbx_cmd_uses": "To see what it is connected to and what it needs, before deciding:",
         "sbx_cmd_remove": "If you do not use it, to remove it:",
         "sbx_cmd_shared": (
             "This looks like a base that other apps are built on: removing it can break apps "
@@ -1035,6 +1036,7 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "ext_cmd_before_npm": "Antes de quitarlo, fijate que ninguno de tus proyectos lo use.",
         "sbx_cmd_update": "Para actualizarla, copiá este comando y pegalo en una consola:",
+        "sbx_cmd_uses": "Para ver a qué está conectada y qué necesita, antes de decidir:",
         "sbx_cmd_remove": "Si no la usás, para quitarla:",
         "sbx_cmd_shared": (
             "Esto parece una base sobre la que se construyen otras apps: quitarla puede romper "
