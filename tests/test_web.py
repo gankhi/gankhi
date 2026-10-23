@@ -87,9 +87,16 @@ class FakeExecutor:
         return {"state": "idle", "lines": [], "command": "", "returncode": None}
 
 
-def build(scan=make_result, simulator=None, executor=None):
+def build(scan=make_result, simulator=None, executor=None, verified_store=None):
     simulator = simulator or (lambda action, name, uris=False: "")
-    app = create_app(scan, SECRET, PORT, simulator, executor or FakeExecutor(available=False))
+    app = create_app(
+        scan,
+        SECRET,
+        PORT,
+        simulator,
+        executor or FakeExecutor(available=False),
+        verified_store=verified_store,
+    )
     app.testing = True
     return app
 

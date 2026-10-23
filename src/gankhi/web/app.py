@@ -32,8 +32,10 @@ from gankhi import (
     narration,
     paging,
     report,
+    verified,
 )
 from gankhi.collectors import sandboxed
+from gankhi.collectors.origins import LOCAL
 from gankhi.executor import RUNNING as CHANGE_RUNNING
 from gankhi.executor import ActionJob
 from gankhi.progress import RUNNING as STEP_RUNNING
@@ -129,6 +131,7 @@ def create_app(
     executor: ActionJob | None = None,
     progress: Progress | None = None,
     opener: Callable[[Path], bool] = folders.show_in_file_manager,
+    verified_store: verified.Store | None = None,
 ) -> Flask:
     """Build the app. ``scan`` produces a ``ScanResult``; ``secret`` is the access token.
 
@@ -139,6 +142,7 @@ def create_app(
     app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
 
     job = ScanJob(scan, progress)
+    marks_store = verified_store if verified_store is not None else verified.Store()
     runner_job = executor or ActionJob(on_done=job.start)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
     app.jinja_env.filters["size"] = paging.human_size
@@ -212,7 +216,14 @@ def create_app(
         )
         return response
 
-    def tool_view(result: ScanResult) -> dict[str, object]:
+    def checked_by_user(tool: Any, marks: dict[str, verified.Mark]) -> bool:
+        """A program Gankhi cannot check that the person marked as checked, in this version."""
+        if tool.state != UNCHECKED or not tool.is_program or not tool.origin:
+            return False
+        how = "deb" if tool.origin == LOCAL else "apt"
+        return verified.key(how, ask_ai.clean(tool.name), ask_ai.clean(tool.version)) in marks
+
+    def tool_view(result: ScanResult, marks: dict[str, verified.Mark]) -> dict[str, object]:
         """Everything the tools table needs, taken from the query string."""
         show_all = request.args.get("show") == "all"
         chosen = request.args.get("f", "all")
@@ -230,6 +241,7 @@ def create_app(
             t
             for t in universe
             if (wanted is None or t.state == wanted)
+            and not (wanted == UNCHECKED and checked_by_user(t, marks))
             and (not text or text in t.name.lower() or text in t.description.lower())
             and not is_parked(t)  # these have their own card
         ]
@@ -240,10 +252,13 @@ def create_app(
         # counted as "up to date".) The filter chips keep counting the programs table only.
         outside = len(result.external)
         outside_bad = sum(1 for p in result.external if p.vulnerable)
-        total_all = len(universe) + outside
+        by_user = sum(1 for t in universe if checked_by_user(t, marks))
+        total_all = (
+            len(universe) + outside - by_user
+        )  # the ones checked by hand have their own card
         total_bad = sum(1 for t in universe if t.state == VULNERABLE) + outside_bad
         total_old = sum(1 for t in universe if t.state == OUTDATED)
-        total_unchecked = sum(1 for t in universe if t.state == UNCHECKED)
+        total_unchecked = sum(1 for t in universe if t.state == UNCHECKED) - by_user
         return {
             "parked": parked,
             "parked_shown": parked if chosen in ("all", "vulnerable") else [],
@@ -261,7 +276,7 @@ def create_app(
                 "outdated": sum(1 for t in universe if t.state == OUTDATED),
                 "vulnerable": sum(1 for t in universe if t.state == VULNERABLE) - len(parked),
                 "ok": sum(1 for t in universe if t.state == OK),
-                "unchecked": sum(1 for t in universe if t.state == UNCHECKED),
+                "unchecked": total_unchecked,
             },
             "filter": chosen,
             "filters": FILTERS,
@@ -277,6 +292,14 @@ def create_app(
         lang = current_language()
         result = job.result
         change = runner_job.status()
+        marks = marks_store.marks()
+        everything = ask_ai.unchecked_items(result) if result is not None else []
+        pending = [i for i in everything if verified.key(i.how, i.name, i.version) not in marks]
+        checked_items = [
+            (i, marks[verified.key(i.how, i.name, i.version)].day)
+            for i in everything
+            if verified.key(i.how, i.name, i.version) in marks
+        ]
         context: dict[str, object] = {
             "lang": lang,
             "t": lambda key, **values: i18n.translate(lang, key, **values),
@@ -299,13 +322,22 @@ def create_app(
             "EXT_OTHERS_MAX": external_tools.MAX_LISTED_OTHERS,
             "state": job.state,
             "result": result,
-            "unchecked": ask_ai.unchecked_items(result) if result is not None else [],
+            "unchecked": pending,
+            "verified_items": checked_items,
+            "sandboxed_shown": [
+                a
+                for a in (result.sandboxed if result is not None else [])
+                if verified.key(a.tool, ask_ai.clean(a.name), ask_ai.clean(a.version)) not in marks
+            ],
+            "tool_checked": lambda tool: checked_by_user(tool, marks),
+            "clean": ask_ai.clean,
+            "pending_how": {i.name: i.how for i in pending},
             "change_running": change.get("state") == CHANGE_RUNNING,
             "change_command": change.get("command", ""),
             "now": datetime.now(),
         }
         if result is not None and job.state in (DONE, RUNNING):
-            context.update(tool_view(result))
+            context.update(tool_view(result, marks))
         items = context["unchecked"]
         if items:
             os_name = result.system.os_name if result is not None and result.system else ""
@@ -525,6 +557,32 @@ def create_app(
     @app.route("/api/status")
     def status() -> Response:
         return jsonify(state=job.state)
+
+    @app.route("/api/verify", methods=["POST"])
+    def verify() -> Response:
+        """Mark (or unmark) a program or app as checked by the person, in its exact version.
+
+        Only something that is really listed as not checked right now can be marked.
+        """
+        data = request.get_json(silent=True)
+        data = data if isinstance(data, dict) else {}
+        how, name, version = data.get("how"), data.get("name"), data.get("version")
+        result = job.result
+        if (
+            not all(isinstance(v, str) for v in (how, name, version))
+            or how not in verified.HOWS
+            or not isinstance(data.get("checked"), bool)
+            or result is None
+        ):
+            return make_response(jsonify(error="invalid"), 400)
+        listed = {(i.how, i.name, i.version) for i in ask_ai.unchecked_items(result)}
+        if (how, name, version) not in listed:
+            return make_response(jsonify(error="unknown"), 404)
+        if data["checked"]:
+            done = marks_store.add(how, name, version)  # type: ignore[arg-type]
+        else:
+            done = marks_store.remove(how, name, version)  # type: ignore[arg-type]
+        return make_response(jsonify(ok=done), 200)
 
     @app.route("/api/rescan", methods=["POST"])
     def rescan() -> Response:
