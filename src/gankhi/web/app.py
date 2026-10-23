@@ -43,7 +43,7 @@ from gankhi.progress import Progress
 from gankhi.runner import CommandNotAllowedError
 from gankhi.service import ScanResult
 from gankhi.summary import RUNNING_KERNEL
-from gankhi.tools import OK, OUTDATED, UNCHECKED, VULNERABLE
+from gankhi.tools import OK, OUTDATED, UNCHECKED, VULNERABLE, is_parked
 from gankhi.web import i18n
 from gankhi.web.jobs import DONE, IDLE, RUNNING, ScanJob
 
@@ -243,7 +243,9 @@ def create_app(
             if (wanted is None or t.state == wanted)
             and not (wanted == UNCHECKED and checked_by_user(t, marks))
             and (not text or text in t.name.lower() or text in t.description.lower())
+            and not is_parked(t)  # these have their own card
         ]
+        parked = [t for t in universe if is_parked(t)]
         kernel = [r for r in result.risks if r.kind == RUNNING_KERNEL]
         # The headline numbers add up everything Gankhi checked: system programs and also the
         # Python and npm packages. (Snap and Flatpak apps are not checked, so they are not
@@ -258,6 +260,8 @@ def create_app(
         total_old = sum(1 for t in universe if t.state == OUTDATED)
         total_unchecked = sum(1 for t in universe if t.state == UNCHECKED) - by_user
         return {
+            "parked": parked,
+            "parked_shown": parked if chosen in ("all", "vulnerable") else [],
             "totals": {
                 "all": total_all,
                 "outdated": total_old,
@@ -270,7 +274,7 @@ def create_app(
             "counts": {
                 "all": len(universe),
                 "outdated": sum(1 for t in universe if t.state == OUTDATED),
-                "vulnerable": sum(1 for t in universe if t.state == VULNERABLE),
+                "vulnerable": sum(1 for t in universe if t.state == VULNERABLE) - len(parked),
                 "ok": sum(1 for t in universe if t.state == OK),
                 "unchecked": total_unchecked,
             },

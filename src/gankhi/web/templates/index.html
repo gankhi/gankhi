@@ -4,6 +4,55 @@
 {# the three tables share these columns, so name, origin, version and size line up #}
 {% macro cols() %}<colgroup><col class="c-name"><col class="c-origin"><col class="c-version"><col class="c-size"><col class="c-state"><col class="c-last"></colgroup>{% endmacro %}
 {% macro note(kind, tag, hint, more) %}<details class="note"><summary><span class="tag {{ kind }}">{{ tag }}</span></summary><p>{{ hint }}</p>{% for paragraph in more %}<p>{{ paragraph }}</p>{% endfor %}</details>{% endmacro %}
+{% macro tool_row(tool) %}
+      <tr>
+        <td class="wrap"><strong>{{ tool.name }}</strong><br><span class="small">{{ tool.description }}</span>
+          {% if tool.fixed_in or tool.unfixable or tool.end_of_support %}
+          <div class="notes">
+            {% if tool.fixed_in and tool.unfixable %}{{ note('ok', t('tag_fixed') ~ ': ' ~ tool.fixable, t('hint_fixed_part', n=tool.fixable, m=tool.unfixable, version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}
+            {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('hint_fixed', version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}{% endif %}
+            {% if tool.unfixable and tool.fixed_in %}{{ note('bad', t('tag_no_fix') ~ ': ' ~ tool.unfixable, t('hint_some_no_fix', n=tool.unfixable), advise(tool, 'no_fix', 'more_no_fix')) }}
+            {% elif tool.unfixable and tool.update_to %}{{ note('bad', t('tag_newer_no_fix'), t('hint_newer_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}
+            {% elif tool.unfixable %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}{% endif %}
+            {% if tool.end_of_support %}{{ note('old', t('tag_eol'), t('hint_eol'), advise(tool, 'eol', 'more_eol')) }}{% endif %}
+          </div>
+          {% endif %}
+          {% if tool.state == 'outdated' and tool.update_to %}{% set ui = update_info(tool) %}
+          <div class="notes">{{ note(ui.kind, ui.tag, ui.hint, ui.more) }}</div>
+          {% endif %}
+          {% if tool.cves %}
+          <details><summary>{{ t('cve_summary', n=tool.cve_count) }}{% if tool.fixed_in and tool.unfixable %} · {{ t('cve_split', fixed=tool.fixable, version=tool.fixed_in, open=tool.unfixable) }}{% elif tool.fixed_in %} · {{ t('fixed_in', version=tool.fixed_in) }}{% elif tool.unfixable %} · {{ t('no_fix_yet') }}{% endif %}</summary>
+            <ul class="cves">
+            {% for c in tool.cves %}
+              <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
+            {% endfor %}
+            </ul>
+            <p class="small">{{ t('details_note') }}</p>
+          </details>
+          {% endif %}
+        </td>
+        <td class="mono">apt</td>
+        <td class="mono">{{ tool.version }}{% if tool.update_to %} → <span class="new">{{ tool.update_to }}</span>{% endif %}</td>
+        <td class="num mono">{{ tool.size_kib|size }}</td>
+        <td>
+          {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
+          {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
+          {% elif tool.state == 'unchecked' and tool_checked(tool) %}<span class="state good">✓ {{ t('state_by_user') }}</span>
+          {% elif tool.state == 'unchecked' %}<span class="state dim">◌ {{ t('state_unchecked') }}</span>
+          {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
+          {% if tool.origin %}<br><span class="small muted">{{ t('unchecked_from', origin=tool.origin) }}</span>{% endif %}
+          {% if tool.end_of_support %}<br><span class="state warn">{{ t('chip_eol') }}</span>{% endif %}
+        </td>
+        <td class="actions">
+          {% if tool.update_to %}<a class="btn{% if tool.fixed_in or not tool.unfixable %} primary{% endif %}" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
+          {% endif %}
+          {% if ai_prompts and ai_prompts.get(tool.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[tool.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}
+          {% if ai_prompts and ai_prompts.get(tool.name) %}<button type="button" class="btn verify-row" data-how="{{ pending_how.get(tool.name, 'apt') }}" data-name="{{ clean(tool.name) }}" data-version="{{ clean(tool.version) }}" title="{{ t('verify_title') }}">{{ t('verify_btn') }}</button>{% endif %}
+          {% if tool.protected %}<span class="btn off" title="{{ t('protected_hint') }}">🔒 {{ t('protected') }}</span>
+          {% else %}<a class="btn danger" href="{{ url_for('preview_page', action='remove', pkg=tool.name) }}">{{ t('btn_remove') }}</a>{% endif %}
+        </td>
+      </tr>
+{% endmacro %}
 {% macro ring(segments, center, caption, label) %}
 {# Each segment is (percent, tone); they are laid end to end around the circle. #}
 <svg class="ring" viewBox="0 0 140 140" role="img" aria-label="{{ label }}: {{ center }} {{ caption }}">
@@ -123,6 +172,7 @@
         <li><a href="{{ url_for('index', f='ok') }}#tools" title="{{ t('leg_open') }}"><i class="sw good"></i>{{ t('leg_ok', n=totals.ok) }}</a></li>
         <li><a href="{{ url_for('index', f='outdated') }}#tools" title="{{ t('leg_open') }}"><i class="sw warn"></i>{{ t('leg_old', n=totals.outdated) }}</a></li>
         {% if totals.vulnerable %}<li><a href="{{ url_for('index', f='vulnerable') }}#tools" title="{{ t('leg_open') }}"><i class="sw bad"></i>{{ t('leg_vuln', n=totals.vulnerable) }}</a></li>{% endif %}
+        {% if parked %}<li><a href="{{ url_for('index', f='vulnerable') }}#parked" title="{{ t('leg_open') }}">{{ t('leg_parked', n=parked|length) }}</a></li>{% endif %}
         {% if totals.unchecked %}<li><a href="{{ url_for('index', f='unchecked') }}#tools" title="{{ t('leg_open') }}"><i class="sw dim"></i>{{ t('leg_unchecked', n=totals.unchecked) }}</a></li>{% endif %}
       </ul>
     </div>
@@ -159,7 +209,7 @@
     <a href="{{ url_for('index', f=f, q=q or None, show='all' if show_all else None) }}"{% if f == filter %} aria-current="true"{% endif %}>{{ t('f_' ~ f) }} · {{ counts[f] }}</a>
     {% endfor %}
   </nav>
-  {% if filter == 'vulnerable' and totals.vulnerable > counts.vulnerable %}<p class="muted small">{{ t('vuln_outside_note', n=totals.vulnerable - counts.vulnerable) }}</p>{% endif %}
+  {% if filter == 'vulnerable' and totals.vulnerable > counts.vulnerable + parked|length %}<p class="muted small">{{ t('vuln_outside_note', n=totals.vulnerable - counts.vulnerable - parked|length) }}</p>{% endif %}
   {% if filter == 'ok' and totals.ok > counts.ok %}<p class="muted small">{{ t('ok_outside_note', n=totals.ok - counts.ok) }}</p>{% endif %}
 
   <input type="checkbox" id="more-tools" class="toggle">
@@ -171,53 +221,7 @@
     {% for group in (page.items[:TOP_ROWS], page.items[TOP_ROWS:]) %}
     <tbody{% if loop.index == 2 %} class="more"{% endif %}>
     {% for tool in group %}
-      <tr>
-        <td class="wrap"><strong>{{ tool.name }}</strong><br><span class="small">{{ tool.description }}</span>
-          {% if tool.fixed_in or tool.unfixable or tool.end_of_support %}
-          <div class="notes">
-            {% if tool.fixed_in and tool.unfixable %}{{ note('ok', t('tag_fixed') ~ ': ' ~ tool.fixable, t('hint_fixed_part', n=tool.fixable, m=tool.unfixable, version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}
-            {% elif tool.fixed_in %}{{ note('ok', t('tag_fixed'), t('hint_fixed', version=tool.fixed_in), advise(tool, 'fixed', 'more_fixed')) }}{% endif %}
-            {% if tool.unfixable and tool.fixed_in %}{{ note('bad', t('tag_no_fix') ~ ': ' ~ tool.unfixable, t('hint_some_no_fix', n=tool.unfixable), advise(tool, 'no_fix', 'more_no_fix')) }}
-            {% elif tool.unfixable and tool.update_to %}{{ note('bad', t('tag_newer_no_fix'), t('hint_newer_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}
-            {% elif tool.unfixable %}{{ note('bad', t('tag_no_fix'), t('hint_no_fix'), advise(tool, 'no_fix', 'more_no_fix')) }}{% endif %}
-            {% if tool.end_of_support %}{{ note('old', t('tag_eol'), t('hint_eol'), advise(tool, 'eol', 'more_eol')) }}{% endif %}
-          </div>
-          {% endif %}
-          {% if tool.state == 'outdated' and tool.update_to %}{% set ui = update_info(tool) %}
-          <div class="notes">{{ note(ui.kind, ui.tag, ui.hint, ui.more) }}</div>
-          {% endif %}
-          {% if tool.cves %}
-          <details><summary>{{ t('cve_summary', n=tool.cve_count) }}{% if tool.fixed_in and tool.unfixable %} · {{ t('cve_split', fixed=tool.fixable, version=tool.fixed_in, open=tool.unfixable) }}{% elif tool.fixed_in %} · {{ t('fixed_in', version=tool.fixed_in) }}{% elif tool.unfixable %} · {{ t('no_fix_yet') }}{% endif %}</summary>
-            <ul class="cves">
-            {% for c in tool.cves %}
-              <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
-            {% endfor %}
-            </ul>
-            <p class="small">{{ t('details_note') }}</p>
-          </details>
-          {% endif %}
-        </td>
-        <td class="mono">apt</td>
-        <td class="mono">{{ tool.version }}{% if tool.update_to %} → <span class="new">{{ tool.update_to }}</span>{% endif %}</td>
-        <td class="num mono">{{ tool.size_kib|size }}</td>
-        <td>
-          {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
-          {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
-          {% elif tool.state == 'unchecked' and tool_checked(tool) %}<span class="state good">✓ {{ t('state_by_user') }}</span>
-          {% elif tool.state == 'unchecked' %}<span class="state dim">◌ {{ t('state_unchecked') }}</span>
-          {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
-          {% if tool.origin %}<br><span class="small muted">{{ t('unchecked_from', origin=tool.origin) }}</span>{% endif %}
-          {% if tool.end_of_support %}<br><span class="state warn">{{ t('chip_eol') }}</span>{% endif %}
-        </td>
-        <td class="actions">
-          {% if tool.update_to %}<a class="btn{% if tool.fixed_in or not tool.unfixable %} primary{% endif %}" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
-          {% endif %}
-          {% if ai_prompts and ai_prompts.get(tool.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[tool.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}
-          {% if ai_prompts and ai_prompts.get(tool.name) %}<button type="button" class="btn verify-row" data-how="{{ pending_how.get(tool.name, 'apt') }}" data-name="{{ clean(tool.name) }}" data-version="{{ clean(tool.version) }}" title="{{ t('verify_title') }}">{{ t('verify_btn') }}</button>{% endif %}
-          {% if tool.protected %}<span class="btn off" title="{{ t('protected_hint') }}">🔒 {{ t('protected') }}</span>
-          {% else %}<a class="btn danger" href="{{ url_for('preview_page', action='remove', pkg=tool.name) }}">{{ t('btn_remove') }}</a>{% endif %}
-        </td>
-      </tr>
+      {{ tool_row(tool) }}
     {% else %}
       {% if loop.index == 1 and group is sameas page.items[:TOP_ROWS] %}<tr><td colspan="6" class="muted">{{ t('none') }}</td></tr>{% endif %}
     {% endfor %}
@@ -236,6 +240,24 @@
   </nav>
   {% endif %}
 </section>
+{% if parked_shown %}
+<section class="card" data-explain="parked" tabindex="0" id="parked">
+  <details><summary><strong>{{ t('parked_title', n=parked|length) }}</strong></summary>
+  <p class="small muted">{{ t('parked_note') }}</p>
+  <div class="scroll"><table class="aligned">{{ cols() }}
+    <thead><tr>
+      <th>{{ t('col_tool') }}</th><th>{{ t('col_origin') }}</th><th>{{ t('col_version') }}</th>
+      <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th><th>{{ t('col_actions') }}</th>
+    </tr></thead>
+    <tbody>
+    {% for tool in parked_shown %}
+      {{ tool_row(tool) }}
+    {% endfor %}
+    </tbody>
+  </table></div>
+  </details>
+</section>
+{% endif %}
 
 {% if sandboxed_shown %}
 <section class="card" data-explain="external" tabindex="0" id="sandboxed">
