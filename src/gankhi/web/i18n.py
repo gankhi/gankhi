@@ -579,6 +579,13 @@ TEXTS: dict[str, dict[str, str]] = {
             "This list shows the system programs. {n} more Python or npm packages have no "
             "known notices, in the section below."
         ),
+        "parked_title": "Known flaws with no fix yet ({n})",
+        "parked_note": (
+            "Updating does not fix these yet: Ubuntu has not published a fix, or the newer "
+            "version does not include it. They are kept here so the list above only shows what "
+            "you can act on. Each scan checks them again, and one leaves here when a fix appears."
+        ),
+        "leg_parked": "{n} of them with no fix yet",
         "vuln_outside_note": (
             "This list shows the system programs. {n} more with vulnerabilities are "
             "Python or npm packages, in the section below."
@@ -1193,6 +1200,14 @@ TEXTS: dict[str, dict[str, str]] = {
             "Esta lista muestra los programas del sistema. {n} paquetes más de Python o npm "
             "no tienen avisos conocidos, en la sección de abajo."
         ),
+        "parked_title": "Fallas conocidas sin arreglo todavía ({n})",
+        "parked_note": (
+            "Actualizar todavía no las arregla: Ubuntu no publicó un arreglo, o la versión más "
+            "nueva no lo incluye. Quedan guardadas acá para que la lista de arriba muestre solo "
+            "lo que podés resolver. Cada escaneo las revisa de nuevo, y una sale de acá cuando "
+            "aparece el arreglo."
+        ),
+        "leg_parked": "{n} de ellas sin arreglo todavía",
         "vuln_outside_note": (
             "Esta lista muestra los programas del sistema. {n} más con vulnerabilidades son "
             "paquetes de Python o npm, en la sección de abajo."

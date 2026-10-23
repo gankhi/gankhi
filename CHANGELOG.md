@@ -8,6 +8,7 @@ All notable changes to Gankhi. Dates are written year-month-day.
 - The "Not checked" card no longer repeats the snap and flatpak apps: each one appears once, in its own section with its own button to copy the question for an AI, and the card keeps only the button that copies everything together.
 
 ### Added
+- Known flaws with no fix yet now have their own folded card, "Known flaws with no fix yet", instead of mixing with what you can act on. The main list shows only what an update or another action can solve, so it gets shorter as you update. Each scan checks the parked ones again, and one leaves the card when a fix appears. The summary still counts them as vulnerable and says how many have no fix.
 - Each snap and flatpak app shows a command to copy that tells what it is connected to and what it needs (`snap connections NAME`, `flatpak info ID`), before the remove command. Gankhi does not run it.
 - Programs that come from outside Ubuntu (another apt repository, a `.deb` file, snap, flatpak) are shown as "Not checked" instead of "up to date", with their own filter, a segment in the summary ring, a section in the page and in the PDF report, and a sentence from the assistant.
 - A package with a newer version that does not fix its vulnerabilities no longer shows "No fix yet" next to a highlighted Update button: it says "A newer version exists, but it does not fix these vulnerabilities yet" and the button is not highlighted. When there is nothing to update, the Update button is no longer shown (it used to appear disabled).

@@ -129,6 +129,14 @@ def _tier(tool: Tool) -> int:
     return 6
 
 
+def is_parked(tool: Tool) -> bool:
+    """Has known flaws and no fix exists yet (or the newer version does not include one), so
+    there is nothing to act on. It goes to its own place instead of the list of what to act on.
+    A published fix that is not installable yet (for example Ubuntu Pro) is still something
+    to act on, so it stays in the main list."""
+    return tool.state == VULNERABLE and not tool.fixed_in
+
+
 def _is_browser(tool: Tool) -> bool:
     return profile_for(tool.name, "", tool.description, tool.section) == "browser"
 
