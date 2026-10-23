@@ -25,7 +25,6 @@ All notable changes to Gankhi. Dates are written year-month-day.
 - While a change runs, a clear "working" notice; when it ends, a "finished" notice and the output folded away.
 
 ### Changed
-- The "Not checked" card no longer repeats the snap and flatpak apps: each one appears once, in its own section with its own button to copy the question for an AI, and the card keeps only the button that copies everything together.
 - A package that comes from another repository is no longer compared with Ubuntu's notices, which are about Ubuntu's own builds.
 - Known limit: repositories that reuse Ubuntu's release name (Docker, PPAs) are not told apart.
 
