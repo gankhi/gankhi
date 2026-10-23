@@ -192,8 +192,10 @@ def test_the_not_checked_card_lists_only_what_gankhi_cannot_update_for_you():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     card = html[html.index('id="unchecked"') :]
     card = card[: card.index("</section>")]
-    assert "<strong>firefox</strong>" in card  # a snap: Gankhi only shows the command
-    assert "<strong>gcloud</strong>" not in card and "<strong>handmade</strong>" not in card
+    # no rows repeated here: the snap lives in its own section, the others in the tools list
+    for name in ("firefox", "gcloud", "handmade"):
+        assert f"<strong>{name}</strong>" not in card
+    assert 'href="#sandboxed"' in card and 'id="sandboxed"' in html
     assert "2 programs from other apt repositories or .deb files are in the tools list" in card
     assert 'href="/?f=unchecked#tools"' in card
     # the text to copy has everything Gankhi could not check: being updatable says nothing
@@ -290,8 +292,8 @@ def test_every_program_gankhi_could_not_check_has_its_own_button_to_ask_an_ai():
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     buttons = html.count('class="btn ask-row"')
-    # gcloud and handmade in the tools list, firefox (snap) in its app card and in the card
-    assert buttons == 4
+    # gcloud and handmade in the tools list, firefox (snap) in its own section only
+    assert buttons == 3
     row = html[html.index("<strong>gcloud</strong>") :]
     row = row[: row.index("</tr>")]
     assert "Copy question for an AI" in row and "- gcloud 548.0.0" in row
