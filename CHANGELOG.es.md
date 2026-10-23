@@ -8,6 +8,7 @@ Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 - La tarjeta «Sin revisar» ya no repite las apps de snap y flatpak: cada una aparece una sola vez, en su sección con su botón para copiar la consulta para una IA, y la tarjeta conserva solo el botón que copia todo junto.
 
 ### Agregado
+- Cada app de snap y flatpak muestra un comando para copiar que dice a qué está conectada y qué necesita (`snap connections NOMBRE`, `flatpak info ID`), antes del comando para quitarla. Gankhi no lo ejecuta.
 - Los programas que vienen de afuera de Ubuntu (otro repositorio de apt, un archivo `.deb`, snap, flatpak) se muestran como «Sin revisar» en vez de «al día», con su propio filtro, un tramo en el anillo del resumen, una sección en la página y en el informe PDF, y una frase del asistente.
 - Un paquete con una versión más nueva que no corrige sus vulnerabilidades ya no muestra «Sin arreglo» junto a un botón Actualizar resaltado: dice «Hay una versión más nueva, pero todavía no corrige estas vulnerabilidades» y el botón no se resalta. Cuando no hay nada para actualizar, el botón Actualizar ya no se muestra (antes aparecía deshabilitado).
 - Un paquete de Ubuntu que solo está desactualizado (hay una versión más nueva) ya no se toma por un archivo `.deb` suelto: apt deja de listar la versión instalada en cualquier repositorio, y Gankhi ahora usa de dónde viene la versión nueva. Esos paquetes vuelven a revisarse con los avisos de Ubuntu, y uno de otro repositorio muestra ese repositorio.

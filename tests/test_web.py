@@ -733,6 +733,8 @@ def test_each_snap_or_flatpak_app_explains_how_gankhi_treats_it():
     order = [snap.index(w) for w in ("Package", "Installed with", "Version", "Size", "Source")]
     assert order == sorted(order)
     assert "sudo snap refresh firefox" in html and "sudo snap remove firefox" in html
+    # read-only command to see what the app is connected to, shown before the remove one
+    assert html.index("snap connections firefox") < html.index("sudo snap remove firefox")
     assert html.count("looks like a base that other apps") == 1  # only for the shared runtime
     assert "3.0 MiB" in html and '<td class="num mono">—</td>' in html  # size, or a dash
 
