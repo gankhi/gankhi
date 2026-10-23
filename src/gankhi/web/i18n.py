@@ -424,6 +424,20 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "ext_cmd_before_npm": "Before removing it, check that none of your projects uses it.",
         "sbx_cmd_update": "To update it, copy this command and paste it into a terminal:",
+        "state_by_user": "Checked by you",
+        "verify_btn": "Verified by me",
+        "verify_title": (
+            "Use it after you checked this program and updated or removed it. Gankhi stops "
+            "listing it as not checked, only for this exact version."
+        ),
+        "verified_title": "Checked by you ({n})",
+        "verified_note": (
+            "You marked these as checked. Gankhi did not check them: it only stopped listing "
+            "them as not checked. If one changes version it comes back to the list."
+        ),
+        "verified_col_how": "Installed with",
+        "verified_col_day": "Marked on",
+        "verified_undo": "Undo",
         "sbx_cmd_uses": "To see what it is connected to and what it needs, before deciding:",
         "sbx_cmd_remove": "If you do not use it, to remove it:",
         "sbx_cmd_shared": (
@@ -1036,6 +1050,20 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "ext_cmd_before_npm": "Antes de quitarlo, fijate que ninguno de tus proyectos lo use.",
         "sbx_cmd_update": "Para actualizarla, copiá este comando y pegalo en una consola:",
+        "state_by_user": "Verificada por vos",
+        "verify_btn": "Verificado por mí",
+        "verify_title": (
+            "Usalo cuando ya revisaste este programa y lo actualizaste o lo quitaste. Gankhi "
+            "deja de listarlo como sin revisar, solo para esta versión exacta."
+        ),
+        "verified_title": "Verificadas por vos ({n})",
+        "verified_note": (
+            "Las marcaste vos como revisadas. Gankhi no las revisó: solo dejó de listarlas "
+            "como sin revisar. Si una cambia de versión, vuelve a aparecer en la lista."
+        ),
+        "verified_col_how": "Instalado con",
+        "verified_col_day": "Marcada el",
+        "verified_undo": "Deshacer",
         "sbx_cmd_uses": "Para ver a qué está conectada y qué necesita, antes de decidir:",
         "sbx_cmd_remove": "Si no la usás, para quitarla:",
         "sbx_cmd_shared": (

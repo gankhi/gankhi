@@ -203,6 +203,7 @@
         <td>
           {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
           {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
+          {% elif tool.state == 'unchecked' and tool_checked(tool) %}<span class="state good">✓ {{ t('state_by_user') }}</span>
           {% elif tool.state == 'unchecked' %}<span class="state dim">◌ {{ t('state_unchecked') }}</span>
           {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
           {% if tool.origin %}<br><span class="small muted">{{ t('unchecked_from', origin=tool.origin) }}</span>{% endif %}
@@ -212,6 +213,7 @@
           {% if tool.update_to %}<a class="btn{% if tool.fixed_in or not tool.unfixable %} primary{% endif %}" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
           {% endif %}
           {% if ai_prompts and ai_prompts.get(tool.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[tool.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}
+          {% if ai_prompts and ai_prompts.get(tool.name) %}<button type="button" class="btn verify-row" data-how="{{ pending_how.get(tool.name, 'apt') }}" data-name="{{ clean(tool.name) }}" data-version="{{ clean(tool.version) }}" title="{{ t('verify_title') }}">{{ t('verify_btn') }}</button>{% endif %}
           {% if tool.protected %}<span class="btn off" title="{{ t('protected_hint') }}">🔒 {{ t('protected') }}</span>
           {% else %}<a class="btn danger" href="{{ url_for('preview_page', action='remove', pkg=tool.name) }}">{{ t('btn_remove') }}</a>{% endif %}
         </td>
@@ -235,13 +237,13 @@
   {% endif %}
 </section>
 
-{% if result.sandboxed %}
+{% if sandboxed_shown %}
 <section class="card" data-explain="external" tabindex="0" id="sandboxed">
-  <div class="toolshead"><div><h2>{{ t('sbx_title') }}</h2><p class="muted">{{ t('sbx_sub', n=result.sandboxed|length) }}</p></div></div>
+  <div class="toolshead"><div><h2>{{ t('sbx_title') }}</h2><p class="muted">{{ t('sbx_sub', n=sandboxed_shown|length) }}</p></div></div>
   <div class="scroll"><table class="aligned">{{ cols() }}
     <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th class="num">{{ t('col_size') }}</th><th>{{ t('sbx_col_source') }}</th><th>{{ t('col_actions') }}</th></tr></thead>
     <tbody>
-    {% for app in result.sandboxed[:200] %}
+    {% for app in sandboxed_shown[:200] %}
       <tr><td class="wrap"><strong>{{ app.name }}</strong>
         <div class="notes">{{ note('info', t('tag_how'), t('sbx_how_hint'), advise_app(app)) }}</div>
         {% set sup = sandboxed_update(app) %}{% set srm = sandboxed_remove(app) %}{% set suse = sandboxed_uses(app) %}
@@ -250,7 +252,7 @@
           {% if suse %}<p class="small">{{ t('sbx_cmd_uses') }}</p><code class="cmd">{{ suse }}</code>{% endif %}
           {% if srm %}<p class="small">{{ t('sbx_cmd_remove') }}</p><code class="cmd">{{ srm }}</code>{% endif %}
           {% if sandboxed_shared(app) %}<p class="small muted">{{ t('sbx_cmd_shared') }}</p>{% endif %}
-        </div>{% endif %}</td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td>{{ app.source }}</td><td class="actions">{% if ai_prompts and ai_prompts.get(app.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[app.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}</td></tr>
+        </div>{% endif %}</td><td>{{ app.tool }}</td><td>{{ app.version }}</td><td class="num mono">{% if app.size_kib is not none %}{{ app.size_kib|size }}{% else %}—{% endif %}</td><td>{{ app.source }}</td><td class="actions">{% if ai_prompts and ai_prompts.get(app.name) %}<button type="button" class="btn ask-row" data-prompt="{{ ai_prompts[app.name] }}" data-done="{{ t('copied') }}" title="{{ t('unchk_row_title') }}">{{ t('unchk_row_copy') }}</button><button type="button" class="btn verify-row" data-how="{{ app.tool }}" data-name="{{ clean(app.name) }}" data-version="{{ clean(app.version) }}" title="{{ t('verify_title') }}">{{ t('verify_btn') }}</button>{% endif %}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>
@@ -266,6 +268,21 @@
   <p><button type="button" id="copy" data-target="ai-text" data-done="{{ t('copied') }}">{{ t('unchk_copy') }}</button></p>
   <p class="small muted">{{ t('unchk_privacy') }}</p>
   <details><summary class="small">{{ t('unchk_what') }}</summary><pre class="commands mono wrapped" id="ai-text">{{ ai_prompt }}</pre></details>
+</section>
+{% endif %}
+{% if verified_items %}
+<section class="card" data-explain="verified" tabindex="0" id="verified">
+  <details><summary><strong>{{ t('verified_title', n=verified_items|length) }}</strong></summary>
+  <p class="small muted">{{ t('verified_note') }}</p>
+  <div class="scroll"><table class="aligned">
+    <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('col_version') }}</th><th>{{ t('verified_col_how') }}</th><th>{{ t('verified_col_day') }}</th><th>{{ t('col_actions') }}</th></tr></thead>
+    <tbody>
+    {% for item, day in verified_items %}
+      <tr><td class="wrap"><strong>{{ item.name }}</strong></td><td class="mono">{{ item.version }}</td><td>{{ item.how }}</td><td class="mono">{{ day }}</td><td class="actions"><button type="button" class="btn verify-row" data-undo="1" data-how="{{ item.how }}" data-name="{{ item.name }}" data-version="{{ item.version }}">{{ t('verified_undo') }}</button></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  </details>
 </section>
 {% endif %}
 {% if result.external or result.external_failed %}

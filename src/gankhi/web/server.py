@@ -29,6 +29,7 @@ from pathlib import Path
 
 from flask import cli as flask_cli
 
+from gankhi import verified
 from gankhi.feed import default_cache_dir
 from gankhi.progress import Progress
 from gankhi.service import run_scan
@@ -212,7 +213,13 @@ def _serve(args: argparse.Namespace) -> int:
 
     access_key = secrets.token_urlsafe(32)
     progress = Progress()
-    app = create_app(lambda: run_scan(progress), access_key, args.port, progress=progress)
+    app = create_app(
+        lambda: run_scan(progress),
+        access_key,
+        args.port,
+        progress=progress,
+        verified_store=verified.Store(verified.default_path()),
+    )
     url = f"http://{HOST}:{args.port}/?access={access_key}"
     saved = save_access_url(url, default_cache_dir())
 

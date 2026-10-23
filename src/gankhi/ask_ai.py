@@ -29,6 +29,9 @@ def _clean(text: str) -> str:
     return " ".join(str(text).split())[:60]
 
 
+clean = _clean  # the form in which names and versions are compared and marked
+
+
 def unchecked_items(result: ScanResult) -> list[Unchecked]:
     """Programs and apps Gankhi cannot compare with any list, in a stable order."""
     items = [
