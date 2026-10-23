@@ -214,7 +214,7 @@ meter::-moz-meter-bar { background: var(--blue); border-radius: 6px; }
 .btn.off { color: #666; border-color: var(--line); }
 .btn.big { min-height: 40px; padding: 0 18px; font-size: 1rem; }
 /* the "ask an AI" button of a row: quiet like the other row buttons, and it may wrap */
-button.ask-row { background: transparent; color: var(--text); border: 1px solid #3a3d45; font-weight: 500;
+button.ask-row, button.verify-row { background: transparent; color: var(--text); border: 1px solid #3a3d45; font-weight: 500;
   font-size: 1rem; min-height: 34px; padding: 4px 12px; white-space: normal; text-align: left; line-height: 1.25; }
 td.actions { display: flex; gap: 8px; flex-wrap: wrap; border-top: 0; }
 tr:has(td.actions) td { border-top: 1px solid var(--line); }

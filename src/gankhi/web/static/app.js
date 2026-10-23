@@ -261,6 +261,20 @@
   document.querySelectorAll(".ask-row").forEach(function (button) {
     copyButton(button, function () { return button.dataset.prompt; });
   });
+  // "Verified by me" (and its undo): Gankhi only remembers it for this exact version.
+  document.querySelectorAll(".verify-row").forEach(function (button) {
+    button.addEventListener("click", function () {
+      button.disabled = true;
+      fetch("/api/verify", {
+        method: "POST", credentials: "same-origin",
+        headers: { "X-Gankhi": "1", "Content-Type": "application/json" },
+        body: JSON.stringify({ how: button.dataset.how, name: button.dataset.name,
+          version: button.dataset.version, checked: !button.dataset.undo })
+      }).then(function (r) {
+        if (r.ok) { location.reload(); } else { button.disabled = false; }
+      }).catch(function () { button.disabled = false; });
+    });
+  });
   // A change started from a preview is still running: show what it does, then reload when it ends.
   var banner = document.getElementById("change-banner");
   if (banner) {
