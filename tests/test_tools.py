@@ -51,7 +51,7 @@ def test_cve_counts_priority_and_fixed_version():
     assert [c.cve_id for c in tool.cves][0] == "CVE-2"  # most urgent first
 
 
-def test_most_urgent_tools_come_first_and_cve_lines_are_capped():
+def test_most_urgent_tools_come_first_and_every_cve_is_listed():
     many = [finding(f"CVE-{i}", "a") for i in range(20)]
     tools = build_tools(
         [pkg("z-ok"), pkg("b"), pkg("a")],
@@ -59,7 +59,7 @@ def test_most_urgent_tools_come_first_and_cve_lines_are_capped():
         [update("z-ok"), update("a"), update("b")],
     )
     assert [t.name for t in tools] == ["b", "a", "z-ok"]
-    assert len(tools[1].cves) == 5
+    assert len(tools[1].cves) == 20  # every notice is listed, not a sample
 
 
 def test_arch_qualified_names_match_updates():
@@ -98,7 +98,7 @@ def test_the_sample_of_notices_keeps_the_ones_without_a_fix():
     (tool,) = build_tools([pkg("a")], findings, [])
     shown = [c.cve_id for c in tool.cves]
     assert "CVE-OPEN" in shown
-    assert sum(1 for c in tool.cves if c.status != "no_fix") == 5
+    assert sum(1 for c in tool.cves if c.status != "no_fix") == 8
     assert tool.cve_count == 9
 
 
@@ -195,3 +195,11 @@ def test_a_high_priority_alone_protects_from_removal_but_not_from_autoremove():
     assert is_core(Package("systemd-sysv", "1", "amd64", 1, "init")) and is_protected(
         Package("systemd-sysv", "1", "amd64", 1, "init")
     )
+
+
+def test_a_huge_number_of_notices_is_capped_and_the_rest_counted():
+    from gankhi.tools import MAX_CVE_LINES
+
+    many = [finding(f"CVE-{n}", priority="low") for n in range(MAX_CVE_LINES + 30)]
+    (tool,) = build_tools([pkg("a")], many, [])
+    assert len(tool.cves) == MAX_CVE_LINES and tool.cve_count == MAX_CVE_LINES + 30

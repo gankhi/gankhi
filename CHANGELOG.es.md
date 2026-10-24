@@ -5,6 +5,7 @@ Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 ## Sin publicar
 
 ### Cambiado
+- Al abrir la lista «CVE: N» de una herramienta ahora se ven los N avisos (hasta 200 de cada tipo), no solo los primeros cinco de cada tipo. Si la lista es larga, se desplaza dentro de su caja, y si se cortó dice cuántos más no se listan.
 - La tarjeta «Sin revisar» ya no repite las apps de snap y flatpak: cada una aparece una sola vez, en su sección con su botón para copiar la consulta para una IA, y la tarjeta conserva solo el botón que copia todo junto.
 
 ### Agregado

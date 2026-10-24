@@ -48,3 +48,26 @@ def test_the_vulnerable_chip_counts_only_what_can_be_acted_on_and_the_ring_all_o
     assert "With vulnerabilities · 1" in html  # openssl, which has a fix
     assert "1 of them with no fix yet" in html  # virtualbox, said next to the totals
     assert 'href="/?f=vulnerable#parked"' in html
+
+
+def test_opening_the_cve_list_shows_every_notice_of_the_tool():
+    from dataclasses import replace
+
+    from gankhi.tools import CveLine
+
+    lines = tuple(CveLine(f"CVE-2026-{n:04d}", "high", "flaw", None, "no_fix") for n in range(28))
+
+    def scan():
+        result = make_result()
+        tools = [
+            replace(t, cves=lines, cve_count=28) if t.name == "virtualbox" else t
+            for t in result.tools
+        ]
+        return replace(result, tools=tools)
+
+    client = login(build(scan).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    assert all(f"CVE-2026-{n:04d}" in html for n in range(28))
+    assert "CVE: 28" in html and "more are not listed" not in html

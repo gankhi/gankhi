@@ -5,6 +5,7 @@ All notable changes to Gankhi. Dates are written year-month-day.
 ## Unreleased
 
 ### Changed
+- Opening the "CVE: N" list of a tool now shows all N notices (up to 200 per kind), not only the first five of each kind. The list scrolls inside its box when it is long, and says how many more are not listed if it was cut.
 - The "Not checked" card no longer repeats the snap and flatpak apps: each one appears once, in its own section with its own button to copy the question for an AI, and the card keeps only the button that copies everything together.
 
 ### Added

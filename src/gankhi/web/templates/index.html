@@ -27,6 +27,7 @@
               <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
             {% endfor %}
             </ul>
+            {% if tool.cve_count > tool.cves|length %}<p class="small muted">{{ t('cve_more', n=tool.cve_count - tool.cves|length) }}</p>{% endif %}
             <p class="small">{{ t('details_note') }}</p>
           </details>
           {% endif %}
@@ -343,6 +344,7 @@
               <li>{{ badge(c.priority) }} <span class="mono">{{ c.cve_id }}</span>{% if c.fixed_version %} → <span class="mono">{{ c.fixed_version }}</span>{% else %} · {{ t('no_fix_yet') }}{% endif %}<br><span class="small">{{ c.summary }}</span></li>
             {% endfor %}
             </ul>
+            {% if tool.cve_count > tool.cves|length %}<p class="small muted">{{ t('cve_more', n=tool.cve_count - tool.cves|length) }}</p>{% endif %}
           </details>
           {% endif %}
         </td>

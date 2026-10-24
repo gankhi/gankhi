@@ -15,7 +15,7 @@ from gankhi.osv import PRIORITY_ORDER, Finding
 VULNERABLE, OUTDATED, OK = "vulnerable", "outdated", "ok"
 UNCHECKED = "unchecked"  # comes from outside Ubuntu: no list of notices to compare it with
 _UNKNOWN = len(PRIORITY_ORDER)
-MAX_CVE_LINES = 5  # most urgent CVEs shown per tool
+MAX_CVE_LINES = 200  # CVEs listed per tool and kind (fixed or not); beyond it, a count
 URGENT_PRIORITIES = ("critical", "high")  # notices that cannot wait
 
 # Newest Node.js major that no longer gets fixes from its authors
@@ -152,7 +152,8 @@ def _is_urgent(tool: Tool) -> bool:
 
 
 def _sample(unique: dict[str, Finding]) -> tuple[CveLine, ...]:
-    """The most urgent notices of each kind, so the ones without a fix are never left out."""
+    """The notices, most urgent first. Fixed and unfixed are capped apart so a flood of one kind
+    never pushes the other out."""
     shown = {"fixed": 0, "open": 0}
     lines = []
     for found in unique.values():
