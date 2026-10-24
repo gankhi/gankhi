@@ -456,3 +456,10 @@ table.aligned td.num { white-space: nowrap; }
 .state, .tag, .sev { white-space: nowrap; }
 .state { padding: 5px 12px; }
 th.c-state, td.c-state { width: 14%; }
+
+/* acciones: alineadas a la derecha */
+td.actions { text-align: right; }
+td.actions form { display: inline; }
+table th:last-child { text-align: right; padding-right: 14px; }
+td.actions { padding-right: 14px; }
+table.aligned th:last-child, table.aligned td.actions { text-align: right; }
