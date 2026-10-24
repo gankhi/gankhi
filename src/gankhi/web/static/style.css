@@ -22,7 +22,7 @@
   --text: #f1f2f4;
   --muted: #9a9ea9;
   --red: #f87171;
-  --red-bg: rgba(239, 68, 68, .12);
+  --red-bg: var(--row);
   --red-line: rgba(239, 68, 68, .4);
   --green: #10b981;
   --green-bg: rgba(16, 185, 129, .12);
@@ -344,8 +344,8 @@ button.danger-solid { background: #ef4444; color: #fff; }
 .btn.primary:hover { background: var(--green); color: var(--on-green); }
 .btn.primary.big { background: var(--green); border-color: var(--green); color: var(--on-green); }
 .btn.primary.big:hover { background: #34d399; }
-.btn.danger { background: rgba(239, 68, 68, .1); border-color: rgba(239, 68, 68, .35); color: #fca5a5; }
-.btn.danger:hover { background: rgba(239, 68, 68, .25); }
+.btn.danger { background: transparent; border-color: #f87171; color: #f87171; }
+.btn.danger:hover { background: #f87171; color: #1a0a0a; }
 .btn.off { background: transparent; color: #6b6f7a; }
 button.ask-row, button.verify-row { background: var(--row); border: 1px solid var(--line); border-radius: 6px; font-size: .85rem;
   min-height: 32px; padding: 4px 12px; font-weight: 500; text-align: center; }
@@ -379,18 +379,18 @@ tr:has(td.actions) td { border-top: 1px solid var(--line); }
 /* severity and state as small tinted badges */
 .state { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 4px; font-size: .78rem;
   border: 1px solid transparent; }
-.state.bad { background: rgba(239, 68, 68, .2); color: #fca5a5; border-color: rgba(239, 68, 68, .4); }
-.state.warn { background: rgba(245, 158, 11, .2); color: #fde68a; border-color: rgba(245, 158, 11, .4); }
-.state.good { background: rgba(16, 185, 129, .15); color: #6ee7b7; border-color: rgba(16, 185, 129, .4); }
-.state.dim { background: rgba(148, 163, 184, .12); color: var(--muted); border-color: rgba(148, 163, 184, .3); }
+.state.bad { background: transparent; color: #f87171; border-color: #f87171; }
+.state.warn { background: transparent; color: #fbbf24; border-color: #fbbf24; }
+.state.good { background: transparent; color: #34d399; border-color: #34d399; }
+.state.dim { background: transparent; color: var(--muted); border-color: #5b5f6a; }
 .tag { font-size: .78rem; border: 1px solid transparent; }
-.tag.bad { background: rgba(239, 68, 68, .2); color: #fca5a5; border-color: rgba(239, 68, 68, .4); }
-.tag.ok { background: rgba(16, 185, 129, .15); color: #6ee7b7; border-color: rgba(16, 185, 129, .4); }
-.tag.old { background: rgba(245, 158, 11, .2); color: #fde68a; border-color: rgba(245, 158, 11, .4); }
-.tag.info { background: rgba(154, 158, 169, .16); color: #d4d7dd; border-color: rgba(154, 158, 169, .4); }
-.tag.imp { background: rgba(249, 115, 22, .2); color: #fdba74; border-color: rgba(249, 115, 22, .4); }
+.tag.bad { background: transparent; color: #f87171; border-color: #f87171; }
+.tag.ok { background: transparent; color: #34d399; border-color: #34d399; }
+.tag.old { background: transparent; color: #fbbf24; border-color: #fbbf24; }
+.tag.info { background: transparent; color: #d4d7dd; border-color: #6b6f7a; }
+.tag.imp { background: transparent; color: #fb923c; border-color: #fb923c; }
 details summary { font-size: .85rem; }
-.p-critical, .p-high { color: #fca5a5; }
+.p-critical, .p-high { color: #f87171; }
 
 /* commands and consoles */
 code.cmd { background: var(--console); color: #8fe3c0; font-size: .78rem; }
@@ -412,8 +412,8 @@ code.cmd { background: var(--console); color: #8fe3c0; font-size: .78rem; }
 
 /* vulnerability level: its own column, colored by how serious it is */
 .sev { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 4px; font-size: .78rem; font-weight: 700; border: 1px solid transparent; }
-.sev-critical { background: rgba(239, 68, 68, .25); color: #fecaca; border-color: rgba(239, 68, 68, .6); }
-.sev-high { background: rgba(249, 115, 22, .22); color: #fdba74; border-color: rgba(249, 115, 22, .55); }
-.sev-medium { background: rgba(234, 179, 8, .2); color: #fde047; border-color: rgba(234, 179, 8, .5); }
-.sev-low, .sev-negligible { background: rgba(148, 163, 184, .15); color: #cbd5e1; border-color: rgba(148, 163, 184, .4); }
-.sev-unknown { background: rgba(154, 158, 169, .12); color: var(--muted); border-color: rgba(154, 158, 169, .3); }
+.sev-critical { background: #dc2626; color: #fff; }
+.sev-high { background: #f97316; color: #1c0a00; }
+.sev-medium { background: #facc15; color: #1c1500; }
+.sev-low, .sev-negligible { background: #a1a1aa; color: #141416; }
+.sev-unknown { background: transparent; color: var(--muted); border-color: #5b5f6a; }
