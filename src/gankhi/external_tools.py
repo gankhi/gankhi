@@ -14,7 +14,7 @@ from gankhi.osv_external import ExternalFinding
 from gankhi.tools import CveLine
 
 PRIORITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "": 4}
-MAX_CVE_LINES = 12
+MAX_CVE_LINES = 100
 
 
 # How many packages without notices the page and the PDF report list (the rest are counted).
