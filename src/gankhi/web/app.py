@@ -274,7 +274,7 @@ def create_app(
             "counts": {
                 "all": len(universe),
                 "outdated": sum(1 for t in universe if t.state == OUTDATED),
-                "vulnerable": sum(1 for t in universe if t.state == VULNERABLE) - len(parked),
+                "vulnerable": sum(1 for t in universe if t.state == VULNERABLE),
                 "ok": sum(1 for t in universe if t.state == OK),
                 "unchecked": total_unchecked,
             },

@@ -210,7 +210,7 @@
     <a href="{{ url_for('index', f=f, q=q or None, show='all' if show_all else None) }}"{% if f == filter %} aria-current="true"{% endif %}>{{ t('f_' ~ f) }} · {{ counts[f] }}</a>
     {% endfor %}
   </nav>
-  {% if filter == 'vulnerable' and totals.vulnerable > counts.vulnerable + parked|length %}<p class="muted small">{{ t('vuln_outside_note', n=totals.vulnerable - counts.vulnerable - parked|length) }}</p>{% endif %}
+  {% if filter == 'vulnerable' and totals.vulnerable > counts.vulnerable %}<p class="muted small">{{ t('vuln_outside_note', n=totals.vulnerable - counts.vulnerable) }}</p>{% endif %}
   {% if filter == 'ok' and totals.ok > counts.ok %}<p class="muted small">{{ t('ok_outside_note', n=totals.ok - counts.ok) }}</p>{% endif %}
 
   <input type="checkbox" id="more-tools" class="toggle">
@@ -221,10 +221,11 @@
     </tr></thead>
     {% for group in (page.items[:TOP_ROWS], page.items[TOP_ROWS:]) %}
     <tbody{% if loop.index == 2 %} class="more"{% endif %}>
+    {% set first_group = loop.first %}
     {% for tool in group %}
       {{ tool_row(tool) }}
     {% else %}
-      {% if loop.index == 1 and group is sameas page.items[:TOP_ROWS] %}<tr><td colspan="6" class="muted">{{ t('none') }}</td></tr>{% endif %}
+      {% if first_group %}<tr><td colspan="6" class="muted">{% if filter == 'vulnerable' and parked_shown %}{{ t('vuln_only_parked', n=parked_shown|length) }}{% else %}{{ t('none') }}{% endif %}</td></tr>{% endif %}
     {% endfor %}
     </tbody>
     {% endfor %}
@@ -243,7 +244,7 @@
 </section>
 {% if parked_shown %}
 <section class="card" data-explain="parked" tabindex="0" id="parked">
-  <details><summary><strong>{{ t('parked_title', n=parked|length) }}</strong></summary>
+  <details{% if filter == 'vulnerable' %} open{% endif %}><summary><strong>{{ t('parked_title', n=parked|length) }}</strong></summary>
   <p class="small muted">{{ t('parked_note') }}</p>
   <div class="scroll"><table class="aligned">{{ cols() }}
     <thead><tr>
