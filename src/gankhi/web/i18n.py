@@ -389,6 +389,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "ext_none": "None of them has a known security notice.",
         "ext_others_summary": "Show the other {n} packages (no known security notice)",
         "ext_others_state": "No known notices",
+        "ext_row_title": (
+            "Copies a question about this package only, to paste into the AI you choose. "
+            "Gankhi sends nothing."
+        ),
         "ext_others_more": "…and {n} more that are not listed here.",
         "ext_failed": (
             "Could not check {tools}: no connection, or the list could not be read. "
@@ -1024,6 +1028,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "ext_none": "Ninguno tiene avisos de seguridad conocidos.",
         "ext_others_summary": "Mostrar los otros {n} paquetes (sin avisos de seguridad conocidos)",
         "ext_others_state": "Sin avisos conocidos",
+        "ext_row_title": (
+            "Copia una consulta solo sobre este paquete, para pegar en la IA que elijas. "
+            "Gankhi no envía nada."
+        ),
         "ext_others_more": "…y {n} más que no se listan acá.",
         "ext_failed": (
             "No pude revisar {tools}: no hubo conexión o no se pudo leer la lista. "

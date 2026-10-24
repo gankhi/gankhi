@@ -360,10 +360,10 @@
   {% if ext_ok %}
   <details class="ext-others"><summary>{{ t('ext_others_summary', n=ext_ok|length) }}</summary>
     <div class="scroll"><table class="aligned">{{ cols() }}
-      <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th colspan="3">{{ t('col_state') }}</th></tr></thead>
+      <thead><tr><th>{{ t('ext_col_package') }}</th><th>{{ t('ext_col_tool') }}</th><th>{{ t('col_version') }}</th><th colspan="2">{{ t('col_state') }}</th><th>{{ t('col_actions') }}</th></tr></thead>
       <tbody>
       {% for tool in ext_ok[:EXT_OTHERS_MAX] %}
-        <tr><td class="wrap"><strong>{{ tool.name }}</strong></td><td class="mono">{{ tool.tool }}</td><td class="mono">{{ tool.version }}</td><td colspan="3"><span class="state good">{{ t('ext_others_state') }}</span></td></tr>
+        <tr><td class="wrap"><strong>{{ tool.name }}</strong></td><td class="mono">{{ tool.tool }}</td><td class="mono">{{ tool.version }}</td><td colspan="2"><span class="state good">{{ t('ext_others_state') }}</span></td><td class="actions">{% if ext_prompts and ext_prompts.get((tool.tool, tool.name)) %}<button type="button" class="btn ask-row" data-prompt="{{ ext_prompts[(tool.tool, tool.name)] }}" data-done="{{ t('copied') }}" title="{{ t('ext_row_title') }}">{{ t('unchk_row_copy') }}</button>{% endif %}</td></tr>
       {% endfor %}
       </tbody>
     </table></div>
