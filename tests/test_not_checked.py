@@ -263,7 +263,7 @@ def test_a_newer_version_that_does_not_fix_the_notices_is_not_offered_as_the_fix
 
     def row(html, name):
         start = html.index(f"<strong>{name}</strong>")
-        return html[start : html.index("</tr>", start)]
+        return html[start : html.index('class="gap"', start)]
 
     # virtualbox has notices with no patch; a newer version exists but fixes none of them
     html = page(with_update("virtualbox"))

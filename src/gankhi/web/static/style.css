@@ -528,3 +528,28 @@ p.small, .card .small { font-size: .98rem; }
 .chips a { padding: 8px 14px; font-size: .95rem; white-space: nowrap; }
 .chips { flex-wrap: nowrap; margin: 0; }
 @media (max-width: 1500px) { .filterbar, .chips { flex-wrap: wrap; } }
+
+/* ===== Filas de herramientas: tarjeta con fila principal + detalle debajo (según boceto) ===== */
+table.aligned.tools { border-spacing: 0; }
+table.aligned.tools tr.gap td { height: 10px; padding: 0; background: transparent; border: 0; }
+table.aligned.tools tbody tr.main td { padding-top: 18px; padding-bottom: 18px; vertical-align: middle; }
+table.aligned.tools tbody tr.main.joined td:first-child { border-radius: 10px 0 0 0; }
+table.aligned.tools tbody tr.main.joined td:last-child { border-radius: 0 10px 0 0; }
+table.aligned.tools tbody tr.main:not(.joined) td:first-child { border-radius: 10px 0 0 10px; }
+table.aligned.tools tbody tr.main:not(.joined) td:last-child { border-radius: 0 10px 10px 0; }
+table.aligned.tools tbody tr.main.joined td { border-bottom: 0; }
+table.aligned.tools tbody tr.detail td { text-align: left; background: var(--row); padding: 12px 14px 14px;
+  border: 1px solid var(--line); border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; }
+table.aligned.tools tbody tr.detail:hover td { background: var(--row); }
+table.aligned.tools tr.detail details > summary { color: var(--muted); font-size: 1rem; cursor: pointer; }
+table.aligned.tools tr.detail details > summary:hover { color: var(--text); }
+table.aligned.tools tr.detail .notes { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+table.aligned.tools td.wrap strong { font-size: 1.3rem; }
+table.aligned.tools td.wrap .small { display: inline-block; margin-top: 4px; color: var(--muted); font-size: .95rem; line-height: 1.35; }
+.origin-chip { display: inline-block; background: #2a2c33; color: var(--muted); border-radius: 8px; padding: 6px 12px; font-size: .95rem; }
+.state.latest { display: inline-flex; align-items: center; gap: 8px; background: #2a2c33; color: #d4d7dd; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 500; }
+.state.latest .dot { width: 8px; height: 8px; border-radius: 50%; background: #8b909c; display: inline-block; }
+.patchline { display: inline-block; margin-top: 8px; font-size: .95rem; }
+.patchline.bad { color: #f87171; }
+.patchline.ok { color: #34d399; }
+table.aligned.tools .sev { font-size: 1.05rem; padding: 8px 16px; border-radius: 8px; }
