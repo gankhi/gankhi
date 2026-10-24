@@ -924,8 +924,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Deberías revisar qué tenés abierto."
         ),
         "say_programs": (
-            "Encontré {total} programas. {ok} están actualizados, {outdated} tienen una actualización "
-            "esperando y {vulnerable} tienen problemas de seguridad conocidos."
+            "Encontré {total} programas. {ok} están actualizados, {outdated} tienen una "
+            "actualización esperando y {vulnerable} tienen problemas de seguridad conocidos."
         ),
         "say_vuln_none": (
             "Ninguno de tus programas tiene un problema de seguridad conocido. Buenas noticias."
