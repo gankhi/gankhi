@@ -425,3 +425,34 @@ table.aligned td.wrap { text-align: left; }
 table.aligned td.actions { overflow: hidden; }
 table.aligned th { padding-left: 4px; padding-right: 4px; letter-spacing: .03em; }
 table.aligned td.num { white-space: nowrap; }
+
+/* bigger, centered rings */
+.ringrow { justify-content: center; gap: 20px; }
+.ring { width: 170px; height: 170px; }
+.ringcard:not([data-explain="programs"]) .ring { width: 200px; height: 200px; }
+.ring-big { font-size: 28px; }
+.ring-cap { font-size: 13px; }
+@media (max-width: 560px) { .ring, .ringcard:not([data-explain="programs"]) .ring { width: 130px; height: 130px; } }
+
+/* bigger, easier to read badges */
+.sev { font-size: 1rem; padding: 5px 16px; border-radius: 6px; }
+.state { font-size: .92rem; padding: 4px 12px; }
+.tag { font-size: .9rem; padding: 3px 10px; }
+.badge { font-size: .95rem; }
+
+/* a color for each type of download */
+.downloads li:nth-child(1) meter::-webkit-meter-optimum-value, .downloads li:nth-child(1) meter::-webkit-meter-suboptimum-value, .downloads li:nth-child(1) meter::-webkit-meter-even-less-good-value { background: #34d399; }
+.downloads li:nth-child(1) meter::-moz-meter-bar { background: #34d399; }
+.downloads li:nth-child(2) meter::-webkit-meter-optimum-value, .downloads li:nth-child(2) meter::-webkit-meter-suboptimum-value, .downloads li:nth-child(2) meter::-webkit-meter-even-less-good-value { background: #facc15; }
+.downloads li:nth-child(2) meter::-moz-meter-bar { background: #facc15; }
+.downloads li:nth-child(3) meter::-webkit-meter-optimum-value, .downloads li:nth-child(3) meter::-webkit-meter-suboptimum-value, .downloads li:nth-child(3) meter::-webkit-meter-even-less-good-value { background: #fb923c; }
+.downloads li:nth-child(3) meter::-moz-meter-bar { background: #fb923c; }
+.downloads li:nth-child(4) meter::-webkit-meter-optimum-value, .downloads li:nth-child(4) meter::-webkit-meter-suboptimum-value, .downloads li:nth-child(4) meter::-webkit-meter-even-less-good-value { background: #a78bfa; }
+.downloads li:nth-child(4) meter::-moz-meter-bar { background: #a78bfa; }
+.downloads li:nth-child(n+5) meter::-webkit-meter-optimum-value, .downloads li:nth-child(n+5) meter::-webkit-meter-suboptimum-value, .downloads li:nth-child(n+5) meter::-webkit-meter-even-less-good-value { background: #2dd4bf; }
+.downloads li:nth-child(n+5) meter::-moz-meter-bar { background: #2dd4bf; }
+
+/* badges: nunca partir el texto en dos líneas */
+.state, .tag, .sev { white-space: nowrap; }
+.state { padding: 5px 12px; }
+th.c-state, td.c-state { width: 14%; }
