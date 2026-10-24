@@ -471,3 +471,60 @@ table.aligned th:last-child, table.aligned td.actions { text-align: right; }
 .sev-medium { background: #e8870e; color: #fff; }
 .sev-low, .sev-negligible { background: #6b7280; color: #fff; }
 .sev-unknown { text-shadow: none; }
+
+/* ===== Escala: cada cosa del tamaño que pide su sección (pantallas grandes) ===== */
+/* Encabezado: resumen, botones principales */
+.status { min-width: 440px; }
+.statusrow strong { font-size: 1.7rem; font-weight: 700; }
+.statusrow .pill { font-size: 1.1rem; padding: 7px 18px; }
+.status .actions { gap: 14px; margin-top: 8px; }
+.status .actions .btn, .status .actions button { min-height: 54px; padding: 0 26px; font-size: 1.1rem; border-radius: 10px; gap: 10px; }
+.status .actions svg { width: 22px; height: 22px; }
+.warnline { font-size: 1.05rem; margin-top: 8px; }
+.facts dd { font-size: 1.35rem; }
+.facts dd.sub { font-size: 1.05rem; }
+.facts dt { font-size: .8rem; }
+
+/* Tarjetas de arriba */
+.card h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.legend { font-size: 1.15rem; gap: 12px; }
+.legend .sw, .legend i { width: 14px; height: 14px; }
+
+/* Espacio recuperable y acciones de limpieza */
+.cleanbtn, .card button.ghost, .card .actions button { min-height: 44px; font-size: 1rem; padding: 0 18px; }
+
+/* Lista de herramientas: buscador, filtros, encabezados, filas, botones */
+.filterbar { gap: 14px 18px; }
+.search input[type="search"] { font-size: 1.05rem; min-height: 46px; min-width: 300px; padding-left: 40px; }
+.filterbar button:not(.lupa) { min-height: 46px; font-size: 1rem; padding: 0 22px; }
+.filterbar label, .filterbar .small { font-size: 1rem; }
+.chips a { font-size: 1rem; padding: 9px 18px; }
+table.aligned thead th { font-size: .82rem; letter-spacing: .08em; }
+table.aligned td { font-size: 1.05rem; }
+table.aligned td strong, table.aligned td .name { font-size: 1.15rem; }
+table.aligned td .small, table.aligned td .muted { font-size: .95rem; }
+td.actions .btn, td.actions button, button.ask-row, button.verify-row { min-height: 42px; font-size: .98rem; padding: 0 18px; border-radius: 8px; }
+.state, .tag { font-size: 1rem; padding: 6px 14px; }
+table.aligned details summary { font-size: 1rem; }
+
+/* Secciones plegables y bloques de abajo */
+details > summary { font-size: 1.1rem; }
+.card h2 { font-size: 1.3rem; }
+.downloads li { font-size: 1.05rem; }
+.card.wide .actions { gap: 14px; margin-top: 10px; }
+.card.wide .actions .btn { min-height: 48px; font-size: 1.05rem; padding: 0 24px; border-radius: 10px; }
+.card.wide .small { font-size: 1rem; }
+.mini li { font-size: 1.15rem; }
+.bigsize { font-size: 2.2rem; }
+.sev { font-size: 1.1rem; padding: 7px 20px; }
+p.small, .card .small { font-size: .98rem; }
+/* la fila de filtros tiene que entrar en una sola línea */
+.filterbar { gap: 10px 12px; flex-wrap: nowrap; }
+.filterbar .search { flex: none; }
+.search input[type="search"] { min-width: 230px; min-height: 44px; font-size: 1rem; padding-left: 40px; }
+.filterbar .lupa { min-height: 30px; padding: 0; font-size: inherit; }
+.filterbar .search > button:not(.lupa) { min-height: 44px; padding: 0 18px; }
+.filterbar .searchbox .lupa { width: 30px; height: 30px; min-height: 30px; padding: 0; }
+.chips a { padding: 8px 14px; font-size: .95rem; white-space: nowrap; }
+.chips { flex-wrap: nowrap; margin: 0; }
+@media (max-width: 1500px) { .filterbar, .chips { flex-wrap: wrap; } }
