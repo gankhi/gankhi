@@ -197,19 +197,22 @@
 <section class="card tools" id="tools" data-explain="tools" tabindex="0">
   <div class="toolshead">
     <div><h2>{{ t('tools') }}</h2><p class="muted">{{ t('tools_sub', n=counts.all) }}</p></div>
-    <form method="get" action="/" class="search">
+  </div>
+  <div class="filterbar">
+  <form method="get" action="/" class="search">
       <input type="hidden" name="f" value="{{ filter }}">
       <label for="q" class="small">{{ t('search_label') }}</label>
       <span class="searchbox"><button type="submit" class="lupa" aria-label="{{ t('apply') }}" title="{{ t('apply') }}"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><input id="q" type="search" name="q" value="{{ q }}" maxlength="100" placeholder="{{ t('search_ph') }}"></span>
       <label class="check"><input type="checkbox" name="show" value="all"{% if show_all %} checked{% endif %}> {{ t('show_all') }}</label>
       <button type="submit" class="ghost">{{ t('apply') }}</button>
-    </form>
-  </div>
+  </form>
+    <span class="vsep" aria-hidden="true"></span>
   <nav class="chips" aria-label="{{ t('tools') }}">
     {% for f in filters %}
     <a href="{{ url_for('index', f=f, q=q or None, show='all' if show_all else None) }}"{% if f == filter %} aria-current="true"{% endif %}>{{ t('f_' ~ f) }} · {{ counts[f] }}</a>
     {% endfor %}
   </nav>
+  </div>
   {% if filter == 'vulnerable' and totals.vulnerable > counts.vulnerable %}<p class="muted small">{{ t('vuln_outside_note', n=totals.vulnerable - counts.vulnerable) }}</p>{% endif %}
   {% if filter == 'ok' and totals.ok > counts.ok %}<p class="muted small">{{ t('ok_outside_note', n=totals.ok - counts.ok) }}</p>{% endif %}
 
