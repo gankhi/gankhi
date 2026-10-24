@@ -93,3 +93,12 @@ def test_when_nothing_has_a_fix_the_vulnerable_view_says_where_the_list_is():
     assert "Nothing here can be fixed by updating. The 2 with known flaws" in html
     card = section(html, 'id="parked"')
     assert "<strong>openssl</strong>" in card and "<strong>virtualbox</strong>" in card
+
+
+def test_the_assistant_starts_minimized_and_the_scan_time_is_local():
+    html = get()
+    assert '<aside class="assistant" id="assistant" hidden' in html
+    assert 'id="assistant-open" class="assistant-open" aria-label' in html  # the icon is visible
+    assert "UTC" not in html  # the time of the last scan is shown in the computer's own time
+    js = (Path(__file__).parents[1] / "src/gankhi/web/static/assistant.js").read_text()
+    assert "gankhi_dock" not in js  # no memory of an earlier open or closed state
