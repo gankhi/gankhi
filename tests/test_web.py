@@ -673,7 +673,7 @@ def test_logging_in_always_redirects_to_the_home_page():
 def test_page_width_grows_with_the_screen_instead_of_a_fixed_column():
     css = (Path(__file__).parent.parent / "src/gankhi/web/static/style.css").read_text()
     main_rule = next(line for line in css.splitlines() if line.startswith("main {"))
-    assert "min(2200px" in main_rule and "100%" in main_rule
+    assert "min(1600px" in main_rule and "100%" in main_rule
 
 
 def test_times_over_a_minute_are_written_in_minutes_and_dates_in_local_form():
