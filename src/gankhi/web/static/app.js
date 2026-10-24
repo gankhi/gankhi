@@ -4,6 +4,12 @@
   "use strict";
   var headers = { "X-Gankhi": "1" };
 
+  // Coming back to a page the browser kept alive (back/forward cache): load it again, so the
+  // numbers are never the ones from before an update or a scan.
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) { location.reload(); }
+  });
+
   function finished() {
     location.reload();
   }
@@ -151,6 +157,7 @@
           var ok = s.state === "done";
           status(ok ? "ok" : "fail", (ok ? run.dataset.ok : run.dataset.failed) +
             (s.snapshot ? " " + run.dataset.saved + " " + s.snapshot : ""));
+          document.body.dataset.changed = "1";  // the list behind this page is out of date now
           if (leave) { leave.textContent = run.dataset.home; }
           if (ok && toggle) {  // success: fold the long output away, it stays one click away
             terminal.hidden = true;
@@ -224,7 +231,8 @@
   // (a plain link would load it again from the top). With no history (opened directly) it is a link.
   Array.prototype.forEach.call(document.querySelectorAll("a[data-back]"), function (link) {
     link.addEventListener("click", function (event) {
-      if (window.history.length > 1) {
+      // After a change ran, "Back" must load the list again: the old page would show stale numbers.
+      if (window.history.length > 1 && document.body.dataset.changed !== "1") {
         event.preventDefault();
         window.history.back();
       }

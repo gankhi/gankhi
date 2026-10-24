@@ -813,7 +813,7 @@ SANDBOXED_TEXT = {
         "snap": (
             "Esta app es un snap: trae sus propias bibliotecas adentro, y Ubuntu no publica "
             "avisos de seguridad por cada snap. Por eso Gankhi no puede decirte si tiene fallos "
-            'conocidos, y no te muestra un "al día" que no pueda comprobar. Lo que sí se '
+            'conocidos, y no te muestra un "actualizado" que no pueda comprobar. Lo que sí se '
             "sabe: snap revisa y actualiza sus apps solo, varias veces por día. Para forzarlo: "
             "sudo snap refresh."
         ),

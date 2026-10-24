@@ -73,7 +73,7 @@ def test_opening_the_cve_list_shows_every_notice_of_the_tool():
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert all(f"CVE-2026-{n:04d}" in html for n in range(28))
-    assert "CVE: 28" in html and "more are not listed" not in html
+    assert "28 CVEs" in html and "more are not listed" not in html
 
 
 def test_when_nothing_has_a_fix_the_vulnerable_view_says_where_the_list_is():
@@ -102,3 +102,28 @@ def test_the_assistant_starts_minimized_and_the_scan_time_is_local():
     assert "UTC" not in html  # the time of the last scan is shown in the computer's own time
     js = (Path(__file__).parents[1] / "src/gankhi/web/static/assistant.js").read_text()
     assert "gankhi_dock" not in js  # no memory of an earlier open or closed state
+
+
+def test_state_and_vulnerabilities_are_two_separate_columns():
+    html = get("/?f=vulnerable")
+    head = section(html, 'id="tools"', "</thead>")
+    assert head.index("Repo status") < head.index("Vulnerabilities") < head.index("Actions")
+    row = html[html.index("<strong>openssl</strong>") :]
+    row = row[: row.index("</tr>")]
+    # the state only says if it is outdated, up to date or not checked; the level has its own cell
+    assert 'class="sev sev-high">▲ High · 1 CVE<' in row
+    assert "Vulnerability ·" not in row
+    assert "Latest available" in row  # no newer version is on offer, whatever its flaws
+
+
+def test_a_program_without_flaws_shows_a_dash_in_the_vulnerabilities_column():
+    html = get("/?f=ok")
+    row = html[html.index("<strong>git</strong>") :]
+    row = row[: row.index("</tr>")]
+    assert "sev sev-" not in row and "—" in row
+
+
+def test_every_level_has_its_own_color_class():
+    css = (Path(__file__).parents[1] / "src/gankhi/web/static/style.css").read_text()
+    for level in ("critical", "high", "medium", "low", "unknown"):
+        assert f".sev-{level}" in css

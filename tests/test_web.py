@@ -673,7 +673,7 @@ def test_logging_in_always_redirects_to_the_home_page():
 def test_page_width_grows_with_the_screen_instead_of_a_fixed_column():
     css = (Path(__file__).parent.parent / "src/gankhi/web/static/style.css").read_text()
     main_rule = next(line for line in css.splitlines() if line.startswith("main {"))
-    assert "min(2200px" in main_rule and "100%" in main_rule
+    assert "min(1600px" in main_rule and "100%" in main_rule
 
 
 def test_times_over_a_minute_are_written_in_minutes_and_dates_in_local_form():
@@ -701,7 +701,7 @@ def test_the_fix_labels_open_an_explanation_with_what_to_keep_in_mind():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     # each label is the summary of a details element: a keyboard-friendly button, no script
     assert '<details class="note"><summary><span class="tag ok">' in html
-    assert '<details class="note"><summary><span class="tag bad">' in html
+    assert 'class="patchline bad"' in html  # no fix: said under the severity badge
     assert "A virtual machine isolates another system" in html  # virtualbox, not a generic text
     assert "encrypts the connections of many programs" in html  # openssl
 
@@ -735,7 +735,7 @@ def test_each_snap_or_flatpak_app_explains_how_gankhi_treats_it():
     assert "How Gankhi checks it" in html
     assert "cannot tell you whether it has known flaws" in html
     # every table lines up on the same columns: name, origin, version, size
-    assert html.count('<table class="aligned">') == 3  # tools, no fix yet, snap and flatpak
+    assert html.count('<table class="aligned') == 3  # tools, no fix yet, snap and flatpak
     snap = html[html.index("Snap and Flatpak apps") :]
     order = [snap.index(w) for w in ("Package", "Installed with", "Version", "Size", "Source")]
     assert order == sorted(order)
