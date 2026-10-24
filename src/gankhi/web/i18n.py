@@ -643,9 +643,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_detail": "{used} ocupados, {free} libres de {total}",
         "ram": "Memoria RAM",
         "ram_detail": "{used} en uso, {free} libres",
-        "programs": "Programas y paquetes al día",
+        "programs": "Programas y paquetes actualizados",
         "totals_note": (
-            'Incluye {n} paquetes de Python y npm. En esos, "al día" significa sin avisos de '
+            'Incluye {n} paquetes de Python y npm. En esos, "actualizado" significa sin avisos de '
             "seguridad conocidos: Gankhi no revisa si existe una versión más nueva."
         ),
         "programs_detail": "{vuln} con vulnerabilidades, {old} desactualizados",
@@ -660,7 +660,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "tools_hint": "Ordenadas por estado: lo que necesita atención va primero.",
         "search": "Buscar herramienta",
         "f_all": "Todas",
-        "f_ok": "Al día",
+        "f_ok": "Actualizado",
         "f_outdated": "Desactualizadas",
         "f_unchecked": "Sin revisar",
         "state_unchecked": "Sin revisar",
@@ -717,7 +717,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "col_size": "Tamaño",
         "col_state": "Estado",
         "col_vuln": "Vulnerabilidades",
-        "state_ok": "Al día",
+        "state_ok": "Actualizado",
         "state_outdated": "Desactualizada",
         "state_vulnerable": "Vulnerabilidad",
         "cve_summary": "CVE: {n}",
@@ -924,7 +924,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "Deberías revisar qué tenés abierto."
         ),
         "say_programs": (
-            "Encontré {total} programas. {ok} están al día, {outdated} tienen una actualización "
+            "Encontré {total} programas. {ok} están actualizados, {outdated} tienen una actualización "
             "esperando y {vulnerable} tienen problemas de seguridad conocidos."
         ),
         "say_vuln_none": (
@@ -980,7 +980,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "No encontré problemas de seguridad. Programas desactualizados: {outdated}. "
             "Con Actualizar todo los ponés al día."
         ),
-        "say_tools_clean": "Todo está al día y no encontré problemas de seguridad conocidos.",
+        "say_tools_clean": "Todo está actualizado y no encontré problemas de seguridad conocidos.",
         "say_reclaim": "Podés recuperar unos {total}: {parts}. Revisalo antes de limpiar.",
         "say_reclaim_kernels": "{size} en kernels viejos",
         "say_reclaim_cache": "{size} en paquetes descargados",
@@ -1225,7 +1225,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "unknown": "desconocida",
         "ring_used": "ocupado",
         "ring_in_use": "en uso",
-        "ring_ok": "al día",
+        "ring_ok": "actualizados",
         "show_more": "Ver {n} más",
         "show_less": "Ver menos",
         "reclaim_total": "Revisar antes de limpiar",
@@ -1236,7 +1236,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_free_big": "{free} libres",
         "disk_used_of": "{used} ocupados de {total}",
         "last_scan_short": "último escaneo",
-        "x_of_y_ok": "{ok} de {all} al día",
+        "x_of_y_ok": "{ok} de {all} actualizados",
         "pill_vuln": "{n} con vulnerabilidades",
         "pill_vuln_open": "Ver la lista de lo que tiene vulnerabilidades",
         "leg_open": "Ver la lista",
@@ -1264,7 +1264,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "leg_disk_free": "{size} libres",
         "leg_ram_used": "{size} en uso",
         "leg_ram_free": "{size} libres",
-        "leg_ok": "{n} al día",
+        "leg_ok": "{n} actualizados",
         "leg_old": "{n} desactualizados",
         "leg_vuln": "{n} con vulnerabilidades",
         "col_origin": "Origen",
