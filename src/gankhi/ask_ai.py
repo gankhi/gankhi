@@ -174,3 +174,76 @@ def build_prompt(items: list[Unchecked], os_name: str, lang: str, ecosystem: str
         lines.append(texts["more"].format(n=len(items) - MAX_LISTED))
     intro = texts["intro"].format(os=system_phrase(os_name, ecosystem, lang))
     return intro + "\n\n" + "\n".join(lines) + "\n\n" + texts["ask"]
+
+
+_PACKAGE_TEXT = {
+    "en": {
+        "intro": (
+            "I have this package installed. I want to know if this exact version has known "
+            "security vulnerabilities, and which is the latest version published."
+        ),
+        "ask": (
+            "Answer ONLY with a table of exactly 3 columns, one row per package, and nothing "
+            "else:\n"
+            "| Package and version | Vulnerable in my version? | Latest published version |\n"
+            '- "Vulnerable in my version?": write only "Yes", "Not reported yet" or "Not '
+            'verified". "Yes" only if an advisory says my exact version is affected; add the CVE '
+            "numbers, each with a direct link to the advisory (OSV.dev, GitHub Security "
+            "Advisories, NVD or the maintainers), never a search-engine link. If you found "
+            'nothing, do not write "No": write "Not reported yet".\n'
+            '- "Latest published version": the version number, as the package registry shows it, '
+            'with the full link to its page there. Add "(deprecated)" if the registry marks the '
+            "package as deprecated or abandoned.\n"
+            "- Search the web for the package by name and exact version, in: the package "
+            "registry, OSV.dev, GitHub Security Advisories, NVD and the project's own security "
+            "page. Do not answer from memory.\n"
+            "- Write every link as the full plain URL (https://...), never shortened and never "
+            "wrapped in a search or redirect address.\n"
+            "- Do not suggest removing, updating or changing anything. No advice of any kind.\n"
+            "- No introduction, no explanations, no notes, no headings, no paragraphs. Keep "
+            "every cell short.\n"
+            '- If you cannot verify something, write "Not verified". Do not make anything up '
+            "and do not guess version numbers."
+        ),
+    },
+    "es": {
+        "intro": (
+            "Tengo instalado este paquete. Quiero saber si esta versión exacta tiene "
+            "vulnerabilidades de seguridad conocidas, y cuál es la última versión publicada."
+        ),
+        "ask": (
+            "Respondé SOLO con una tabla de exactamente 3 columnas, una fila por paquete, y "
+            "nada más:\n"
+            "| Paquete y versión | ¿Vulnerable en mi versión? | Última versión publicada |\n"
+            '- "¿Vulnerable en mi versión?": escribí solo "Sí", "Aún no reportado" o "No '
+            'verificado". "Sí" solo si un aviso dice que mi versión exacta está afectada; sumá '
+            "los números CVE, cada uno con un enlace directo al aviso (OSV.dev, GitHub Security "
+            "Advisories, NVD o los mantenedores), nunca un enlace de buscador. Si no encontraste "
+            'nada, no escribas "No": escribí "Aún no reportado".\n'
+            '- "Última versión publicada": el número de versión, como lo muestra el registro '
+            'del paquete, con el enlace completo a su página ahí. Sumá "(obsoleto)" si el '
+            "registro marca el paquete como obsoleto (deprecated) o abandonado.\n"
+            "- Buscá en la web el paquete por nombre y versión exacta, en: el registro del "
+            "paquete, OSV.dev, GitHub Security Advisories, NVD y la página de seguridad del "
+            "propio proyecto. No respondas de memoria.\n"
+            "- Escribí cada enlace como la URL completa y sin adornos (https://...), nunca "
+            "acortada ni envuelta en una dirección de búsqueda o de redirección.\n"
+            "- No sugieras quitar, actualizar ni cambiar nada. Sin consejos de ningún tipo.\n"
+            "- Sin introducción, sin explicaciones, sin notas, sin títulos, sin párrafos. Cada "
+            "celda, corta.\n"
+            '- Si no podés verificar algo, escribí "No verificado". No inventes nada y no '
+            "adivines números de versión."
+        ),
+    },
+}
+_PACKAGE_KIND = {"pip": "Python (PyPI)", "npm": "Node (npm)"}
+
+
+def build_package_prompt(name: str, version: str, tool: str, lang: str) -> str:
+    """The text to copy for one Python or npm package: whether its version has known flaws and
+    which version is the latest. It asks for no update or removal command: Gankhi has them."""
+    texts = _PACKAGE_TEXT.get(lang, _PACKAGE_TEXT["en"])
+    kind = _PACKAGE_KIND.get(tool, tool)
+    return (
+        f"{texts['intro']}\n\n- {_clean(name)} {_clean(version)} ({_clean(kind)})\n\n{texts['ask']}"
+    )

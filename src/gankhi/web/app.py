@@ -348,6 +348,13 @@ def create_app(
                 i.name: ask_ai.build_prompt([i], os_name, lang, ecosystem)
                 for i in items  # type: ignore[attr-defined]
             }
+        if result is not None:
+            # one question per Python or npm package, for the button in its own row
+            context["ext_prompts"] = {
+                (p.tool, p.name): ask_ai.build_package_prompt(p.name, p.version, p.tool, lang)
+                for p in result.external
+                if not p.vulnerable
+            }
         return render_template("index.html", **context)
 
     def build_preview(result: ScanResult, action: str, package: str) -> actions.Preview:
