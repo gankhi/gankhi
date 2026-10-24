@@ -5,6 +5,7 @@ Los cambios importantes de Gankhi. Las fechas van como año-mes-día.
 ## Sin publicar
 
 ### Cambiado
+- El asistente ahora arranca minimizado cada vez que se abre Gankhi y solo se abre al hacer clic en su ícono. Mientras está minimizado, pasar el mouse por las secciones no explica ni resalta nada. La hora del último escaneo se muestra en la hora de tu computadora y no en UTC.
 - La vista «Con vulnerabilidades» ya no parece vacía cuando todas las fallas están sin arreglo: el botón cuenta todas (como el resumen), la tarjeta de «sin arreglo todavía» se abre sola en esa vista, y la tabla vacía dice dónde está la lista. El mensaje de tabla vacía, que nunca aparecía, ahora aparece.
 - Al abrir la lista «CVE: N» de una herramienta ahora se ven los N avisos (hasta 200 de cada tipo), no solo los primeros cinco de cada tipo. Si la lista es larga, se desplaza dentro de su caja, y si se cortó dice cuántos más no se listan.
 - La tarjeta «Sin revisar» ya no repite las apps de snap y flatpak: cada una aparece una sola vez, en su sección con su botón para copiar la consulta para una IA, y la tarjeta conserva solo el botón que copia todo junto.

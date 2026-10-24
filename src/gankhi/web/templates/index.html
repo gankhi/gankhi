@@ -120,7 +120,7 @@
       <div><dt>{{ t('lbl_system') }}</dt><dd>{{ sys.os_name }}</dd><dd class="mono sub">kernel {{ sys.kernel }} · {{ sys.architecture }}</dd></div>
       <div><dt>{{ t('lbl_user') }}</dt><dd>{{ sys.user }}</dd><dd class="mono sub">{{ t('uptime', time=sys.uptime_seconds|uptime) }}</dd></div>
       {% endif %}
-      <div><dt>{{ t('lbl_datetime') }}</dt><dd>{{ now.strftime('%Y-%m-%d · %H:%M') }}</dd><dd class="mono sub">{{ t('last_scan_short') }}: {{ result.scanned_at.strftime('%H:%M UTC') }}</dd></div>
+      <div><dt>{{ t('lbl_datetime') }}</dt><dd>{{ now.strftime('%Y-%m-%d · %H:%M') }}</dd><dd class="mono sub">{{ t('last_scan_short') }}: {{ result.scanned_at.astimezone().strftime('%H:%M') }}</dd></div>
       {% if sys %}
       <div><dt>{{ t('lbl_disk') }}</dt><dd>{{ t('disk_free_big', free=sys.disk_free|bytes) }}</dd><dd class="mono sub">{{ t('disk_used_of', used=sys.disk_used|bytes, total=sys.disk_total|bytes) }}</dd></div>
       {% endif %}
@@ -409,7 +409,7 @@
 </section>
 {% endif %}
 
-<aside class="assistant" id="assistant" aria-label="{{ t('assistant_title') }}"
+<aside class="assistant" id="assistant" hidden aria-label="{{ t('assistant_title') }}"
   data-lang="{{ lang }}" data-state="{{ state }}"
   data-ready="{{ t('assistant_ready') }}" data-prompt="{{ t('assistant_prompt') }}">
   <div class="assistant-head">
@@ -421,5 +421,5 @@
     <button type="button" id="assistant-explain">{{ t('assistant_play') }}</button>
   </div>
 </aside>
-<button type="button" id="assistant-open" class="assistant-open" hidden aria-label="{{ t('assistant_open') }}" title="{{ t('assistant_open') }}">💬</button>
+<button type="button" id="assistant-open" class="assistant-open" aria-label="{{ t('assistant_open') }}" title="{{ t('assistant_open') }}">💬</button>
 {% endblock %}

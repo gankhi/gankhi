@@ -44,22 +44,20 @@
     mark(null);
     dock.hidden = true;
     btnOpen.hidden = false;
-    try { sessionStorage.setItem("gankhi_dock", "closed"); } catch (e) { /* ignore */ }
   }
   function openDock() {
     dock.hidden = false;
     btnOpen.hidden = true;
-    try { sessionStorage.removeItem("gankhi_dock"); } catch (e) { /* ignore */ }
   }
   btnClose.addEventListener("click", closeDock);
   btnOpen.addEventListener("click", openDock);
-  try { if (sessionStorage.getItem("gankhi_dock") === "closed") { dock.hidden = true; btnOpen.hidden = false; } } catch (e) { /* ignore */ }
 
   btnExplain.addEventListener("click", explainAll);
 
   // Explain a section when the mouse (or keyboard focus) is on it. The page never scrolls.
   function explain(el) {
     clearTimeout(hoverTimer);
+    if (dock.hidden) { return; }  // minimized: nothing is explained or highlighted
     hoverTimer = setTimeout(function () {
       var section = el.dataset.explain;
       (cache ? Promise.resolve(cache) : load()).then(function (data) {
