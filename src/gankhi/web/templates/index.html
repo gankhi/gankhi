@@ -3,6 +3,7 @@
 {% macro badge(priority) %}<span class="badge p-{{ priority or 'unknown' }}">{{ t(priority or 'unknown') }}</span>{% endmacro %}
 {# the three tables share these columns, so name, origin, version and size line up #}
 {% macro cols() %}<colgroup><col class="c-name"><col class="c-origin"><col class="c-version"><col class="c-size"><col class="c-state"><col class="c-last"></colgroup>{% endmacro %}
+{% macro cols_tools() %}<colgroup><col class="c-name"><col class="c-origin"><col class="c-version"><col class="c-size"><col class="c-state"><col class="c-vuln"><col class="c-last"></colgroup>{% endmacro %}
 {% macro note(kind, tag, hint, more) %}<details class="note"><summary><span class="tag {{ kind }}">{{ tag }}</span></summary><p>{{ hint }}</p>{% for paragraph in more %}<p>{{ paragraph }}</p>{% endfor %}</details>{% endmacro %}
 {% macro tool_row(tool) %}
       <tr>
@@ -36,13 +37,17 @@
         <td class="mono">{{ tool.version }}{% if tool.update_to %} → <span class="new">{{ tool.update_to }}</span>{% endif %}</td>
         <td class="num mono">{{ tool.size_kib|size }}</td>
         <td>
-          {% if tool.state == 'vulnerable' %}<span class="state bad">{{ t('state_vulnerable') }} · {{ t(tool.top_priority or 'unknown') }}</span>
-          {% elif tool.state == 'outdated' %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
-          {% elif tool.state == 'unchecked' and tool_checked(tool) %}<span class="state good">✓ {{ t('state_by_user') }}</span>
+          {% if tool.state == 'unchecked' and tool_checked(tool) %}<span class="state good">✓ {{ t('state_by_user') }}</span>
           {% elif tool.state == 'unchecked' %}<span class="state dim">◌ {{ t('state_unchecked') }}</span>
+          {% elif tool.update_to %}<span class="state warn">↑ {{ t('state_outdated') }}</span>
           {% else %}<span class="state good">✓ {{ t('state_ok') }}</span>{% endif %}
           {% if tool.origin %}<br><span class="small muted">{{ t('unchecked_from', origin=tool.origin) }}</span>{% endif %}
           {% if tool.end_of_support %}<br><span class="state warn">{{ t('chip_eol') }}</span>{% endif %}
+        </td>
+        <td>
+          {% if tool.state == 'vulnerable' %}<span class="sev sev-{{ tool.top_priority or 'unknown' }}">{{ t(tool.top_priority or 'unknown')|capitalize }}</span>
+          <br><span class="small">{{ t('cve_summary', n=tool.cve_count) }}</span>
+          {% else %}<span class="small muted">—</span>{% endif %}
         </td>
         <td class="actions">
           {% if tool.update_to %}<a class="btn{% if tool.fixed_in or not tool.unfixable %} primary{% endif %}" href="{{ url_for('preview_page', action='update', pkg=tool.name) }}">{{ t('btn_update') }}</a>
@@ -217,10 +222,10 @@
   {% if filter == 'ok' and totals.ok > counts.ok %}<p class="muted small">{{ t('ok_outside_note', n=totals.ok - counts.ok) }}</p>{% endif %}
 
   <input type="checkbox" id="more-tools" class="toggle">
-  <div class="scroll"><table class="aligned">{{ cols() }}
+  <div class="scroll"><table class="aligned">{{ cols_tools() }}
     <thead><tr>
       <th>{{ t('col_tool') }}</th><th>{{ t('col_origin') }}</th><th>{{ t('col_version') }}</th>
-      <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th><th>{{ t('col_actions') }}</th>
+      <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th><th>{{ t('col_vuln') }}</th><th>{{ t('col_actions') }}</th>
     </tr></thead>
     {% for group in (page.items[:TOP_ROWS], page.items[TOP_ROWS:]) %}
     <tbody{% if loop.index == 2 %} class="more"{% endif %}>
@@ -228,7 +233,7 @@
     {% for tool in group %}
       {{ tool_row(tool) }}
     {% else %}
-      {% if first_group %}<tr><td colspan="6" class="muted">{% if filter == 'vulnerable' and parked_shown %}{{ t('vuln_only_parked', n=parked_shown|length) }}{% else %}{{ t('none') }}{% endif %}</td></tr>{% endif %}
+      {% if first_group %}<tr><td colspan="7" class="muted">{% if filter == 'vulnerable' and parked_shown %}{{ t('vuln_only_parked', n=parked_shown|length) }}{% else %}{{ t('none') }}{% endif %}</td></tr>{% endif %}
     {% endfor %}
     </tbody>
     {% endfor %}
@@ -249,10 +254,10 @@
 <section class="card" data-explain="parked" tabindex="0" id="parked">
   <details{% if filter == 'vulnerable' %} open{% endif %}><summary><strong>{{ t('parked_title', n=parked|length) }}</strong></summary>
   <p class="small muted">{{ t('parked_note') }}</p>
-  <div class="scroll"><table class="aligned">{{ cols() }}
+  <div class="scroll"><table class="aligned">{{ cols_tools() }}
     <thead><tr>
       <th>{{ t('col_tool') }}</th><th>{{ t('col_origin') }}</th><th>{{ t('col_version') }}</th>
-      <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th><th>{{ t('col_actions') }}</th>
+      <th class="num">{{ t('col_size') }}</th><th>{{ t('col_state') }}</th><th>{{ t('col_vuln') }}</th><th>{{ t('col_actions') }}</th>
     </tr></thead>
     <tbody>
     {% for tool in parked_shown %}

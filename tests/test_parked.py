@@ -102,3 +102,28 @@ def test_the_assistant_starts_minimized_and_the_scan_time_is_local():
     assert "UTC" not in html  # the time of the last scan is shown in the computer's own time
     js = (Path(__file__).parents[1] / "src/gankhi/web/static/assistant.js").read_text()
     assert "gankhi_dock" not in js  # no memory of an earlier open or closed state
+
+
+def test_state_and_vulnerabilities_are_two_separate_columns():
+    html = get("/?f=vulnerable")
+    head = section(html, 'id="tools"', "</thead>")
+    assert head.index("State") < head.index("Vulnerabilities") < head.index("Actions")
+    row = html[html.index("<strong>openssl</strong>") :]
+    row = row[: row.index("</tr>")]
+    # the state only says if it is outdated, up to date or not checked; the level has its own cell
+    assert 'class="sev sev-high">High<' in row and "CVE: 1" in row
+    assert "Vulnerability ·" not in row
+    assert "Up to date" in row  # no newer version is on offer, whatever its flaws
+
+
+def test_a_program_without_flaws_shows_a_dash_in_the_vulnerabilities_column():
+    html = get("/?f=ok")
+    row = html[html.index("<strong>git</strong>") :]
+    row = row[: row.index("</tr>")]
+    assert "sev sev-" not in row and "—" in row
+
+
+def test_every_level_has_its_own_color_class():
+    css = (Path(__file__).parents[1] / "src/gankhi/web/static/style.css").read_text()
+    for level in ("critical", "high", "medium", "low", "unknown"):
+        assert f".sev-{level}" in css

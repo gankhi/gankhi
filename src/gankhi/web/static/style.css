@@ -129,12 +129,13 @@ th { text-align: left; font: 500 .72rem var(--mono); letter-spacing: .06em; text
 td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); white-space: nowrap; font-size: 1rem; vertical-align: top; }
 .num { text-align: right; }
 table.aligned { table-layout: fixed; min-width: 960px; }
-table.aligned col.c-name { width: 27%; }
-table.aligned col.c-origin { width: 8%; }
-table.aligned col.c-version { width: 17%; }
+table.aligned col.c-name { width: 24%; }
+table.aligned col.c-origin { width: 7%; }
+table.aligned col.c-version { width: 15%; }
 table.aligned col.c-size { width: 8%; }
-table.aligned col.c-state { width: 14%; }
-table.aligned col.c-last { width: 26%; }
+table.aligned col.c-state { width: 12%; }
+table.aligned col.c-vuln { width: 10%; }
+table.aligned col.c-last { width: 24%; }
 table.aligned td { white-space: normal; overflow-wrap: anywhere; }
 /* Downloads detail: the three tables share one grid, so the size columns line up. */
 table.dl-table { table-layout: fixed; min-width: 640px; }
@@ -408,3 +409,11 @@ code.cmd { background: var(--console); color: #8fe3c0; font-size: .78rem; }
 .vsep { width: 1px; align-self: stretch; min-height: 28px; background: var(--line); }
 @media (max-width: 900px) { .vsep { display: none; } }
 .check { font-size: .88rem; }
+
+/* vulnerability level: its own column, colored by how serious it is */
+.sev { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 4px; font-size: .78rem; font-weight: 700; border: 1px solid transparent; }
+.sev-critical { background: rgba(239, 68, 68, .25); color: #fecaca; border-color: rgba(239, 68, 68, .6); }
+.sev-high { background: rgba(249, 115, 22, .22); color: #fdba74; border-color: rgba(249, 115, 22, .55); }
+.sev-medium { background: rgba(234, 179, 8, .2); color: #fde047; border-color: rgba(234, 179, 8, .5); }
+.sev-low, .sev-negligible { background: rgba(148, 163, 184, .15); color: #cbd5e1; border-color: rgba(148, 163, 184, .4); }
+.sev-unknown { background: rgba(154, 158, 169, .12); color: var(--muted); border-color: rgba(154, 158, 169, .3); }
