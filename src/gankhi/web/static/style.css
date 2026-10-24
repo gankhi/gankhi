@@ -129,13 +129,13 @@ th { text-align: left; font: 500 .72rem var(--mono); letter-spacing: .06em; text
 td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); white-space: nowrap; font-size: 1rem; vertical-align: top; }
 .num { text-align: right; }
 table.aligned { table-layout: fixed; min-width: 960px; }
-table.aligned col.c-name { width: 24%; }
-table.aligned col.c-origin { width: 7%; }
-table.aligned col.c-version { width: 15%; }
-table.aligned col.c-size { width: 8%; }
+table.aligned col.c-name { width: 22%; }
+table.aligned col.c-origin { width: 6%; }
+table.aligned col.c-version { width: 14%; }
+table.aligned col.c-size { width: 9%; }
 table.aligned col.c-state { width: 12%; }
-table.aligned col.c-vuln { width: 10%; }
-table.aligned col.c-last { width: 24%; }
+table.aligned col.c-vuln { width: 12%; }
+table.aligned col.c-last { width: 25%; }
 table.aligned td { white-space: normal; overflow-wrap: anywhere; }
 /* Downloads detail: the three tables share one grid, so the size columns line up. */
 table.dl-table { table-layout: fixed; min-width: 640px; }
@@ -372,8 +372,8 @@ table.aligned tbody td { background: var(--row); border-top: 1px solid var(--lin
 table.aligned tbody td:first-child { border-left: 1px solid var(--line); border-radius: 8px 0 0 8px; padding-left: 14px; }
 table.aligned tbody td:last-child { border-right: 1px solid var(--line); border-radius: 0 8px 8px 0; padding-right: 14px; }
 table.aligned tbody tr:hover td { background: var(--row-hover); }
-td.actions { display: table-cell; text-align: right; white-space: normal; border-top: 1px solid var(--line); }
-td.actions > * { margin: 0 0 6px 6px; vertical-align: middle; }
+td.actions { display: table-cell; text-align: center; white-space: normal; border-top: 1px solid var(--line); }
+td.actions > * { margin: 3px; vertical-align: middle; }
 tr:has(td.actions) td { border-top: 1px solid var(--line); }
 
 /* severity and state as small tinted badges */
@@ -417,3 +417,11 @@ code.cmd { background: var(--console); color: #8fe3c0; font-size: .78rem; }
 .sev-medium { background: #facc15; color: #1c1500; }
 .sev-low, .sev-negligible { background: #a1a1aa; color: #141416; }
 .sev-unknown { background: transparent; color: var(--muted); border-color: #5b5f6a; }
+
+/* titles and cells are centered in every column (the first one, the name, stays on the left) */
+table.aligned th, table.aligned td, table.aligned .num { text-align: center; }
+table.aligned th:first-child, table.aligned td:first-child { text-align: left; }
+table.aligned td.wrap { text-align: left; }
+table.aligned td.actions { overflow: hidden; }
+table.aligned th { padding-left: 4px; padding-right: 4px; letter-spacing: .03em; }
+table.aligned td.num { white-space: nowrap; }
