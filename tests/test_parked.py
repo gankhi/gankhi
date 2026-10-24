@@ -43,9 +43,12 @@ def test_the_card_is_shown_with_all_and_vulnerable_but_not_with_other_filters():
     assert 'id="parked"' not in get("/?f=outdated") and 'id="parked"' not in get("/?f=ok")
 
 
-def test_the_vulnerable_chip_counts_only_what_can_be_acted_on_and_the_ring_all_of_it():
+def test_the_vulnerable_chip_counts_all_of_them_and_the_card_opens_in_that_view():
     html = get()
-    assert "With vulnerabilities · 1" in html  # openssl, which has a fix
+    assert "With vulnerabilities · 2" in html  # openssl (has a fix) and virtualbox (does not)
+    assert "<details open>" not in section(html, 'id="parked"', "</summary>")
+    view = get("/?f=vulnerable")
+    assert "<details open>" in section(view, 'id="parked"', "</summary>")  # shown, not folded
     assert "1 of them with no fix yet" in html  # virtualbox, said next to the totals
     assert 'href="/?f=vulnerable#parked"' in html
 
@@ -71,3 +74,22 @@ def test_opening_the_cve_list_shows_every_notice_of_the_tool():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     assert all(f"CVE-2026-{n:04d}" in html for n in range(28))
     assert "CVE: 28" in html and "more are not listed" not in html
+
+
+def test_when_nothing_has_a_fix_the_vulnerable_view_says_where_the_list_is():
+    from dataclasses import replace
+
+    def scan():
+        result = make_result()
+        return replace(
+            result,
+            tools=[replace(t, fixed_in=None) if t.name == "openssl" else t for t in result.tools],
+        )
+
+    client = login(build(scan).test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    html = client.get("/?f=vulnerable", base_url=BASE).get_data(as_text=True)
+    assert "Nothing here can be fixed by updating. The 2 with known flaws" in html
+    card = section(html, 'id="parked"')
+    assert "<strong>openssl</strong>" in card and "<strong>virtualbox</strong>" in card

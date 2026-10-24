@@ -598,6 +598,10 @@ TEXTS: dict[str, dict[str, str]] = {
             "This list shows the system programs. {n} more Python or npm packages have no "
             "known notices, in the section below."
         ),
+        "vuln_only_parked": (
+            "Nothing here can be fixed by updating. The {n} with known flaws and no fix yet "
+            "are listed right below."
+        ),
         "parked_title": "Known flaws with no fix yet ({n})",
         "parked_note": (
             "Updating does not fix these yet: Ubuntu has not published a fix, or the newer "
@@ -1237,6 +1241,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "ok_outside_note": (
             "Esta lista muestra los programas del sistema. {n} paquetes más de Python o npm "
             "no tienen avisos conocidos, en la sección de abajo."
+        ),
+        "vuln_only_parked": (
+            "Nada de acá se arregla actualizando. Las {n} con fallas conocidas y sin arreglo "
+            "todavía están listadas justo abajo."
         ),
         "parked_title": "Fallas conocidas sin arreglo todavía ({n})",
         "parked_note": (
