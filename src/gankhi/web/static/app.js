@@ -10,6 +10,40 @@
     if (event.persisted) { location.reload(); }
   });
 
+
+  // Side menu: show one panel at a time. Without JavaScript every panel is shown.
+  var tabLinks = document.querySelectorAll("[data-tab-link]");
+  function showTab(name) {
+    document.documentElement.setAttribute("data-tab", name);
+    for (var i = 0; i < tabLinks.length; i++) {
+      if (tabLinks[i].getAttribute("data-tab-link") === name) { tabLinks[i].setAttribute("aria-current", "true"); }
+      else { tabLinks[i].removeAttribute("aria-current"); }
+    }
+    try { sessionStorage.setItem("gankhi-tab", name); } catch (e) { /* storage may be blocked */ }
+  }
+  function tabFromHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    var el = id ? document.getElementById(id) : null;
+    var holder = el ? el.closest("[data-tab]") : null;
+    return holder ? holder.getAttribute("data-tab") : null;
+  }
+  if (tabLinks.length) {
+    var saved = null;
+    try { saved = sessionStorage.getItem("gankhi-tab"); } catch (e) { saved = null; }
+    showTab(tabFromHash() || saved || "tools");
+    window.addEventListener("hashchange", function () {
+      var name = tabFromHash();
+      if (name) { showTab(name); }
+    });
+    for (var k = 0; k < tabLinks.length; k++) {
+      tabLinks[k].addEventListener("click", function (event) {
+        event.preventDefault();
+        showTab(this.getAttribute("data-tab-link"));
+        window.scrollTo(0, 0);
+      });
+    }
+  }
+
   function finished() {
     location.reload();
   }

@@ -482,7 +482,8 @@ def test_the_rows_explain_the_flag_only_when_the_python_is_protected(monkeypatch
 def test_the_headline_numbers_add_up_programs_and_python_npm_packages():
     from test_web import BASE, build, login, make_result, wait_until_done
 
-    programs = [t for t in make_result().tools if t.is_program]
+    # the headline counts libraries and dependencies too, not only the programs
+    programs = list(make_result().tools)
     own_bad = sum(1 for t in programs if t.state == "vulnerable")
     own_old = sum(1 for t in programs if t.state == "outdated")
     total = len(programs) + 3  # evilpkg, oldlib and calm

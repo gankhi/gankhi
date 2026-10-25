@@ -37,6 +37,70 @@ _RUNNING_KERNEL_PART = re.compile(
 _RELEASE_ABI = re.compile(r"^(\d+\.\d+\.\d+-\d+)")
 
 
+_VERSIONED_KERNEL = re.compile(
+    r"^linux-(image|headers|modules|tools|buildinfo)\S*-\d+\.\d+\.\d+-\d+"
+)
+_KERNEL_META = ("linux-generic", "linux-image-generic", "linux-headers-generic")
+
+
+def _update_via(tool: Tool, by_name: dict[str, Tool]) -> str:
+    """The kernel meta-package that brings this versioned kernel package's fix, if it can update.
+
+    A kernel is installed once per version, under a name that carries the version, so the new
+    one is a different package and the old one never has a newer version of its own.
+    """
+    if tool.update_to or not tool.fixed_in or not _VERSIONED_KERNEL.match(tool.name):
+        return ""
+    for name in _KERNEL_META:
+        meta = by_name.get(name)
+        if meta is not None and meta.update_to:
+            return name
+    return ""
+
+
+# Development headers: they are only used to compile programs. Their notices come from the
+# source they are built from, and removing them takes the compilers' packages along.
+KEEP_PACKAGES = frozenset({"linux-libc-dev"})
+_KERNEL_NUMBER = re.compile(r"(\d+\.\d+\.\d+-\d+)")
+_STATE_ORDER = (VULNERABLE, OUTDATED, UNCHECKED, OK)
+
+
+def group_kernels(tools: list[Tool], kernel_release: str = "") -> list[Tool]:
+    """Join the packages of each installed kernel into one tool.
+
+    The notices of a kernel apply to all its packages, so counting each package would count the
+    same flaws several times, and twice over while an old and a new kernel are installed.
+    """
+    members: dict[str, list[Tool]] = {}
+    rest: list[Tool] = []
+    for tool in tools:
+        number = _KERNEL_NUMBER.search(tool.name) if _VERSIONED_KERNEL.match(tool.name) else None
+        if number:
+            members.setdefault(number.group(1), []).append(tool)
+        else:
+            rest.append(tool)
+    for number, parts in members.items():
+        lead = max(parts, key=lambda t: (t.cve_count, t.name))
+        state = min((t.state for t in parts), key=_STATE_ORDER.index)
+        rest.append(
+            replace(
+                lead,
+                name=f"linux-{number}",
+                description="",
+                state=state,
+                size_kib=sum(t.size_kib for t in parts),
+                update_via=next((t.update_via for t in parts if t.update_via), ""),
+                protected=True,
+                core=True,
+                urgent=any(t.urgent for t in parts),
+                is_program=any(t.is_program for t in parts),
+                group=tuple(sorted(t.name for t in parts)),
+                kernel_in_use=bool(kernel_release) and number in kernel_release,
+            )
+        )
+    return rest
+
+
 def is_protected(pkg: Package, kernel_release: str = "") -> bool:
     """Packages Gankhi will never offer to remove: the system depends on them."""
     return pkg.priority in SYSTEM_PRIORITIES or is_core(pkg, kernel_release)
@@ -98,6 +162,14 @@ class Tool:
     section: str = ""  # the package's own category in the distribution (net, mail, graphics...)
     update_security: bool = False  # the newer version comes from Ubuntu's security channel
     update_origin: str = ""  # where the newer version comes from, as apt reports it
+    # The package that carries this one's fix when this package itself has no newer version
+    # (a kernel with its version in the name: the fix arrives through the kernel meta-package).
+    update_via: str = ""
+    # A kernel is one item, however many packages it has (image, headers, modules...): these
+    # are the names of the packages grouped here, empty for any other tool.
+    group: tuple[str, ...] = ()
+    keep_hint: bool = False  # removing it is not worth it: the notices shown do not make it risky
+    kernel_in_use: bool = False
     fixable_priority: str = ""  # most urgent priority among the notices an update fixes
     urgent: bool = False  # worth updating before anything else
     origin: str = ""  # where it comes from when that is not Ubuntu ("cloud-sdk", "local")
@@ -119,7 +191,7 @@ def _tier(tool: Tool) -> int:
     if tool.urgent:
         return 0
     if tool.state == VULNERABLE:
-        if tool.fixed_in and tool.update_to:
+        if tool.fixed_in and (tool.update_to or tool.update_via):
             return 3 if tool.unfixable else 2
         return 5
     if tool.state == OUTDATED:
@@ -242,6 +314,10 @@ def build_tools(
             )
         )
     tools = [replace(t, urgent=_is_urgent(t)) for t in tools]
+    by_name = {t.name: t for t in tools}
+    tools = [replace(t, update_via=_update_via(t, by_name)) for t in tools]
+    tools = group_kernels(tools, kernel_release)
+    tools = [replace(t, keep_hint=t.name.split(":")[0] in KEEP_PACKAGES) for t in tools]
     return sorted(
         tools,
         key=lambda t: (

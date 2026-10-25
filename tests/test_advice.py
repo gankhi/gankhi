@@ -110,8 +110,16 @@ def test_the_update_line_depends_on_the_data():
 
 
 def test_a_fixed_notice_keeps_the_update_advice_and_skips_the_conditions():
-    text = " ".join(explain(tool("virtualbox", [ORACLE]), "fixed"))
+    from dataclasses import replace
+
+    updatable = replace(tool("virtualbox", [ORACLE]), update_to="2")
+    text = " ".join(explain(updatable, "fixed"))
     assert "How it can be used" not in text and "Press Update" in text
+
+
+def test_a_fix_that_no_update_of_the_package_carries_does_not_say_press_update():
+    text = " ".join(explain(tool("virtualbox", [ORACLE]), "fixed"))
+    assert "Press Update" not in text and "has no Update button" in text
 
 
 def test_a_program_unknown_to_gankhi_still_gets_precautions_from_its_own_notices():

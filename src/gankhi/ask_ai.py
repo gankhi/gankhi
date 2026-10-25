@@ -145,7 +145,15 @@ _TEXT = {
 
 def how_text(item: Unchecked, lang: str) -> str:
     texts = _TEXT.get(lang, _TEXT["en"])["how"]
-    return texts[item.how].format(source=item.source or "?").replace(" ?", "").replace(", ?", "")
+    seen: list[str] = []
+    for part in (item.source or "").split(","):
+        part = part.strip()
+        if part and part.lower() != "unknown" and part not in seen:
+            seen.append(part)
+    source = ", ".join(seen)
+    if not source and item.how == "apt":
+        return "apt"  # apt did not report the repository: better silence than "unknown"
+    return texts[item.how].format(source=source or "?").replace(" ?", "").replace(", ?", "")
 
 
 def system_phrase(os_name: str, ecosystem: str, lang: str) -> str:

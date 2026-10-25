@@ -350,6 +350,11 @@ TAILS = {
             "Apretá Actualizar en esta fila. Algunas actualizaciones recién se aplican al "
             "cerrar y volver a abrir el programa, o al reiniciar."
         ),
+        "fixed_other": (
+            "Esta fila no tiene botón Actualizar porque tu sistema todavía no ofrece una versión "
+            "nueva de este paquete. Cuando llegue con las actualizaciones del sistema, el aviso "
+            "desaparece solo en el próximo análisis."
+        ),
         "no_fix": (
             "Mientras no haya parche: {todo}. Gankhi vuelve a revisar en cada análisis y la "
             "etiqueta desaparece sola cuando se publique un arreglo."
@@ -400,6 +405,11 @@ TAILS = {
         "fixed": (
             "Press Update on this row. Some updates only take effect after you close and "
             "reopen the program, or after a restart."
+        ),
+        "fixed_other": (
+            "This row has no Update button because your system does not offer a newer version "
+            "of this package yet. Once it arrives with the system updates, the notice goes away "
+            "by itself on the next scan."
         ),
         "no_fix": (
             "While there is no patch: {todo}. Gankhi checks again on every scan and the label "
@@ -715,7 +725,10 @@ def paragraphs(
         elif cves and kind in ("no_fix", "eol", "ext_no_fix"):
             result.append(texts["how_unknown"].format(todo=todo.rstrip(".")))
         else:
-            result.append(texts[kind].format(todo=todo.rstrip(".")))
+            # a fix that no update of this package carries does not say "press Update"
+            has_update = getattr(tool, "update_to", None) or getattr(tool, "update_via", "")
+            tail = "fixed_other" if kind == "fixed" and not has_update else kind
+            result.append(texts[tail].format(todo=todo.rstrip(".")))
     return result
 
 
