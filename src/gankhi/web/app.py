@@ -12,6 +12,7 @@ Defences, in order of what they stop:
 from __future__ import annotations
 
 import hmac
+import math
 import subprocess
 from collections.abc import Callable
 from datetime import datetime
@@ -78,6 +79,42 @@ def feed_date_text(text: str, lang: str) -> str:
     return f"{moment.day} {months[moment.month - 1]} {moment.year}, {moment:%H:%M}"
 
 
+SEVERITY_LEVELS = ("critical", "high", "medium", "low", "unknown")
+
+
+def severity_level(item: Any) -> str:
+    """The bucket the severity ring counts an item in (negligible counts as low)."""
+    priority = item.top_priority
+    if priority == "negligible":
+        return "low"
+    return priority if priority in SEVERITY_LEVELS else "unknown"
+
+
+def origin_label(origin: str) -> str:
+    """The repository an item comes from, without the placeholders apt reports for unknown parts."""
+    seen: list[str] = []
+    for part in (origin or "").split(","):
+        part = part.strip()
+        if part and part.lower() != "unknown" and part not in seen:
+            seen.append(part)
+    return ", ".join(seen)
+
+
+def ring_arc(start: float, end: float) -> str:
+    """SVG path of the arc of the ring from ``start`` to ``end`` (percent, from 12 o'clock).
+
+    Drawn as a real arc: dashes on a circle left a one pixel gap at the seam between two parts.
+    """
+    end = min(end, 99.999)
+
+    def point(percent: float) -> str:
+        angle = 2 * math.pi * percent / 100 - math.pi / 2
+        return f"{70 + 52 * math.cos(angle):.3f} {70 + 52 * math.sin(angle):.3f}"
+
+    large = 1 if end - start > 50 else 0
+    return f"M{point(start)}A52 52 0 {large} 1 {point(end)}"
+
+
 STEP_WEIGHTS = {
     "system": 4,
     "programs": 8,
@@ -88,7 +125,7 @@ STEP_WEIGHTS = {
     "external": 4,
     "analysis": 10,
 }
-FILTERS = ("all", "ok", "outdated", "vulnerable", "unchecked")
+FILTERS = ("all", "ok", "outdated", "vulnerable", "unchecked", "eol")
 MAX_QUERY_CHARS = 100
 MAX_REQUEST_BYTES = 64 * 1024  # the page only ever sends tiny JSON bodies
 CSP = (
@@ -145,6 +182,7 @@ def create_app(
     marks_store = verified_store if verified_store is not None else verified.Store()
     runner_job = executor or ActionJob(on_done=job.start)
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
+    app.jinja_env.globals["ring_arc"] = ring_arc
     app.jinja_env.filters["size"] = paging.human_size
     app.jinja_env.filters["bytes"] = lambda n: paging.human_size(int(n) // 1024)
     app.jinja_env.filters["uptime"] = uptime_text
@@ -225,9 +263,11 @@ def create_app(
 
     def tool_view(result: ScanResult, marks: dict[str, verified.Mark]) -> dict[str, object]:
         """Everything the tools table needs, taken from the query string."""
-        show_all = request.args.get("show") == "all"
         chosen = request.args.get("f", "all")
         chosen = chosen if chosen in FILTERS else "all"
+        # The list of flaws always has all of them, libraries and dependencies included.
+        ticked = request.args.get("show") == "all"
+        show_all = ticked or chosen in ("vulnerable", "outdated", "eol", "unchecked", "ok")
         query = request.args.get("q", "")[:MAX_QUERY_CHARS]
         universe = [t for t in result.tools if t.is_program or show_all]
         wanted = {
@@ -237,46 +277,98 @@ def create_app(
             "unchecked": UNCHECKED,
         }.get(chosen)
         text = query.strip().lower()
+        severity_wanted = request.args.get("sev", "")
+        if chosen != "vulnerable" or severity_wanted not in SEVERITY_LEVELS:
+            severity_wanted = ""
         shown = [
             t
             for t in universe
             if (wanted is None or t.state == wanted)
+            and (chosen != "eol" or t.end_of_support)
             and not (wanted == UNCHECKED and checked_by_user(t, marks))
             and (not text or text in t.name.lower() or text in t.description.lower())
-            and not is_parked(t)  # these have their own card
+            # parked ones have their own card in the views that show it; in the others (for
+            # example out of support) they must be listed here, or the list would come up empty
+            and not (is_parked(t) and chosen in ("all", "vulnerable"))
+            and (not severity_wanted or severity_level(t) == severity_wanted)
         ]
-        parked = [t for t in universe if is_parked(t)]
+        parked = [
+            t
+            for t in universe
+            if is_parked(t) and (not severity_wanted or severity_level(t) == severity_wanted)
+        ]
         kernel = [r for r in result.risks if r.kind == RUNNING_KERNEL]
         # The headline numbers add up everything Gankhi checked: system programs and also the
         # Python and npm packages. (Snap and Flatpak apps are not checked, so they are not
         # counted as "up to date".) The filter chips keep counting the programs table only.
         outside = len(result.external)
         outside_bad = sum(1 for p in result.external if p.vulnerable)
-        by_user = sum(1 for t in universe if checked_by_user(t, marks))
+        # The headline always counts the libraries and dependencies too, whatever the table shows:
+        # the checkbox only changes the list, never how many flaws the computer has.
+        everything = result.tools
+        by_user = sum(1 for t in everything if checked_by_user(t, marks))
         total_all = (
-            len(universe) + outside - by_user
+            len(everything) + outside - by_user
         )  # the ones checked by hand have their own card
-        total_bad = sum(1 for t in universe if t.state == VULNERABLE) + outside_bad
-        total_old = sum(1 for t in universe if t.state == OUTDATED)
-        total_unchecked = sum(1 for t in universe if t.state == UNCHECKED) - by_user
+        eol_total = sum(1 for t in everything if t.end_of_support)
+        problems = (
+            sum(1 for t in everything if t.state in (VULNERABLE, OUTDATED) or t.end_of_support)
+            + outside_bad
+        )
+        parked_total = sum(1 for t in everything if is_parked(t))
+        support = {"fine": outside, "outdated": 0, "eol": 0, "unchecked": 0}
+        for item in everything:
+            if checked_by_user(item, marks):
+                continue  # these have their own card
+            if item.end_of_support:
+                support["eol"] += 1
+            elif item.state == OUTDATED:
+                support["outdated"] += 1
+            elif item.state == UNCHECKED:
+                support["unchecked"] += 1
+            else:
+                support["fine"] += 1
+        severity = {key: 0 for key in ("critical", "high", "medium", "low", "unknown")}
+        flawed = [t for t in everything if t.state == VULNERABLE]
+        flawed += [p for p in result.external if p.vulnerable]
+        for item in flawed:
+            severity[severity_level(item)] += 1
+        bad_programs = sum(1 for t in everything if t.state == VULNERABLE and t.is_program)
+        bad_libraries = sum(1 for t in everything if t.state == VULNERABLE and not t.is_program)
+        total_bad = bad_programs + bad_libraries + outside_bad
+        total_old = sum(1 for t in everything if t.state == OUTDATED)
+        total_unchecked = sum(1 for t in everything if t.state == UNCHECKED) - by_user
         return {
+            "severity_filter": severity_wanted,
             "parked": parked,
             "parked_shown": parked if chosen in ("all", "vulnerable") else [],
             "totals": {
                 "all": total_all,
                 "outdated": total_old,
                 "vulnerable": total_bad,
+                "severity": severity,
+                "support": support,
+                "eol": eol_total,
+                "hidden_libraries": len(everything) - len(universe),
+                "problems": problems,
+                "parked_all": parked_total,
+                "vuln_programs": bad_programs,
+                "vuln_libraries": bad_libraries,
+                "vuln_outside": outside_bad,
+                "ok_outside": outside - outside_bad,
                 "ok": total_all - total_old - total_bad - total_unchecked,
                 "unchecked": total_unchecked,
                 "outside": outside,
             },
             "page": paging.paginate(shown, request.args.get("page", 1, type=int)),
+            # each chip counts what its list shows, so they match the numbers in the rings
             "counts": {
-                "all": len(universe),
-                "outdated": sum(1 for t in universe if t.state == OUTDATED),
-                "vulnerable": sum(1 for t in universe if t.state == VULNERABLE),
-                "ok": sum(1 for t in universe if t.state == OK),
+                "all": len([t for t in everything if t.is_program or ticked]),
+                "outdated": total_old,
+                "vulnerable": bad_programs + bad_libraries,
+                "ok": sum(1 for t in everything if t.state == OK),
                 "unchecked": total_unchecked,
+                "eol": sum(1 for t in universe if t.end_of_support),
             },
             "filter": chosen,
             "filters": FILTERS,
@@ -331,6 +423,7 @@ def create_app(
             ],
             "tool_checked": lambda tool: checked_by_user(tool, marks),
             "clean": ask_ai.clean,
+            "origin_label": origin_label,
             "pending_how": {i.name: i.how for i in pending},
             "change_running": change.get("state") == CHANGE_RUNNING,
             "change_command": change.get("command", ""),

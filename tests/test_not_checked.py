@@ -140,8 +140,8 @@ def test_the_not_checked_programs_do_not_count_as_up_to_date():
     client.get("/", base_url=BASE)
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
-    assert "1 not checked" in html  # the legend of the ring
-    assert 'class="seg dim"' in html
+    assert "1 not checked" in html  # the legend of the updates and support ring
+    assert 'class="seg dim"' in html  # and it has its own part in that ring, not counted as fine
 
 
 def test_the_assistant_and_the_report_say_what_was_not_checked():
@@ -157,7 +157,7 @@ def test_each_part_of_the_programs_ring_opens_its_own_list():
     client.get("/", base_url=BASE)
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
-    for filter_name in ("ok", "outdated", "unchecked"):
+    for filter_name in ("vulnerable", "outdated", "eol", "unchecked"):
         assert f'href="/?f={filter_name}#tools"' in html
     only = client.get("/?f=unchecked", base_url=BASE).get_data(as_text=True)
     assert "<strong>gcloud</strong>" in only and "<strong>vim</strong>" not in only
@@ -328,3 +328,14 @@ def test_a_change_that_is_running_is_shown_on_the_main_page_with_what_it_does():
     assert 'id="change-banner"' not in main_page(FakeExecutor())  # nothing running: no banner
     script = (Path(__file__).parent.parent / "src/gankhi/web/static/app.js").read_text()
     assert "function followOther()" in script and 'getElementById("change-banner")' in script
+
+
+def test_how_text_hides_unknown_repository_parts():
+    from gankhi import ask_ai
+
+    def item(source):
+        return ask_ai.Unchecked(name="x", version="1", how="apt", source=source)
+
+    assert ask_ai.how_text(item("unknown,unknown"), "es") == "apt"
+    assert ask_ai.how_text(item("unknown"), "en") == "apt"
+    assert ask_ai.how_text(item("stable,unknown"), "es") == "apt, repositorio stable"

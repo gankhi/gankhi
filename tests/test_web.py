@@ -223,7 +223,9 @@ def test_filters_narrow_the_tools_table():
     assert 'class="tag info">Update<' in outdated
     up_to_date = client.get("/?f=ok", base_url=BASE).get_data(as_text=True)
     assert "<strong>git</strong>" in up_to_date and "<strong>vim</strong>" not in up_to_date
-    assert "<strong>virtualbox</strong>" not in up_to_date and "Up to date · 1" in up_to_date
+    assert "<strong>virtualbox</strong>" not in up_to_date
+    # the chip counts what the list shows, libraries and dependencies included
+    assert "libfoo1" in up_to_date and "Up to date · 2" in up_to_date
     assert "libfoo1" in client.get("/?show=all", base_url=BASE).get_data(as_text=True)
     found = client.get("/?q=version+control", base_url=BASE).get_data(as_text=True)
     assert "<strong>git</strong>" in found and "<strong>vim</strong>" not in found
@@ -421,8 +423,8 @@ def test_page_draws_the_ring_charts_and_folds_extra_rows():
     client.get("/", base_url=BASE)
     wait_until_done(client)
     html = client.get("/?show=all", base_url=BASE).get_data(as_text=True)
-    assert html.count('class="ring"') == 3  # disk, RAM, programs up to date
-    assert "stroke-dasharray" in html and "style=" not in html  # CSP: no inline styles
+    assert html.count('class="ring"') == 4  # disk, RAM, vulnerabilities, updates and support
+    assert '<path class="seg' in html and "style=" not in html  # CSP: no inline styles
     assert 'id="more-tools"' in html and 'class="more"' in html  # rows beyond the first few fold
 
 
@@ -477,7 +479,9 @@ def test_rows_explain_in_plain_words_what_to_do():
     client.get("/", base_url=BASE)
     wait_until_done(client)
     html = client.get("/", base_url=BASE).get_data(as_text=True)
-    assert "Fixed in 2.0 with the distribution" in html  # openssl has a fix
+    assert (
+        "Fixed in 2.0, but your system offers no newer version" in html
+    )  # a fix without an update
     assert "No fix yet" in html and "no patch published for this yet" in html  # virtualbox has none
 
 
@@ -701,7 +705,7 @@ def test_the_fix_labels_open_an_explanation_with_what_to_keep_in_mind():
     html = client.get("/", base_url=BASE).get_data(as_text=True)
     # each label is the summary of a details element: a keyboard-friendly button, no script
     assert '<details class="note"><summary><span class="tag ok">' in html
-    assert 'class="patchline bad"' in html  # no fix: said under the severity badge
+    assert 'class="infotag bad"' in html  # no fix: said under the severity badge
     assert "A virtual machine isolates another system" in html  # virtualbox, not a generic text
     assert "encrypts the connections of many programs" in html  # openssl
 
@@ -1357,3 +1361,28 @@ def test_what_uses_a_tool_is_not_offered_for_actions_that_are_not_about_one_tool
     for action in ("all", "clean"):
         html = client.get(f"/preview?action={action}", base_url=BASE).get_data(as_text=True)
         assert "apt-cache rdepends" not in html
+
+
+def test_origin_label_hides_the_placeholders_apt_reports_for_unknown_parts():
+    from gankhi.web.app import origin_label
+
+    assert origin_label("unknown,unknown") == ""
+    assert origin_label("") == ""
+    assert origin_label("Linux Lite,unknown") == "Linux Lite"
+    assert origin_label("PPA,PPA") == "PPA"
+
+
+def test_recoverable_space_is_a_short_row_with_one_button_per_line():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    client.get("/lang/es", base_url=BASE)
+    html = client.get("/", base_url=BASE).get_data(as_text=True)
+    box = html[
+        html.index('data-explain="reclaim"') : html.index(
+            "</section>", html.index('data-explain="reclaim"')
+        )
+    ]
+    assert ">Borrar caché</a>" in box and "Quitar kernels viejos</a>" in box
+    assert "(1.9 GiB)" not in box  # the button says only what it does
+    assert html.index('data-explain="reclaim"') > html.index('data-explain="support"')

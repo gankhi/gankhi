@@ -21,11 +21,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_detail": "{used} used, {free} free of {total}",
         "ram": "Memory (RAM)",
         "ram_detail": "{used} in use, {free} free",
-        "programs": "Programs and packages up to date",
-        "totals_note": (
-            'Includes {n} Python and npm packages. For those, "up to date" means no known '
-            "security notice: Gankhi does not check whether a newer version exists."
-        ),
+        "programs": "Vulnerabilities",
+        "support_title": "Updates and support",
+        "ring_total": "in total",
+        "sup_fine": "{n} up to date and supported",
+        "sup_fine_one": "1 up to date and supported",
+        "sup_old": "{n} outdated, still supported",
+        "sup_old_one": "1 outdated, still supported",
+        "sup_eol": "{n} without support",
+        "totals_note": "Includes {n} Python and npm packages.",
         "programs_detail": "{vuln} with vulnerabilities, {old} outdated",
         "reclaim": "Recoverable space",
         "reclaim_hint": "Review before cleaning. Nothing is removed from here yet.",
@@ -45,6 +49,10 @@ TEXTS: dict[str, dict[str, str]] = {
         "unchecked_from": "Not from Ubuntu: {origin}",
         "leg_unchecked": "{n} not checked",
         "unchk_title": "Not checked",
+        "unchk_sub_total": (
+            "{total} not checked in total; {n} of them come from outside Ubuntu. Gankhi has no "
+            "list of notices to compare them with, so it cannot say whether they are safe."
+        ),
         "unchk_sub": (
             "{n} from outside Ubuntu. Gankhi has no list of notices to compare them with, "
             "so it cannot say whether they are safe."
@@ -112,6 +120,18 @@ TEXTS: dict[str, dict[str, str]] = {
         "fixed_in": "Fixed in {version}",
         "cve_split": "{fixed} fixed in {version} · {open} with no fix yet",
         "no_fix_yet": "no fix published yet",
+        "hint_fixed_other": (
+            "Fixed in {version}, but your system offers no newer version of this package yet."
+        ),
+        "hint_fixed_part_other": (
+            "{n} notices are fixed in {version}, but your system offers no newer version of this "
+            "package yet. The other {m} have no patch."
+        ),
+        "more_fixed_other": (
+            "What to keep in mind: the fix exists, but it has not reached your system's sources "
+            "for this package. Gankhi checks again on every scan and this label changes by itself "
+            "once the update arrives."
+        ),
         "hint_fixed": "Fixed in {version} with the distribution's patch. Update to resolve it.",
         "tag_fixed": "Fix available",
         "tag_no_fix": "No fix yet",
@@ -184,6 +204,23 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "prev_clean_name": "emptying the cache",
         "prev_run_note_clean": "To do it from a terminal instead, copy this line:",
+        "kernel_name": "Kernel {ver}",
+        "kernel_in_use": "in use",
+        "kernel_not_in_use": "not in use (old)",
+        "kernel_packages": "{n} packages",
+        "tag_keep": "Better not to remove it",
+        "hint_keep": (
+            "Only used to compile programs; the notices it shows come from the kernel source."
+        ),
+        "more_keep": (
+            "Removing it also removes the compilers' packages that depend on it, and it does "
+            "not make your system safer. Keep it installed and update it when a new version "
+            "comes."
+        ),
+        "btn_update_via": "The fix arrives by updating {pkg}",
+        "btn_clean_short": "Empty cache",
+        "btn_kernels_short": "Remove old kernels",
+        "btn_orphans_short": "Remove unused packages",
         "btn_clean_cache": "Empty apt's download cache ({size})",
         "blocked_nothing_to_clean": "The download cache is already empty.",
         "confirm_clean": "Yes, empty the cache",
@@ -591,6 +628,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "ring_used": "used",
         "ring_in_use": "in use",
         "ring_ok": "up to date",
+        "ring_problems": "total",
+        "leg_vuln_total_one": "1 vulnerability",
+        "leg_outdated_one": "1 outdated",
+        "sevn_critical_one": "1 critical",
+        "sevn_high_one": "1 high",
+        "sevn_medium_one": "1 medium",
+        "sevn_low_one": "1 low",
+        "sevn_unknown_one": "1 unclassified",
+        "leg_vuln_total": "{n} vulnerabilities",
+        "leg_outdated_n": "{n} outdated",
+        "sevn_critical": "{n} critical",
+        "sevn_high": "{n} high",
+        "sevn_medium": "{n} medium",
+        "sevn_low": "{n} low",
+        "sevn_unknown": "{n} unclassified",
+        "leg_eol": "{n} no support",
+        "leg_parked_of": "{n} with no fix yet",
         "show_more": "Show {n} more",
         "show_less": "Show less",
         "reclaim_total": "Review before cleaning",
@@ -603,6 +657,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "last_scan_short": "last scan",
         "x_of_y_ok": "{ok} of {all} up to date",
         "pill_vuln": "{n} with vulnerabilities",
+        "vuln_split_programs": "{n} programs",
+        "vuln_split_libraries": "{n} libraries and dependencies",
+        "vuln_split_outside": "{n} Python and npm packages",
         "pill_vuln_open": "See the list of what has vulnerabilities",
         "leg_open": "See the list",
         "ok_outside_note": (
@@ -632,7 +689,24 @@ TEXTS: dict[str, dict[str, str]] = {
         "leg_old": "{n} outdated",
         "leg_vuln": "{n} with vulnerabilities",
         "col_origin": "Origin",
+        "card_plus_outside": "+{n} Python and npm",
+        "sevn_critical_only": "Critical only",
+        "sevn_high_only": "High only",
+        "sevn_medium_only": "Medium only",
+        "sevn_low_only": "Low only",
+        "sevn_unknown_only": "Unclassified only",
+        "sev_filter_clear": "Show all",
+        "nav_label": "Sections",
+        "nav_tools": "Installed tools",
+        "nav_apps": "Apps",
+        "nav_ext": "Python and npm",
+        "nav_unchecked": "Not checked",
+        "nav_downloads": "Other downloads",
+        "nav_downloads_hint": "(PDF, .zip, …)",
         "tools_sub": "{n} programs · what an update fully fixes first",
+        "tools_extra": "The total at the top also counts {parts}.",
+        "tools_extra_outside": "{n} Python and npm packages (in their own section below)",
+        "tools_extra_hidden": "{n} libraries and dependencies (tick the box to list them)",
         "search_label": "Search tool",
         "search_ph": "name or description",
         "prompt_cmd": "gankhi --summary",
@@ -653,11 +727,15 @@ TEXTS: dict[str, dict[str, str]] = {
         "disk_detail": "{used} ocupados, {free} libres de {total}",
         "ram": "Memoria RAM",
         "ram_detail": "{used} en uso, {free} libres",
-        "programs": "Programas y paquetes actualizados",
-        "totals_note": (
-            'Incluye {n} paquetes de Python y npm. En esos, "actualizado" significa sin avisos de '
-            "seguridad conocidos: Gankhi no revisa si existe una versión más nueva."
-        ),
+        "programs": "Vulnerabilidades",
+        "support_title": "Actualizaciones y soporte",
+        "ring_total": "en total",
+        "sup_fine": "{n} actualizados y con soporte",
+        "sup_fine_one": "1 actualizado y con soporte",
+        "sup_old": "{n} desactualizados con soporte",
+        "sup_old_one": "1 desactualizado con soporte",
+        "sup_eol": "{n} sin soporte",
+        "totals_note": "Incluye {n} paquetes de Python y npm.",
         "programs_detail": "{vuln} con vulnerabilidades, {old} desactualizados",
         "reclaim": "Espacio recuperable",
         "reclaim_hint": "Revisar antes de limpiar. Todavía no se quita nada desde acá.",
@@ -671,12 +749,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "search": "Buscar herramienta",
         "f_all": "Todas",
         "f_ok": "Actualizado",
-        "f_outdated": "Desactualizadas",
+        "f_outdated": "Desactualizados",
         "f_unchecked": "Sin revisar",
         "state_unchecked": "Sin revisar",
         "unchecked_from": "No es de Ubuntu: {origin}",
         "leg_unchecked": "{n} sin revisar",
         "unchk_title": "Sin revisar",
+        "unchk_sub_total": (
+            "{total} sin revisar en total; {n} de ellos vienen de afuera de Ubuntu. Gankhi no "
+            "tiene una lista de avisos para compararlos, así que no puede decir si son seguros."
+        ),
         "unchk_sub": (
             "{n} vienen de afuera de Ubuntu. Gankhi no tiene una lista de avisos para "
             "compararlos, así que no puede decir si son seguros."
@@ -738,13 +820,26 @@ TEXTS: dict[str, dict[str, str]] = {
         "col_state": "Estado",
         "col_vuln": "Vulnerabilidades",
         "state_ok": "Actualizado",
-        "state_outdated": "Desactualizada",
+        "state_outdated": "Desactualizado",
         "state_vulnerable": "Vulnerabilidad",
         "cve_summary": "CVE: {n}",
         "cve_more": "Hay {n} más que no se listan acá para no cargar la página.",
         "fixed_in": "Corregida en {version}",
         "cve_split": "{fixed} se corrigen en {version} · {open} sin arreglo",
         "no_fix_yet": "sin arreglo publicado",
+        "hint_fixed_other": (
+            "Corregida en {version}, pero tu sistema todavía no ofrece una versión nueva de este "
+            "paquete."
+        ),
+        "hint_fixed_part_other": (
+            "{n} avisos se corrigen en {version}, pero tu sistema todavía no ofrece una versión "
+            "nueva de este paquete. Los otros {m} no tienen parche."
+        ),
+        "more_fixed_other": (
+            "Qué tener en cuenta: el arreglo existe, pero todavía no llegó a los orígenes de tu "
+            "sistema para este paquete. Gankhi vuelve a revisar en cada análisis y esta etiqueta "
+            "cambia sola cuando llegue la actualización."
+        ),
         "hint_fixed": (
             "Corregida en {version} con parche de la distribución. Actualizá para resolverla."
         ),
@@ -822,6 +917,24 @@ TEXTS: dict[str, dict[str, str]] = {
         ),
         "prev_clean_name": "vaciar la caché",
         "prev_run_note_clean": "Para hacerlo desde una terminal, copiá esta línea:",
+        "kernel_name": "Kernel {ver}",
+        "kernel_in_use": "en uso",
+        "kernel_not_in_use": "no está en uso (viejo)",
+        "kernel_packages": "{n} paquetes",
+        "tag_keep": "Se recomienda no quitarlo",
+        "hint_keep": (
+            "Solo se usa para compilar programas; los avisos que muestra vienen del código del "
+            "kernel."
+        ),
+        "more_keep": (
+            "Quitarlo también quita los paquetes de compilación que dependen de él, y no hace "
+            "que tu sistema sea más seguro. Dejalo instalado y actualizalo cuando haya una "
+            "versión nueva."
+        ),
+        "btn_update_via": "El arreglo llega al actualizar {pkg}",
+        "btn_clean_short": "Borrar caché",
+        "btn_kernels_short": "Quitar kernels viejos",
+        "btn_orphans_short": "Quitar paquetes sin uso",
         "btn_clean_cache": "Vaciar la caché de descargas de apt ({size})",
         "blocked_nothing_to_clean": "La caché de descargas ya está vacía.",
         "confirm_clean": "Sí, vaciar la caché",
@@ -1246,6 +1359,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "ring_used": "ocupado",
         "ring_in_use": "en uso",
         "ring_ok": "actualizados",
+        "ring_problems": "total",
+        "leg_vuln_total_one": "1 vulnerabilidad",
+        "leg_outdated_one": "1 desactualizado",
+        "sevn_critical_one": "1 crítica",
+        "sevn_high_one": "1 alta",
+        "sevn_medium_one": "1 media",
+        "sevn_low_one": "1 baja",
+        "sevn_unknown_one": "1 sin clasificar",
+        "leg_vuln_total": "{n} vulnerabilidades",
+        "leg_outdated_n": "{n} desactualizados",
+        "sevn_critical": "{n} críticas",
+        "sevn_high": "{n} altas",
+        "sevn_medium": "{n} medias",
+        "sevn_low": "{n} bajas",
+        "sevn_unknown": "{n} sin clasificar",
+        "leg_eol": "{n} sin soporte",
+        "leg_parked_of": "{n} sin arreglo todavía",
         "show_more": "Ver {n} más",
         "show_less": "Ver menos",
         "reclaim_total": "Revisar antes de limpiar",
@@ -1258,6 +1388,9 @@ TEXTS: dict[str, dict[str, str]] = {
         "last_scan_short": "último escaneo",
         "x_of_y_ok": "{ok} de {all} actualizados",
         "pill_vuln": "{n} con vulnerabilidades",
+        "vuln_split_programs": "{n} programas",
+        "vuln_split_libraries": "{n} bibliotecas y dependencias",
+        "vuln_split_outside": "{n} paquetes de Python y npm",
         "pill_vuln_open": "Ver la lista de lo que tiene vulnerabilidades",
         "leg_open": "Ver la lista",
         "ok_outside_note": (
@@ -1288,7 +1421,24 @@ TEXTS: dict[str, dict[str, str]] = {
         "leg_old": "{n} desactualizados",
         "leg_vuln": "{n} con vulnerabilidades",
         "col_origin": "Origen",
+        "card_plus_outside": "+{n} Python y npm",
+        "sevn_critical_only": "Solo críticas",
+        "sevn_high_only": "Solo altas",
+        "sevn_medium_only": "Solo medias",
+        "sevn_low_only": "Solo bajas",
+        "sevn_unknown_only": "Solo sin clasificar",
+        "sev_filter_clear": "Ver todas",
+        "nav_label": "Secciones",
+        "nav_tools": "Herramientas instaladas",
+        "nav_apps": "Apps",
+        "nav_ext": "Python y npm",
+        "nav_unchecked": "Sin revisar",
+        "nav_downloads": "Otras descargas",
+        "nav_downloads_hint": "(PDF, .zip, …)",
         "tools_sub": "{n} programas · primero lo que una actualización arregla del todo",
+        "tools_extra": "El total de arriba cuenta también {parts}.",
+        "tools_extra_outside": "{n} paquetes de Python y npm (en su propia sección, más abajo)",
+        "tools_extra_hidden": "{n} bibliotecas y dependencias (tildá la casilla para verlas)",
         "search_label": "Buscar herramienta",
         "search_ph": "nombre o descripción",
         "prompt_cmd": "gankhi --resumen",

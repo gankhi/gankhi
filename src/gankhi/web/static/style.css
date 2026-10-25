@@ -553,3 +553,279 @@ table.aligned.tools td.wrap .small { display: inline-block; margin-top: 4px; col
 .patchline.bad { color: #f87171; }
 .patchline.ok { color: #34d399; }
 table.aligned.tools .sev { font-size: 1.05rem; padding: 8px 16px; border-radius: 8px; }
+
+/* mensaje de "terminó bien": texto claro con marca verde, no todo verde */
+.run-status.ok { color: var(--text); background: var(--row); border-color: var(--line); border-left: 4px solid var(--green); }
+.run-status.ok::before { color: var(--green); }
+.vuln-split { font-size: .95rem; flex-basis: 100%; }
+
+/* avisos informativos bajo la etiqueta de vulnerabilidad: enmarcados, uno debajo del otro */
+.infotags { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 8px; }
+.infotag { display: inline-block; border: 1px solid; border-radius: 6px; padding: 5px 12px; font-size: .92rem; font-weight: 600; white-space: nowrap; background: transparent; }
+.infotag.bad { color: #f87171; border-color: #f87171; }
+.infotag.ok { color: #34d399; border-color: #34d399; }
+.infotag.warn { color: var(--amber); border-color: var(--amber); }
+
+/* torta de vulnerabilidades: un tono por origen (programas, bibliotecas, Python y npm) */
+.ring .seg.bad { stroke: #f87171; }
+.ring .seg.bad2 { stroke: #be123c; }
+.ring .seg.bad3 { stroke: #e879f9; }
+.sw.bad { background: #f87171; }
+.sw.bad2 { background: #be123c; }
+.sw.bad3 { background: #e879f9; }
+.legend li.sub { padding-left: 18px; font-size: 1.05rem; }
+/* columnas de la tabla de herramientas: más aire para estado y vulnerabilidades */
+table.aligned col.c-name { width: 20%; }
+table.aligned col.c-state { width: 14%; }
+table.aligned col.c-vuln { width: 16%; }
+table.aligned col.c-last { width: 19%; }
+
+/* todos los recuadros de la columna Vulnerabilidades: mismo ancho y mismo alto */
+table.aligned.tools .sev, .infotag { box-sizing: border-box; width: 190px; max-width: 100%; height: 40px; display: inline-flex; align-items: center; justify-content: center; padding: 0 10px; font-size: .95rem; white-space: nowrap; }
+table.aligned.tools .sev { font-size: 1rem; border-radius: 6px; }
+.infotag { border-radius: 6px; }
+
+/* torta de lo que hay que atender: vulnerabilidades, desactualizados, sin soporte */
+.ring .seg.old { stroke: #fbbf24; }
+.sw.old { background: #fbbf24; }
+[data-explain="programs"] .ring .seg.warn { stroke: #f97316; }
+[data-explain="programs"] .sw.warn { background: #f97316; }
+.ring-cap { max-width: 100%; }
+.legend li.sub.note { font-size: .98rem; color: var(--muted); }
+.legend li.sub.note a { color: inherit; }
+.legend li.note { color: var(--muted); font-size: 1rem; }
+.legend li.note a { color: inherit; }
+
+/* torta "Importante": vulnerabilidades por gravedad, desactualizaciones y sin soporte */
+[data-explain="programs"] .ring .seg.sev-critical, .sw.sev-critical { stroke: #dc2626; background: #dc2626; }
+[data-explain="programs"] .ring .seg.sev-high, .sw.sev-high { stroke: #ef6a1a; background: #ef6a1a; }
+[data-explain="programs"] .ring .seg.sev-medium, .sw.sev-medium { stroke: #e8b30e; background: #e8b30e; }
+[data-explain="programs"] .ring .seg.sev-low, .sw.sev-low { stroke: #8b909c; background: #8b909c; }
+[data-explain="programs"] .ring .seg.sev-unknown, .sw.sev-unknown { stroke: #5b5f6a; background: #5b5f6a; }
+[data-explain="programs"] .ring .seg.warn { stroke: #a78bfa; }
+[data-explain="programs"] .sw.warn { background: #a78bfa; }
+[data-explain="programs"] .ring .seg.old { stroke: #2dd4bf; }
+[data-explain="programs"] .sw.old { background: #2dd4bf; }
+.ringcard[data-explain="programs"] .ring { width: 200px; height: 200px; }
+[data-explain="programs"] .ring-cap { font-size: 11.5px; }
+
+/* torta de actualizaciones y soporte */
+[data-explain="support"] .ring .seg.sup-fine, .sw.sup-fine { stroke: #10b981; background: #10b981; }
+[data-explain="support"] .ring .seg.sup-old, .sw.sup-old { stroke: #a78bfa; background: #a78bfa; }
+[data-explain="support"] .ring .seg.sup-eol, .sw.sup-eol { stroke: #fbbf24; background: #fbbf24; }
+[data-explain="support"] .ring .seg.dim { stroke: #6b7080; }
+[data-explain="support"] .ring-cap { font-size: 12px; }
+
+/* gravedad con la convención de siempre: rojo crítica, naranja alta, amarillo media, verde baja, gris sin dato */
+.sev-critical { background: #dc2626; color: #fff; }
+.sev-high { background: #ef6a1a; color: #fff; }
+.sev-medium { background: #eab308; color: #1c1500; text-shadow: none; }
+.sev-low, .sev-negligible { background: #16a34a; color: #fff; }
+[data-explain="programs"] .ring .seg.sev-medium, .sw.sev-medium { stroke: #eab308; background: #eab308; }
+[data-explain="programs"] .ring .seg.sev-low, .sw.sev-low { stroke: #16a34a; background: #16a34a; }
+
+/* ===== Un solo estilo de recuadro: solo línea y texto, misma fuente y mismo tamaño, cada uno con su color ===== */
+.btn, button.ghost, button.ask-row, button.verify-row, .state, .pill, .infotag,
+td.actions .btn, td.actions button, .status .actions .btn, .status .actions button, .card.wide .actions .btn {
+  font: 600 1rem var(--sans); letter-spacing: 0; text-shadow: none; box-shadow: none;
+  background: transparent; border: 1px solid currentColor; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; text-decoration: none;
+}
+.btn:hover, button.ghost:hover, button.ask-row:hover, button.verify-row:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+/* colores */
+.btn, button.ghost, button.ask-row, button.verify-row { color: #e5e7eb; border-color: #6b6f7a; }
+.btn.primary, .btn.primary.big { color: #34d399; border-color: #34d399; background: transparent; }
+.btn.primary:hover, .btn.primary.big:hover { background: color-mix(in srgb, #34d399 14%, transparent); color: #34d399; }
+.btn.danger { color: #f87171; border-color: #f87171; }
+.btn.danger:hover { background: color-mix(in srgb, #f87171 14%, transparent); color: #f87171; }
+.btn.off { color: #6b6f7a; border-color: #4a4d57; }
+.pill.bad { color: #f87171; border-color: #f87171; background: transparent; }
+.state.good { color: #34d399; border-color: #34d399; }
+.state.warn { color: #fbbf24; border-color: #fbbf24; }
+.state.dim { color: #9a9ea9; border-color: #6b6f7a; }
+.state.latest { color: #d4d7dd; border: 1px solid #6b6f7a; background: transparent; }
+.state.latest .dot { background: #8b909c; }
+/* tamaños: la misma letra en todos; el alto se adapta a cada sección */
+.btn, button.ask-row, button.verify-row, td.actions .btn, td.actions button { min-height: 42px; padding: 0 18px; }
+.state, .infotag, .pill { min-height: 36px; padding: 0 14px; }
+.status .actions .btn, .status .actions button { min-height: 48px; padding: 0 24px; }
+.status .pill { min-height: 40px; padding: 0 18px; }
+.card.wide .actions .btn { min-height: 46px; padding: 0 22px; }
+.infotag { width: 190px; height: 40px; padding: 0 10px; }
+/* etiquetas desplegables (Con arreglo, Actualización...): misma letra y tamaño que el resto */
+.tag { font: 600 1rem var(--sans); letter-spacing: 0; min-height: 36px; padding: 0 14px; display: inline-flex; align-items: center; background: transparent; border: 1px solid currentColor; border-radius: 6px; }
+.tag.ok { color: #34d399; }
+.tag.bad { color: #f87171; }
+.tag.old { color: #fbbf24; }
+
+/* side menu: one panel at a time */
+.workspace { display: flex; gap: 16px; align-items: flex-start; }
+.sidenav { flex: 0 0 230px; position: sticky; top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.sidenav a { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); text-decoration: none; font-size: 1rem; }
+.sidenav a small { display: block; font-size: .8rem; opacity: .8; }
+.sidenav a b { font-size: .8rem; font-weight: 600; border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; flex: none; }
+.sidenav a:hover, .sidenav a:focus-visible { color: var(--text); }
+.sidenav a[aria-current="true"] { color: var(--text); border-color: var(--text); box-shadow: inset 4px 0 0 var(--text); font-weight: 600; }
+.panels { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+html[data-tab="tools"] .panels > [data-tab]:not([data-tab="tools"]),
+html[data-tab="apps"] .panels > [data-tab]:not([data-tab="apps"]),
+html[data-tab="unchecked"] .panels > [data-tab]:not([data-tab="unchecked"]),
+html[data-tab="ext"] .panels > [data-tab]:not([data-tab="ext"]),
+html[data-tab="downloads"] .panels > [data-tab]:not([data-tab="downloads"]) { display: none; }
+@media (max-width: 800px) {
+  .workspace { flex-direction: column; }
+  .sidenav { position: static; flex: none; width: 100%; flex-direction: row; flex-wrap: wrap; }
+}
+
+/* compact header: one row of facts and status, one row of five cards */
+.head { padding: 12px 20px; }
+.headrow { margin-bottom: 8px; }
+.headgrid { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
+.facts { flex: 1 1 520px; flex-wrap: nowrap; gap: 0; }
+.facts div { padding: 0 20px; border-left: 2px solid var(--line); min-width: 0; }
+.facts div:first-child { padding-left: 0; border-left: 0; }
+.facts dd, .facts dd.sub { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.facts dd { font-weight: 700; }
+.facts dd.sub { font-size: .85rem; }
+.facts dt { font-size: .72rem; }
+.status { flex: 1 1 560px; min-width: 0; flex-direction: row; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px 14px; }
+.statusrow { display: grid; grid-template-columns: auto auto; justify-content: start; align-items: center; gap: 4px 12px; }
+.statusrow strong { font-size: 1.25rem; }
+.statusrow .pill { font-size: .95rem; padding: 3px 14px; }
+.statusrow .vuln-split { grid-column: 1 / -1; justify-self: end; }
+.status .actions { margin-top: 0; gap: 8px; flex-wrap: nowrap; }
+.status .actions .btn, .status .actions button { min-height: 38px; padding: 0 16px; font-size: .95rem; border-radius: 8px; gap: 8px; }
+.status .actions svg { width: 16px; height: 16px; }
+.status .warnline, .status > .small { flex-basis: 100%; text-align: right; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 12px; }
+.cards .card, .cards .card.wide { flex: none; padding: 12px 14px; gap: 6px; min-width: 0; }
+.cards h3 { font-size: .95rem; }
+.cardtop { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.cardnote { font-size: .78rem; color: var(--muted); white-space: nowrap; text-decoration: none; }
+a.cardnote:hover, a.cardnote:focus-visible { text-decoration: underline; }
+.cards .ringrow { gap: 12px; }
+.cards .ring, .cards .ringcard:not([data-explain="programs"]) .ring { width: 88px; height: 88px; }
+.cards .legend { font-size: .85rem; gap: 6px; }
+.cards .legend li.sub { font-size: .85rem; }
+.cards .legend .sw, .cards .legend i { width: 10px; height: 10px; }
+.cards .small { font-size: .78rem; }
+.cards .bigsize { font-size: 1.15rem; }
+.cards .mini { font-size: .85rem; }
+.cards .card.wide .actions .btn { min-height: 34px; font-size: .85rem; padding: 0 12px; border-radius: 8px; }
+.cards .card.wide .actions { gap: 8px; margin-top: 4px; }
+@media (max-width: 800px) { .facts { flex-wrap: wrap; gap: 10px 20px; } .facts div { border-left: 0; padding: 0; } .status { justify-content: flex-start; } .status .actions { flex-wrap: wrap; } }
+.head dl.facts { display: flex; margin: 0; padding: 0; border-top: 0; font-size: inherit; gap: 0; }
+.head dl.facts div { display: flex; flex-direction: column; }
+.cards .ringcard .ring, .cards .ringcard[data-explain="programs"] .ring { width: 88px; height: 88px; }
+.cards .ringcard .ring-big { font-size: 28px; }
+.cards .mini li, .cards .mini li span, .cards .mini li b { font-size: .85rem; }
+.cards .card.wide .actions { flex-direction: column; align-items: stretch; }
+.cards .card.wide .actions .btn { white-space: normal; text-align: center; height: auto; padding: 6px 12px; }
+.cards .legend li { white-space: normal; }
+.cards .small { font-size: .78rem; }
+@media (min-width: 1200px) {
+  .headgrid { flex-wrap: nowrap; }
+  .head dl.facts { flex: 1 1 0; min-width: 0; }
+  .head dl.facts div { flex: 0 1 auto; overflow: hidden; }
+  .status { flex: 0 0 auto; }
+}
+@media (min-width: 1200px) {
+  .head dl.facts { flex: 1 1 420px; }
+  .head dl.facts div { flex: 1 1 auto; min-width: 70px; }
+  .status { flex: 0 1 640px; max-width: 640px; }
+  .status .warnline { max-width: 100%; font-size: .85rem; }
+}
+@media (min-width: 1200px) { .status { flex: 0 1 800px; max-width: 800px; } }
+@media (min-width: 1200px) { .status { flex: 0 1 980px; max-width: 980px; flex-wrap: nowrap; } .status .warnline { display: none; } .head dl.facts div { min-width: 90px; } }
+@media (min-width: 1200px) { .status { flex: 0 1 900px; max-width: 900px; flex-wrap: wrap; } .status .warnline { display: block; flex-basis: 100%; } .status .actions .btn, .status .actions button { padding: 0 12px; font-size: .9rem; } }
+
+/* round 2: shorter rows, filters inside the frame, header readable, bigger rings */
+.filterbar { flex-wrap: wrap; }
+.filterbar .chips { flex-wrap: wrap; flex: 1 1 100%; }
+table.aligned.tools td { padding-top: 8px; padding-bottom: 8px; }
+table.aligned.tools td.actions { display: table-cell; text-align: right; }
+table.aligned.tools td.actions > * { margin: 3px; }
+table.aligned.tools col.c-name { width: 17%; }
+table.aligned.tools col.c-origin { width: 7%; }
+table.aligned.tools col.c-version { width: 15%; }
+table.aligned.tools col.c-size { width: 8%; }
+table.aligned.tools col.c-state { width: 14%; }
+table.aligned.tools col.c-vuln { width: 11%; }
+table.aligned.tools col.c-last { width: 28%; }
+.origin-chip { white-space: nowrap; }
+table.aligned.tools td.actions .btn, table.aligned.tools td.actions button { min-height: 32px; padding: 0 12px; font-size: .85rem; }
+table.aligned.tools td.mono { overflow-wrap: anywhere; font-size: .9rem; }
+table.aligned.tools tr.detail td { padding-top: 4px; padding-bottom: 6px; }
+.head dl.facts { flex: 1 1 0; min-width: 0; }
+.head dl.facts div { flex: 1 1 auto; min-width: 0; overflow: visible; }
+.head dl.facts dd, .head dl.facts dd.sub { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.status { flex: 0 0 auto; max-width: none; flex-direction: column; align-items: flex-end; flex-wrap: nowrap; }
+.status .warnline, .status > .small { flex-basis: auto; text-align: right; }
+.statusrow { justify-content: end; }
+.status .actions { flex-wrap: wrap; justify-content: flex-end; }
+.cardtop { flex-direction: column; align-items: flex-start; gap: 0; min-height: 2.6em; }
+.cardtop h3 { white-space: nowrap; }
+.cards .ringrow { flex-direction: column; align-items: center; gap: 10px; }
+.cards .ringcard.ringcard:not([data-explain="none"]) .ring { width: 140px; height: 140px; }
+.cards .legend { align-self: stretch; }
+@media (max-width: 800px) { .status { align-items: flex-start; } }
+table.aligned.tools { width: 100%; min-width: 0; table-layout: fixed; }
+table.aligned.tools th { white-space: normal; font-size: .72rem; letter-spacing: .03em; overflow-wrap: anywhere; }
+table.aligned.tools .state { font-size: .85rem; padding: 4px 10px; }
+.sidenav { flex-basis: 210px; }
+table.aligned.tools th { overflow-wrap: normal; font-size: .66rem; letter-spacing: .02em; }
+
+/* recoverable space: one short wide card under the rings */
+.card.reclaim { padding: 10px 18px; display: block; }
+.card.reclaim .reclaimhead { margin-bottom: 4px; }
+.reclaimrows { list-style: none; margin: 0; padding: 0; }
+.reclaimrows li { display: flex; align-items: center; gap: 20px; padding: 6px 0; border-top: 1px solid var(--line); }
+.reclaimrows li span { flex: 0 0 200px; }
+.reclaimrows li b { flex: 0 0 130px; }
+.reclaimrows li .btn { margin-left: auto; min-height: 34px; padding: 0 16px; font-size: .9rem; }
+@media (max-width: 560px) { .reclaimrows li { flex-wrap: wrap; gap: 6px 14px; } .reclaimrows li span { flex-basis: auto; } .reclaimrows li b { flex-basis: auto; } }
+
+/* round 3: the vulnerability column keeps everything inside its frame */
+table.aligned.tools col.c-name { width: 16%; }
+table.aligned.tools col.c-origin { width: 6%; }
+table.aligned.tools col.c-version { width: 13%; }
+table.aligned.tools col.c-size { width: 7%; }
+table.aligned.tools col.c-state { width: 14%; }
+table.aligned.tools col.c-vuln { width: 23%; }
+table.aligned.tools col.c-last { width: 21%; }
+table.aligned.tools .sev, .infotag { width: auto; max-width: 100%; height: auto; min-height: 36px; padding: 4px 10px; white-space: normal; text-align: center; line-height: 1.2; }
+table.aligned.tools .infotags { align-items: stretch; }
+table.aligned.tools td { overflow: hidden; }
+.sevfilter { margin: 0 0 10px; display: flex; gap: 12px; align-items: center; }
+table.aligned.tools td { overflow: visible; }
+table.aligned.tools col.c-name { width: 15%; }
+table.aligned.tools col.c-version { width: 12%; }
+table.aligned.tools col.c-size { width: 8%; }
+table.aligned.tools col.c-state { width: 15%; }
+table.aligned.tools col.c-vuln { width: 22%; }
+table.aligned.tools col.c-last { width: 22%; }
+table.aligned.tools .state { white-space: normal; text-align: center; line-height: 1.2; padding: 4px 8px; }
+.sevfilter .tag { color: var(--text); border-color: var(--muted); }
+
+/* use the whole width of the screen the browser reports */
+main { max-width: 100%; padding-left: clamp(16px, 2vw, 48px); padding-right: clamp(16px, 2vw, 48px); }
+/* rings grow with the screen; the tags in the vulnerability column keep a sensible width */
+.cards .ringcard.ringcard:not([data-explain="none"]) .ring { width: clamp(140px, 7.5vw, 230px); height: clamp(140px, 7.5vw, 230px); }
+table.aligned.tools .sev, .infotag { max-width: 230px; min-width: 150px; }
+table.aligned.tools .infotags { align-items: center; }
+
+/* readable on big screens: type grows with the width of the window */
+html { font-size: clamp(16px, calc(0.5vw + 7px), 24px); }
+table.aligned.tools th { font-size: .75rem; }
+table.aligned.tools tr.detail td { padding-top: 2px; padding-bottom: 6px; }
+table.aligned.tools tr.detail .tag, table.aligned.tools tr.detail summary { min-height: 30px; }
+table.aligned.tools col.c-vuln { width: 18%; }
+table.aligned.tools col.c-last { width: 25%; }
+/* bigger rings on big screens */
+.cards .ringcard.ringcard:not([data-explain="none"]) .ring { width: clamp(150px, 11vw, 320px); height: clamp(150px, 11vw, 320px); }
+.cards .legend, .cards .legend li.sub { font-size: 1rem; }
+.cards .cardnote { font-size: .85rem; }
+.cards h3 { font-size: 1.05rem; }
+/* the "better not to remove it" tag lives under the tool's name */
+td.wrap details.note { margin-top: 6px; }
+td.wrap details.note p { white-space: normal; }
