@@ -783,13 +783,28 @@ def test_a_second_click_opens_the_running_copy_instead_of_failing(tmp_path, monk
     assert opened == [url]
 
 
+def fake_popen(calls, code=0):
+    """A stand-in for Popen that records the command and ends at once with ``code``."""
+
+    class Process:
+        def wait(self, timeout=None):
+            return code
+
+    def popen(cmd, **kwargs):
+        calls.append(cmd)
+        assert kwargs.get("start_new_session") is True  # the browser must outlive the terminal
+        return Process()
+
+    return popen
+
+
 def test_the_desktop_opener_is_the_fallback_when_no_browser_is_found(monkeypatch):
     from gankhi.web import server
 
     calls = []
     monkeypatch.setattr(server.webbrowser, "open", lambda address: False)
     monkeypatch.setattr(server.shutil, "which", lambda name: "/usr/bin/xdg-open")
-    monkeypatch.setattr(server.subprocess, "Popen", lambda cmd, **kw: calls.append(cmd))
+    monkeypatch.setattr(server.subprocess, "Popen", fake_popen(calls))
     assert server.open_in_browser("http://127.0.0.1:1/") is True
     assert calls == [["/usr/bin/xdg-open", "http://127.0.0.1:1/"]]
     monkeypatch.setattr(server.shutil, "which", lambda name: None)
@@ -803,7 +818,7 @@ def test_any_installed_browser_is_used_when_there_is_no_default(monkeypatch):
     monkeypatch.setattr(server.webbrowser, "open", lambda address: False)
     installed = {"librewolf": "/usr/bin/librewolf"}  # no xdg-open, no default browser
     monkeypatch.setattr(server.shutil, "which", lambda name: installed.get(name))
-    monkeypatch.setattr(server.subprocess, "Popen", lambda cmd, **kw: calls.append(cmd))
+    monkeypatch.setattr(server.subprocess, "Popen", fake_popen(calls))
     assert server.open_in_browser("http://127.0.0.1:1/") is True
     assert calls == [["/usr/bin/librewolf", "http://127.0.0.1:1/"]]
 
@@ -1386,3 +1401,66 @@ def test_recoverable_space_is_a_short_row_with_one_button_per_line():
     assert ">Borrar caché</a>" in box and "Quitar kernels viejos</a>" in box
     assert "(1.9 GiB)" not in box  # the button says only what it does
     assert html.index('data-explain="reclaim"') > html.index('data-explain="support"')
+
+
+def test_a_browser_that_fails_right_away_is_not_taken_for_opened(monkeypatch):
+    from gankhi.web import server
+
+    calls = []
+    monkeypatch.setattr(server.webbrowser, "open", lambda address: False)
+    installed = {"xdg-open": "/usr/bin/xdg-open", "librewolf": "/usr/bin/librewolf"}
+    monkeypatch.setattr(server.shutil, "which", lambda name: installed.get(name))
+    codes = {"/usr/bin/xdg-open": 3, "/usr/bin/librewolf": 0}  # the desktop opener fails
+
+    def popen(cmd, **kwargs):
+        calls.append(cmd)
+
+        class Process:
+            def wait(self, timeout=None):
+                return codes[cmd[0]]
+
+        return Process()
+
+    monkeypatch.setattr(server.subprocess, "Popen", popen)
+    assert server.open_in_browser("http://127.0.0.1:1/") is True
+    assert [c[0] for c in calls] == ["/usr/bin/xdg-open", "/usr/bin/librewolf"]
+
+
+def ready_client():
+    client = login(build().test_client())
+    client.get("/", base_url=BASE)
+    wait_until_done(client)
+    return client
+
+
+def test_searching_a_cve_number_finds_it_and_says_so_at_the_top():
+    client = ready_client()
+    html = client.get("/?q=CVE-1", base_url=BASE).get_data(as_text=True)
+    assert 'class="cvehit found"' in html
+    assert "CVE-1" in html.split('class="cvehit found"')[1].split("</section>")[0]
+    assert "openssl" in html.split('class="cvehit found"')[1].split("</section>")[0]
+    # the banner comes before the header of the page
+    assert html.index('class="cvehit found"') < html.index('class="card head"')
+
+
+def test_searching_a_cve_number_that_is_not_there_says_so():
+    client = ready_client()
+    html = client.get("/?q=CVE-2026-98432", base_url=BASE).get_data(as_text=True)
+    assert 'class="cvehit none"' in html
+    assert "CVE-2026-98432" in html
+
+
+def test_a_cve_search_filters_the_list_and_a_name_search_has_no_banner():
+    client = ready_client()
+    html = client.get("/?q=cve-1", base_url=BASE).get_data(as_text=True)
+    table = html.split('id="tools"')[1].split("</table>")[0]
+    assert "openssl" in table and "vim" not in table
+    plain = client.get("/?q=openssl", base_url=BASE).get_data(as_text=True)
+    assert "cvehit" not in plain.split("<style")[-1].split("<header")[0]
+
+
+def test_a_number_is_only_a_cve_search_when_it_looks_like_one():
+    from gankhi.web.app import is_cve_search
+
+    assert is_cve_search("CVE-2026-98432") and is_cve_search("cve") and is_cve_search("2026-98")
+    assert not is_cve_search("2") and not is_cve_search("python3") and not is_cve_search("")
