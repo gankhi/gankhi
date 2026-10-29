@@ -696,6 +696,13 @@ TEXTS: dict[str, dict[str, str]] = {
         "sevn_low_only": "Low only",
         "sevn_unknown_only": "Unclassified only",
         "sev_filter_clear": "Show all",
+        "cvehit_found": "Found {query} on this computer",
+        "cvehit_none": "{query} was not found in your installed programs and libraries.",
+        "cvehit_none_hint": (
+            "It only looks at what the last scan found. If the notice is new, press Scan again "
+            "to download the latest list and search again."
+        ),
+        "search_ph_cve": "name, description or CVE number",
         "nav_label": "Sections",
         "nav_tools": "Installed tools",
         "nav_apps": "Apps",
@@ -1428,6 +1435,13 @@ TEXTS: dict[str, dict[str, str]] = {
         "sevn_low_only": "Solo bajas",
         "sevn_unknown_only": "Solo sin clasificar",
         "sev_filter_clear": "Ver todas",
+        "cvehit_found": "Encontré {query} en esta computadora",
+        "cvehit_none": "No encontré {query} en tus programas y librerías instalados.",
+        "cvehit_none_hint": (
+            "Solo mira lo que encontró el último escaneo. Si el aviso es nuevo, apretá Volver a "
+            "escanear para bajar la lista más reciente y buscá otra vez."
+        ),
+        "search_ph_cve": "nombre, descripción o número de CVE",
         "nav_label": "Secciones",
         "nav_tools": "Herramientas instaladas",
         "nav_apps": "Apps",

@@ -829,3 +829,9 @@ table.aligned.tools col.c-last { width: 25%; }
 /* the "better not to remove it" tag lives under the tool's name */
 td.wrap details.note { margin-top: 6px; }
 td.wrap details.note p { white-space: normal; }
+
+/* Result of searching for a CVE number: at the top of the page, whatever tab is open */
+.cvehit { margin: 0 0 14px; padding: 12px 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--row); display: flex; flex-direction: column; gap: 4px; }
+.cvehit.found { border-left: 4px solid var(--green); }
+.cvehit.none { border-left: 4px solid var(--muted); }
+.cvehit ul { margin: 4px 0 0; padding-left: 18px; }

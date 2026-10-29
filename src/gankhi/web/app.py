@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hmac
 import math
+import re
 import subprocess
 from collections.abc import Callable
 from datetime import datetime
@@ -98,6 +99,40 @@ def origin_label(origin: str) -> str:
         if part and part.lower() != "unknown" and part not in seen:
             seen.append(part)
     return ", ".join(seen)
+
+
+_CVE_QUERY = re.compile(r"^(cve|\d{4}-\d)")
+
+
+def is_cve_search(text: str) -> bool:
+    """A search that is a CVE number (whole or started: ``CVE-2026-98``, ``2026-98432``)."""
+    return bool(_CVE_QUERY.match(text.strip().lower()))
+
+
+def tool_matches(tool: Any, text: str) -> bool:
+    """The search box: the name or description of a program, or one of its CVE numbers."""
+    if not text:
+        return True
+    if text in tool.name.lower() or text in tool.description.lower():
+        return True
+    return is_cve_search(text) and any(text in c.cve_id.lower() for c in tool.cves)
+
+
+def cve_hits(tools: list[Any], text: str) -> list[dict[str, str]]:
+    """Every program or library with a notice for the CVE number that was searched."""
+    hits: list[dict[str, str]] = []
+    for tool in tools:
+        for cve in tool.cves:
+            if text in cve.cve_id.lower():
+                hits.append(
+                    {
+                        "tool": tool.name,
+                        "cve": cve.cve_id,
+                        "priority": cve.priority or "",
+                        "fixed": cve.fixed_version or "",
+                    }
+                )
+    return hits
 
 
 def ring_arc(start: float, end: float) -> str:
@@ -267,8 +302,12 @@ def create_app(
         chosen = chosen if chosen in FILTERS else "all"
         # The list of flaws always has all of them, libraries and dependencies included.
         ticked = request.args.get("show") == "all"
-        show_all = ticked or chosen in ("vulnerable", "outdated", "eol", "unchecked", "ok")
         query = request.args.get("q", "")[:MAX_QUERY_CHARS]
+        cve_search = is_cve_search(query)
+        # A CVE can be in a library: looking for one searches libraries and dependencies too.
+        show_all = (
+            ticked or cve_search or chosen in ("vulnerable", "outdated", "eol", "unchecked", "ok")
+        )
         universe = [t for t in result.tools if t.is_program or show_all]
         wanted = {
             "ok": OK,
@@ -286,7 +325,7 @@ def create_app(
             if (wanted is None or t.state == wanted)
             and (chosen != "eol" or t.end_of_support)
             and not (wanted == UNCHECKED and checked_by_user(t, marks))
-            and (not text or text in t.name.lower() or text in t.description.lower())
+            and tool_matches(t, text)
             # parked ones have their own card in the views that show it; in the others (for
             # example out of support) they must be listed here, or the list would come up empty
             and not (is_parked(t) and chosen in ("all", "vulnerable"))
@@ -295,7 +334,9 @@ def create_app(
         parked = [
             t
             for t in universe
-            if is_parked(t) and (not severity_wanted or severity_level(t) == severity_wanted)
+            if is_parked(t)
+            and tool_matches(t, text)
+            and (not severity_wanted or severity_level(t) == severity_wanted)
         ]
         kernel = [r for r in result.risks if r.kind == RUNNING_KERNEL]
         # The headline numbers add up everything Gankhi checked: system programs and also the
@@ -341,7 +382,12 @@ def create_app(
         return {
             "severity_filter": severity_wanted,
             "parked": parked,
-            "parked_shown": parked if chosen in ("all", "vulnerable") else [],
+            "parked_shown": parked if chosen in ("all", "vulnerable") or cve_search else [],
+            "cve_search": (
+                {"query": query.strip().upper(), "hits": cve_hits(everything, text)}
+                if cve_search
+                else None
+            ),
             "totals": {
                 "all": total_all,
                 "outdated": total_old,

@@ -82,17 +82,32 @@ def port_is_free(port: int) -> bool:
 KNOWN_BROWSERS = tuple(command for command, _label in browsers.KNOWN)
 
 
-def _start(command: list[str]) -> bool:
+def _start(command: list[str], settle: float = 2.0) -> bool:
+    """Start a program on its own and say whether it really started.
+
+    A program that fails right away (a missing library, a refused profile) used to count as
+    opened, because starting it worked. Now a quick failure is a failure, so the next way of
+    opening the browser is tried. One that is still running after ``settle`` seconds is a
+    browser that stays in front: that is a success.
+    """
+    print(f"Opening with: {command[0]}")
     try:
-        subprocess.Popen(  # noqa: S603  (absolute path from which(), fixed arguments, no shell)
+        process = subprocess.Popen(  # noqa: S603  (absolute path from which(), fixed arguments, no shell)
             command,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            start_new_session=True,
         )
     except OSError:
         return False
-    return True
+    try:
+        code = process.wait(timeout=settle)
+    except subprocess.TimeoutExpired:
+        return True
+    if code != 0:
+        print(f"{Path(command[0]).name} stopped with code {code}; trying another way.")
+    return code == 0
 
 
 def open_in_browser(url: str, browser: str = browsers.DEFAULT) -> bool:
